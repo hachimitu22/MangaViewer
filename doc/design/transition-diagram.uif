@@ -1,0 +1,101 @@
+
+[header]
+ヘッダーを表示する
+--
+トップへ移動する
+={/}=> Home
+タグ一覧へ移動する
+={/tags}=> tags
+キャラクター一覧へ移動する
+={/characters}=> characters
+シリーズ一覧へ移動する
+={/series}=> series
+作者一覧へ移動する
+={/authors}=> authors
+作品追加へ移動する
+={/upload}=> upload
+検索ワードで検索する
+={/?xxxx&yyyy}=> Home
+詳細検索へ移動する
+={/search}=> search
+
+[tags]
+タグ一覧を表示
+--
+タグを選択
+={/?tag=XXXX}=> Home
+
+[characters]
+キャラクター一覧を表示
+--
+キャラクターを選択
+={/?character=XXXX}=> Home
+
+[series]
+シリーズ一覧
+--
+シリーズを選択する
+={/?series=XXXX}=> Home
+
+[authors]
+作者一覧
+--
+作者を選択する
+={/?author=XXXX}=> Home
+
+[upload]
+作品追加画面を表示する
+--
+作品を追加する
+={/?sort=new}=> Home
+
+[search]
+詳細検索画面を表示する
+--
+検索する
+={/?xxxx&yyyy}=> Home
+
+[Home]
+トップページまたは検索結果を表示
+--
+マンガを選択する
+={/manga/id}=> manga
+
+[manga]
+マンガ情報を表示
+表紙サムネイル
+ページ一覧のサムネイル
+タイトル
+作者名
+シリーズ
+キャラクター一覧
+タグ一覧
+編集
+--
+タグを選択
+={/?tag=XXXX}=> Home
+シリーズを選択する
+={/?series=XXXX}=> Home
+キャラクターを選択
+={/?character=XXXX}=> Home
+作者を選択する
+={/?author=XXXX}=> Home
+表紙サムネイルを選択する
+={/viewer/id#1}=> viewer
+サムネイルを選択する
+={/viewer/id#XXX}=> viewer
+編集ボタンを選択
+={/edit/id}=> edit
+
+[viewer]
+マンガを表示
+--
+マンガ情報へ戻る
+={/manga/id}=> manga
+
+[edit]
+作品編集画面を表示する
+--
+作品を編集する
+={/?sort=new}=> Home
+
