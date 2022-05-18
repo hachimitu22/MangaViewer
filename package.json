@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -o ./doc/api/api.html"
+    "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -o ./doc/api/api.html",
+    "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -s"
   },
   "author": "",
   "license": "MIT",
