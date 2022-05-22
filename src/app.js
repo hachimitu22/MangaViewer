@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('Hi!!');
-});
+const topRouter = require('./routes/top')
+
+app.use('/', topRouter);
 
 module.exports = app;
