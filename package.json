@@ -9,6 +9,7 @@
     "jest-puppeteer": "jest __tests__/e2e",
     "test:e2e": "start-server-and-test start http://localhost:3000 jest-puppeteer",
     "test:integration": "jest __tests__/integration",
+    "test:unit": "jest __tests__/unit",
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -o ./doc/api/api.html",
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -s"
   },

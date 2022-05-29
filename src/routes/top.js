@@ -1,8 +1,7 @@
 const express = require('express');
+const top = require('../handlers/top');
 const router = express.Router();
 
-router.get('/', (req, res) => {
-  res.send('top');
-});
+router.get('/', top);
 
 module.exports = router;
