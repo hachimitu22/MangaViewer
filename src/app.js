@@ -1,16 +1,16 @@
 const express = require('express');
 const app = express();
 
-const topRouter = require('./routes/top')
-const tagsRouter = require('./routes/tags')
-const charactersRouter = require('./routes/characters')
-const seriesRouter = require('./routes/series')
-const artistRouter = require('./routes/artist')
+const top = require('./handlers/top');
+const tags = require('./handlers/tags');
+const characters = require('./handlers/characters');
+const series = require('./handlers/series');
+const artist = require('./handlers/artist');
 
-app.use('/', topRouter);
-app.use('/tags', tagsRouter);
-app.use('/characters', charactersRouter);
-app.use('/series', seriesRouter);
-app.use('/artist', artistRouter);
+app.use('/', top);
+app.use('/tags', tags);
+app.use('/characters', characters);
+app.use('/series', series);
+app.use('/artist', artist);
 
 module.exports = app;
