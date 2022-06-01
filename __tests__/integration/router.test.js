@@ -1,7 +1,11 @@
 const request = require('supertest');
-const app = require('../../src/app');
+const express = require('express');
+const app = express();
+const router = require('../../src/router');
 
-describe('app', () => {
+app.use('/', router);
+
+describe('router', () => {
   it('GET / to top page', (done) => {
     request(app)
       .get('/')
