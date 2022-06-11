@@ -4,7 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/server.js",
+    "test": "jest",
+    "jest-puppeteer": "jest __tests__/e2e",
+    "test:e2e": "start-server-and-test start http://localhost:3000 jest-puppeteer",
+    "test:integration": "jest __tests__/integration",
+    "test:unit": "jest __tests__/unit",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:all:coverage": "start-server-and-test start http://localhost:3000 jest __tests__/ --coverage",
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -o ./doc/api/api.html",
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -s"
   },
@@ -15,6 +22,9 @@
   },
   "devDependencies": {
     "aglio": "^2.3.0",
-    "jest": "^28.1.0"
+    "jest": "^28.1.0",
+    "jest-puppeteer": "^6.1.0",
+    "start-server-and-test": "^1.14.0",
+    "supertest": "^6.2.3"
   }
 }
