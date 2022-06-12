@@ -4,12 +4,12 @@ describe('unit artist', () => {
   it('artist', async () => {
     const req = {};
     const res = {
-      send: jest.fn(),
+      render: jest.fn(),
     };
 
     await artist(req, res);
 
-    expect(res.send.mock.calls.length).toBe(1);
-    expect(res.send.mock.calls[0]).toEqual(['artist']);
+    expect(res.render.mock.calls.length).toBe(1);
+    expect(res.render.mock.calls[0]).toEqual(['pages/artist']);
   });
 });

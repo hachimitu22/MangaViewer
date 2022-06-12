@@ -1,3 +1,3 @@
 module.exports = (req, res) => {
-  res.send('characters');
+  res.render('pages/characters');
 };
