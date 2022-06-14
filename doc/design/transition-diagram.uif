@@ -11,7 +11,7 @@
 シリーズ一覧へ移動する
 ={/series}=> series
 作者一覧へ移動する
-={/artist}=> artist
+={/artists}=> artists
 作品追加へ移動する
 ={/upload}=> upload
 検索ワードで検索する
@@ -37,7 +37,7 @@
 シリーズを選択する
 ={/?series=XXXX}=> Home
 
-[artist]
+[artists]
 作者一覧
 --
 作者を選択する

@@ -19,12 +19,12 @@ describe('router', () => {
         done(err);
       });
   });
-  it('GET /artist to artist page', (done) => {
+  it('GET /artists to artists page', (done) => {
     request(app)
-      .get('/artist')
+      .get('/artists')
       .then(res => {
         expect(res.statusCode).toBe(200);
-        expect(res.text).toBe('artist');
+        expect(res.text).toBe('artists');
         done();
       })
       .catch(err => {

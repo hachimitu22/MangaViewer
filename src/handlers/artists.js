@@ -1,3 +1,3 @@
 module.exports = (req, res) => {
-  res.render('pages/artist');
+  res.render('pages/artists');
 };
