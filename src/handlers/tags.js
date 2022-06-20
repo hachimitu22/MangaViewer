@@ -1,3 +1,3 @@
 module.exports = (req, res) => {
-  res.send('tags');
+  res.render('pages/tags');
 };

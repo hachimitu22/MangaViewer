@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const router = require('../../src/router');
 
+app.set('view engine', 'ejs');
 app.use('/', router);
 
 describe('router', () => {
@@ -18,12 +19,12 @@ describe('router', () => {
         done(err);
       });
   });
-  it('GET /artist to artist page', (done) => {
+  it('GET /artists to artists page', (done) => {
     request(app)
-      .get('/artist')
+      .get('/artists')
       .then(res => {
         expect(res.statusCode).toBe(200);
-        expect(res.text).toBe('artist');
+        expect(res.text).toBe('artists');
         done();
       })
       .catch(err => {

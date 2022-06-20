@@ -4,12 +4,12 @@ describe('unit series', () => {
   it('series', async () => {
     const req = {};
     const res = {
-      send: jest.fn(),
+      render: jest.fn(),
     };
 
     await series(req, res);
 
-    expect(res.send.mock.calls.length).toBe(1);
-    expect(res.send.mock.calls[0]).toEqual(['series']);
+    expect(res.render.mock.calls.length).toBe(1);
+    expect(res.render.mock.calls[0]).toEqual(['pages/series']);
   });
 });
