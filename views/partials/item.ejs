@@ -1,0 +1,10 @@
+<div class="item">
+  <a class="item-title" href="/viewer/<%= id %>"><%= title %></a>
+  <img id="item-thumbnail" src="<%= thumbnail %>">
+  <% for (category of categories) { %>
+    <div class="category-name"><%= category.name %></div>
+    <% for (label of category.labels) { %>
+      <a class="category-label" href="/list?search=<%= `${category.name}:${label}` %>"><%= label %></a>
+    <% } %>
+  <% } %>
+</div>
