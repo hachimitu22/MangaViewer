@@ -12,7 +12,7 @@ module.exports = (req, res) => {
     return res.redirect('/');
   }
 
-  res.render('pages/viewer', {
+  res.render('pages/edit', {
     ...item,
   });
 };

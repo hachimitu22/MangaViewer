@@ -1,5 +1,6 @@
 <div class="item">
-  <a class="item-title" href="/viewer/<%= id %>"><%= title %></a>
+  <a class="item-title" href="/view/<%= id %>"><%= title %></a>
+  <a class="item-edit" href="/edit/<%= id %>">edit</a>
   <img id="item-thumbnail" src="<%= thumbnail %>">
   <% for (category of categories) { %>
     <div class="category-name"><%= category.name %></div>
