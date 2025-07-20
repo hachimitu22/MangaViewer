@@ -2,7 +2,7 @@ const allItems = [
   {
     id: 1,
     title: 'abc',
-    thumbnail: '/images/slash_001.png',
+    thumbnail: '/images/dummy01.png',
     categories: [
       {
         name: 'tag',
@@ -13,17 +13,17 @@ const allItems = [
       },
     ],
     thumbnails: [
-      '/images/slash_001.png',
-      '/images/slash_002.png',
-      '/images/slash_003.png',
-      '/images/slash_004.png',
-      '/images/slash_005.png',
+      '/images/dummy01.png',
+      '/images/dummy02.png',
+      '/images/dummy03.png',
+      '/images/dummy04.png',
+      '/images/dummy05.png',
     ],
   },
   {
     id: 2,
     title: 'def',
-    thumbnail: '/images/slash_006.png',
+    thumbnail: '/images/dummy06.png',
     categories: [
       {
         name: 'tag',
@@ -34,11 +34,11 @@ const allItems = [
       },
     ],
     thumbnails: [
-      '/images/slash_006.png',
-      '/images/slash_007.png',
-      '/images/slash_008.png',
-      '/images/slash_009.png',
-      '/images/slash_010.png',
+      '/images/dummy06.png',
+      '/images/dummy07.png',
+      '/images/dummy08.png',
+      '/images/dummy09.png',
+      '/images/dummy10.png',
     ],
   },
 ];
