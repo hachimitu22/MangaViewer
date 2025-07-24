@@ -1,4 +1,4 @@
-const items = require('../repositories/items');
+const { searchMangaSummaries } = require('../repositories/items');
 
 const createPagination = page => {
   const pagination = {
@@ -17,11 +17,11 @@ const createPagination = page => {
   return pagination;
 };
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   const query = req.query
   const content = {
     total: 100,
-    items: items.searchItemList(query.search),
+    items: await searchMangaSummaries(query.search),
   };
 
   if (content.total === 0) {

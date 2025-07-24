@@ -11,6 +11,11 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    thumbnail: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: '',
+    },
     path: {
       type: DataTypes.STRING,
       allowNull: false,
