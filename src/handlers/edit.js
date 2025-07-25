@@ -1,13 +1,13 @@
-const items = require('../repositories/items');
+const { getMangaDetail } = require('../repositories/items');
 
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   const itemId = req.params && parseInt(req.params.id) || null;
   if (!itemId) {
     return res.redirect('/');
   }
 
-  const item = items.getItem(itemId);
+  const item = await getMangaDetail(itemId);
   if (!item) {
     return res.redirect('/');
   }
