@@ -23,7 +23,10 @@ const handlers = [
     const itemId = req.params && parseInt(req.params.id) || null;
     const filename = req.file.originalname;
     const src = path.join(__dirname, `../../tmp/${itemId}/${filename}`);
-    const dest = path.join(__dirname, `../../public/images/${filename}`);
+    const dest = path.join(__dirname, `../../public/images/${itemId}/${filename}`);
+    if (!fs.existsSync(`../../public/images/${itemId}`)) {
+      fs.mkdirSync(`../../public/images/${itemId}`, { recursive: true });
+    }
     fs.renameSync(src, dest);
     res.redirect(`/edit/${itemId}`);
   },
