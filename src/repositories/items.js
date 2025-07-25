@@ -1,8 +1,47 @@
+const fs = require('fs').promises;
+const path = require('path');
 const { Manga, Label, Category, MangaLabel } = require('../models');
 
 module.exports = {
-  getItem: id => {
-    return allItems.find(item => item.id === id);
+  getMangaDetail: async (id) => {
+    const mangaDetailRecords = await Manga.findAll({
+      attributes: ['manga_id', 'title', 'path'],
+      where: {
+        manga_id: id,
+      },
+      include: [
+        {
+          model: Label,
+          attributes: ['name'],
+          through: { attributes: [] },
+          include: [
+            {
+              model: Category,
+              attributes: ['name'],
+              where: {},
+            },
+          ],
+        },
+      ],
+      raw: true,
+    });
+
+    const categories = Object.values(mangaDetailRecords.reduce((o, cur) => {
+      if (!o[cur['Labels.Category.category_id']]) {
+        o[cur['Labels.Category.category_id']] = { name: cur['Labels.Category.name'], labels: [] };
+      }
+      o[cur['Labels.Category.category_id']].labels.push(cur['Labels.name']);
+
+      return o;
+    }, {}));
+
+    const files = await fs.readdir(path.join(process.cwd(), 'public', mangaDetailRecords[0].path));
+    return {
+      id: mangaDetailRecords[0].manga_id,
+      title: mangaDetailRecords[0].title,
+      thumbnails: files.map(p => `/images/${id}/${p}`),
+      categories,
+    };
   },
   searchMangaSummaries: async condition => {
     const query = {

@@ -1,6 +1,6 @@
 const app = require('./app');
 const { sequelize, Manga, Label, Category, MangaLabel } = require('./models');
-const { searchMangaList } = require('./repositories/items');
+const { searchMangaSummaries, getMangaDetail } = require('./repositories/items');
 const port = 3000;
 
 (async () => {
@@ -14,8 +14,8 @@ const port = 3000;
     const transaction = await sequelize.transaction();
     try {
       await Manga.bulkCreate([
-        { manga_id: 1, title: 'abc', thumbnail: '/images/dummy01.png', path: '/images/1' },
-        { manga_id: 2, title: 'def', thumbnail: '/images/dummy02.png', path: '/images/2' },
+        { manga_id: 1, title: 'abc', thumbnail: '/images/1/dummy01.png', path: '/images/1' },
+        { manga_id: 2, title: 'def', thumbnail: '/images/2/dummy06.png', path: '/images/2' },
       ], { validate: true });
       await Category.bulkCreate([
         { category_id: 1, name: 'tag' },
@@ -46,6 +46,9 @@ const port = 3000;
       await transaction.rollback();
       throw error;
     }
+
+    // console.log(JSON.stringify(await searchMangaSummaries('tag:tag1'), null, 2));
+    // console.log(JSON.stringify(await getMangaDetail(1), null, 2));
 
     app.listen(port, () => {
       console.log(`port http://localhost:${port} start`);
