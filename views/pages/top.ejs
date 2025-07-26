@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html>
-  <head>
-
-  </head>
-  <body>
-    <div id="header">
-      <%- include('../partials/header.ejs') %>
-    </div>
-  </body>
-</html>
+<div id="login">
+  <form method="POST" action="/login">
+    <input id="login-id" name="id">
+    <input type="password" id="login-password" name="password">
+    <button type="submit">login</button>
+  </form>
+</div>

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js --watch ./src",
     "test": "jest",
     "jest-puppeteer": "jest __tests__/e2e",
     "test:e2e": "start-server-and-test start http://localhost:3000 jest-puppeteer",
@@ -19,12 +20,16 @@
   "license": "MIT",
   "dependencies": {
     "ejs": "^3.1.8",
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "multer": "^2.0.2",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "aglio": "^2.3.0",
     "jest": "^28.1.0",
     "jest-puppeteer": "^6.1.0",
+    "nodemon": "^3.1.10",
     "start-server-and-test": "^1.14.0",
     "supertest": "^6.2.3"
   }

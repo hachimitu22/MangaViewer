@@ -1,0 +1,16 @@
+<div>
+  <% if (prev) { %>
+    <a  href="/list?page=<%= prev %><%= search ? `&${search}` : '' %>" id="prev">prev</a>
+  <% } %>
+  <% for (let i = 1; i <= totalPage; i++) { %>
+    <% if (i === current) { %>
+      <span id="page-link-<%= i %><%= search ? `&${search}` : '' %>"><%= i %></span>
+    <% } else { %>
+      <a  href="/list?page=<%= i %><%= search ? `&${search}` : '' %>" id="page-link-<%= i %>"><%= i %></a>
+    <% } %>
+  <% } %>
+  <% if (next) { %>
+    <a  href="/list?page=<%= next %><%= search ? `&${search}` : '' %>" id="next">next</a>
+  <% } %>
+  <!-- <div id="selector"></div> -->
+</div>
