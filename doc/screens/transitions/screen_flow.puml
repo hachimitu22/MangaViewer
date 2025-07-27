@@ -1,0 +1,33 @@
+@startuml
+
+state "未ログイン" as Unlogged {
+    Login : ログイン画面
+}
+
+state "ログイン済" as LoggedIn {
+    MediaSummaries : メディア一覧
+    MangaDetail : 漫画詳細
+    VideoDetail : 動画詳細
+    MangaView : 漫画全画面ビュー
+    VideoView : 動画全画面再生
+    MyPage : マイページ
+    Favorites : お気に入り一覧
+    Queue : キュー一覧
+    Navigation : 共通ナビゲーション
+}
+
+[*] --> Login
+Login ---> MediaSummaries : ログイン成功
+Login --> Login : ログイン失敗
+MediaSummaries --> MangaDetail : 漫画を選択
+MediaSummaries --> VideoDetail : 動画を選択
+MangaDetail --> MangaView : サムネイルクリック
+VideoDetail --> VideoView : 全画面再生
+
+Navigation --> MediaSummaries : TOP
+Navigation --> MyPage : マイページ
+Navigation --> Favorites : お気に入り
+Navigation --> Queue : あとで見る
+Navigation --> Login : ログアウト
+
+@enduml

@@ -1,0 +1,38 @@
+@startuml
+    left to right direction
+
+    actor "ユーザー" as a_user
+    actor "管理者" as a_manager
+    package MediaViewer {
+        package 共通機能 {
+            usecase "ログイン" as uc_login
+            usecase "ログアウト" as uc_logout
+            usecase "メディアを見る" as uc_show
+            usecase "メディアを作成する" as uc_create
+            usecase "メディアを更新する" as uc_update
+            usecase "メディアを削除する" as uc_delete
+        }
+        package 管理者機能 {
+            usecase "メディアを管理する" as uc_multi_create
+        }
+    }
+    a_user -- uc_login
+    a_user -- uc_logout
+    a_user -- uc_show
+    a_user -- uc_create
+    a_user -- uc_update
+    a_user -- uc_delete
+
+    uc_login -- a_manager
+    uc_show -- a_manager
+    uc_create -- a_manager
+    uc_update -- a_manager
+    uc_delete -- a_manager
+    uc_multi_create -- a_manager
+
+    json JSON {
+    "fruit":"Apple",
+    "size":"Large",
+    "color": ["Red", "Green"]
+    }
+@enduml

@@ -1,0 +1,59 @@
+@startuml
+entity user {
+  *id : int
+  --
+  username : string
+  password_hash : string
+  created_at : datetime
+}
+
+entity media {
+  *id : int
+  --
+  type : string
+  title : string
+  description : text
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity favorite {
+  *id : int
+  --
+  user_id : int
+  media_id : int
+}
+
+entity queue {
+  *id : int
+  --
+  user_id : int
+  media_id : int
+}
+
+entity category {
+  *id : int
+  --
+  name : string
+}
+
+entity label {
+  *id : int
+  --
+  category_id : int
+  name : string
+}
+
+entity media_label {
+  *media_id : int
+  *label_id : int
+}
+
+user ||--o{ favorite
+user ||--o{ queue
+media ||--o{ favorite
+media ||--o{ queue
+media ||--o{ media_label
+label ||--o{ media_label
+category ||--o{ label
+@enduml
