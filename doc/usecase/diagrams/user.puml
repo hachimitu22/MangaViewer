@@ -1,0 +1,17 @@
+@startuml
+left to right direction
+actor "ユーザー" as User
+
+package "MediaViewer" {
+    package "ユーザー状態管理" {
+        User --> (お気に入り追加)
+        User --> (お気に入り削除)
+        User --> (キュー追加)
+        User --> (キュー削除)
+
+        User --> (お気に入り一覧表示)
+        User --> (キュー一覧表示)
+        User --> (閲覧履歴)
+    }
+}
+@enduml
