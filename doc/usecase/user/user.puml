@@ -11,7 +11,7 @@ package "MediaViewer" {
 
         User --> (お気に入り一覧表示)
         User --> (キュー一覧表示)
-        User --> (閲覧履歴)
+        User --> (閲覧履歴表示)
     }
 }
 @enduml
