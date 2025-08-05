@@ -1,9 +1,0 @@
-@startuml
-state "共通ナビゲーション" as Navigation {
-    Navigation --> MyPage : マイページ
-    Navigation --> Login : ログアウト
-    Navigation --> MediaList : メディア一覧
-    MyPage --> Favorites : お気に入り
-    MyPage --> Queue : キュー一覧
-}
-@enduml

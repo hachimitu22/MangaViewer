@@ -1,0 +1,37 @@
+@startuml
+
+state "未ログイン" as UnSignin {
+    login : ログイン画面
+}
+
+state "ログイン済" as Signin {
+    summary : メディア一覧
+    detail : メディア詳細
+    viewer : メディアビューアー
+    favorite : お気に入り
+    queue : あとで見る
+
+    state "管理者" as Admin {
+        entry : メディア登録
+        edit : メディア編集
+    }
+}
+
+' 共通
+[*] --> UnSignin.login
+UnSignin.login --> Signin.summary : ログイン成功
+UnSignin.login --> UnSignin.login : ログイン失敗
+Signin.summary --> Signin.detail : メディアを選択
+Signin.detail --> Signin.viewer : サムネイル選択
+Signin.viewer --> Signin.detail : ビューアーを閉じる
+
+' ユーザー
+Signin.favorite --> Signin.detail : メディアを選択
+Signin.queue --> Signin.detail : メディアを選択
+
+' 管理者
+Signin.summary --> Signin.Admin.edit : 編集を押下
+Signin.detail --> Signin.Admin.edit : 編集を押下
+Signin.Admin.entry --> Signin.summary : メディアを登録
+
+@enduml
