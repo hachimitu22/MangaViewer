@@ -1,0 +1,13 @@
+paths:
+  /entry:
+    get:
+      summary: メディア登録ページ
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: メディア登録HTML
+          content:
+            text/html:
+              schema:
+                type: string

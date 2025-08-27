@@ -1,0 +1,29 @@
+openapi: 3.1.0
+info:
+  title: Media App API
+  version: 1.0.0
+servers:
+  - url: https://example.com
+paths:
+  /login:
+    $ref: './paths/login.yaml#/paths/~1login'
+  /summary:
+    $ref: './paths/summary.yaml#/paths/~1summary'
+  /detail/{mediaId}:
+    $ref: './paths/detail.yaml#/paths/~1detail~1{mediaId}'
+  /viewer/{mediaId}/{page}:
+    $ref: './paths/viewer.yaml#/paths/~1viewer~1{mediaId}~1{page}'
+  /search:
+    $ref: './paths/search.yaml#/paths/~1search'
+  /favorite:
+    $ref: './paths/favorite.yaml#/paths/~1favorite'
+  /queue:
+    $ref: './paths/queue.yaml#/paths/~1queue'
+  /error:
+    $ref: './paths/error.yaml#/paths/~1error'
+  /entry:
+    $ref: './paths/entry.yaml#/paths/~1entry'
+  /edit/{mediaId}:
+    $ref: './paths/edit.yaml#/paths/~1edit~1{mediaId}'
+components:
+  $ref: './components/securitySchemes.yaml'
