@@ -7,6 +7,8 @@ servers:
 paths:
   /login:
     $ref: './paths/login.yaml#/paths/~1login'
+  /logout:
+    $ref: './paths/logout.yaml#/paths/~1logout'
   /summary:
     $ref: './paths/summary.yaml#/paths/~1summary'
   /detail/{mediaId}:

@@ -1,16 +1,9 @@
 paths:
-  /login:
-    get:
-      summary: ログイン画面
-      responses:
-        "200":
-          description: ログインページHTML
-          content:
-            text/html:
-              schema:
-                type: string
+  /logout:
     post:
-      summary: ログイン処理
+      summary: ログアウト処理
+      security:
+        - cookieAuth: []
       requestBody:
         required: true
         content:
@@ -29,12 +22,7 @@ paths:
                 - password
       responses:
         "200":
-          description: ログイン成否、セッション発行
-          headers:
-            Set-Cookie:
-              description: セッショントークン
-              schema:
-                type: string
+          description: ログアウト成否
           content:
             application/json:
               schema:
@@ -42,15 +30,15 @@ paths:
                 properties:
                   code:
                     type: integer
-                    description: ログイン成否
+                    description: ログアウト成否
               examples:
                 success:
-                  summary: ログイン成功
+                  summary: ログアウト成功
                   value: {
                     code: 0
                   }
                 fail:
-                  summary: ログイン失敗
+                  summary: ログアウト失敗
                   value: {
                     code: 1
                   }
