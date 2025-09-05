@@ -78,13 +78,33 @@
 </details>
 
 <details open>
-<summary>No.11 メディア区切り線</summary>
+<summary>No.11 お気に入りボタン</summary>
+
+- ラベル: "お気に入り"
+- 文字色
+  - 登録時: 黒
+  - 未登録時: 灰色
+- 登録時は背景色を付ける
+</details>
+
+<details open>
+<summary>No.12 あとで見るボタン</summary>
+
+- ラベル: "あとで見る"
+- 文字色
+  - 登録時: 黒
+  - 未登録時: 灰色
+- 登録時は背景色を付ける
+</details>
+
+<details open>
+<summary>No.13 メディア区切り線</summary>
 
 - 備考: メディア1件ごとに表示する
 </details>
 
 <details open>
-<summary>No.12 ページネーション</summary>
+<summary>No.14 ページネーション</summary>
 
 - ラベル: "{ページ番号}", "..."
 - 表示ルール:
@@ -96,7 +116,7 @@
 </details>
 
 <details open>
-<summary>No.13 検索結果0件ラベル</summary>
+<summary>No.15 検索結果0件ラベル</summary>
 
 - ラベル: "検索結果0件ラベル"
 - 表示ルール:
