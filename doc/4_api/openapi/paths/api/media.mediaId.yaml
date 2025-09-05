@@ -1,0 +1,138 @@
+# /api/media/{mediaId}
+patch:
+  summary: メディア更新処理
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: mediaId
+      in: path
+      description: 対象のメディアID
+      required: true
+      schema:
+        type: integer
+      example: 1
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            title:
+              description: メディアタイトル
+              type: string
+            add:
+              description: 追加一覧
+              type: array
+              items:
+                description: メディアファイル
+                type: object
+                properties:
+                  file:
+                    description: ファイル
+                    type: string
+                    format: binary
+                  page:
+                    description: ページ番号
+                    type: integer
+            update:
+              description: ページ更新一覧
+              type: array
+              items:
+                description: ページ更新ペア
+                type: object
+                properties:
+                  from:
+                    description: 変更前ページ番号
+                    type: integer
+                  to:
+                    description: 変更後ページ番号
+                    type: integer
+            remove:
+              description: 削除一覧
+              type: array
+              items:
+                page: ページ番号
+                type: integer
+        examples:
+          changeTitle:
+            summary: タイトルを変更
+            value:
+              title: スティール・ポール・ラン
+          addTwoItems:
+            summary: 画像2枚を追加
+            value:
+              add:
+                - file: example3.jpg
+                  count: 3
+                - file: example4.png
+                  count: 4
+          updateItem:
+            summary: 画像2枚のページ順を入れ替える
+            value:
+              update:
+                - from: 1
+                  to: 2
+                - from: 2
+                  to: 1
+          removeItem:
+            summary: 画像1枚を削除する
+            value:
+              remove:
+                - page: 2
+  responses:
+    "200":
+      description: メディア更新成功
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                description: 更新成否
+          examples:
+            success:
+              summary: 更新成功
+              value: {
+                code: 0
+              }
+            fail:
+              summary: 更新失敗
+              value: {
+                code: 1
+              }
+delete:
+  summary: メディア削除処理
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: mediaId
+      in: path
+      description: 対象のメディアID
+      required: true
+      schema:
+        type: integer
+      example: 1
+  responses:
+    "200":
+      description: メディア削除成否
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                description: 削除成否
+          examples:
+            success:
+              summary: 削除成功
+              value: {
+                code: 0
+              }
+            fail:
+              summary: 削除失敗
+              value: {
+                code: 1
+              }

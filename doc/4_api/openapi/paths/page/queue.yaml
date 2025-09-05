@@ -1,0 +1,12 @@
+# /queue
+get:
+  summary: あとで見る一覧画面
+  security:
+    - cookieAuth: []
+  responses:
+    "200":
+      description: あとで見る一覧HTML
+      content:
+        text/html:
+          schema:
+            type: string

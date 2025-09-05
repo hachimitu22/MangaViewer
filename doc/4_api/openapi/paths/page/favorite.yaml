@@ -1,0 +1,12 @@
+# /favorite
+get:
+  summary: お気に入り一覧画面
+  security:
+    - cookieAuth: []
+  responses:
+    "200":
+      description: お気に入り一覧HTML
+      content:
+        text/html:
+          schema:
+            type: string

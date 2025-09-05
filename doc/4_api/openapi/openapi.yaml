@@ -5,27 +5,41 @@ info:
 servers:
   - url: https://example.com
 paths:
-  /login:
-    $ref: './paths/login.yaml#/paths/~1login'
-  /logout:
-    $ref: './paths/logout.yaml#/paths/~1logout'
-  /summary:
-    $ref: './paths/summary.yaml#/paths/~1summary'
-  /detail/{mediaId}:
-    $ref: './paths/detail.yaml#/paths/~1detail~1{mediaId}'
-  /viewer/{mediaId}/{page}:
-    $ref: './paths/viewer.yaml#/paths/~1viewer~1{mediaId}~1{page}'
-  /search:
-    $ref: './paths/search.yaml#/paths/~1search'
-  /favorite:
-    $ref: './paths/favorite.yaml#/paths/~1favorite'
-  /queue:
-    $ref: './paths/queue.yaml#/paths/~1queue'
-  /error:
-    $ref: './paths/error.yaml#/paths/~1error'
-  /entry:
-    $ref: './paths/entry.yaml#/paths/~1entry'
-  /edit/{mediaId}:
-    $ref: './paths/edit.yaml#/paths/~1edit~1{mediaId}'
+  # ページURL
+  /page/login:
+    $ref: './paths/page/login.yaml'
+  /page/summary:
+    $ref: './paths/page/summary.yaml'
+  /page/detail/{mediaId}:
+    $ref: './paths/page/detail.mediaId.yaml'
+  /page/viewer/{mediaId}/{page}:
+    $ref: './paths/page/viewer.mediaId.page.yaml'
+  /page/search:
+    $ref: './paths/page/search.yaml'
+  /page/favorite:
+    $ref: './paths/page/favorite.yaml'
+  /page/queue:
+    $ref: './paths/page/queue.yaml'
+  /page/error:
+    $ref: './paths/page/error.yaml'
+  /page/entry:
+    $ref: './paths/page/entry.yaml'
+  /page/edit/{mediaId}:
+    $ref: './paths/page/edit.mediaId.yaml'
+
+  # WebAPI
+  /api/login:
+    $ref: './paths/api/login.yaml'
+  /api/logout:
+    $ref: './paths/api/logout.yaml'
+  /api/media:
+    $ref: './paths/api/media.yaml'
+  /api/media/{mediaId}:
+    $ref: './paths/api/media.mediaId.yaml'
+  /api/favorite/{mediaId}:
+    $ref: './paths/api/favorite.mediaId.yaml'
+  /api/queue/{mediaId}:
+    $ref: './paths/api/queue.mediaId.yaml'
+
 components:
   $ref: './components/securitySchemes.yaml'

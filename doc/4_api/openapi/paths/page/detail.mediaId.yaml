@@ -1,0 +1,20 @@
+# /detail/{mediaId}
+get:
+  summary: メディア詳細画面
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: mediaId
+      in: path
+      description: 対象のメディアID
+      required: true
+      schema:
+        type: integer
+      example: 1
+  responses:
+    "200":
+      description: メディア詳細HTML
+      content:
+        text/html:
+          schema:
+            type: string

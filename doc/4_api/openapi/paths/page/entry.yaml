@@ -1,0 +1,12 @@
+# /entry
+get:
+  summary: メディア登録画面
+  security:
+    - cookieAuth: []
+  responses:
+    "200":
+      description: メディア登録HTML
+      content:
+        text/html:
+          schema:
+            type: string

@@ -1,0 +1,12 @@
+# /search
+get:
+  summary: 検索条件入力画面
+  security:
+    - cookieAuth: []
+  responses:
+    "200":
+      description: 検索条件入力HTML
+      content:
+        text/html:
+          schema:
+            type: string
