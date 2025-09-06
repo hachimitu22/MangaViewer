@@ -10,11 +10,6 @@ state "ログイン済" as Signin {
     viewer : メディアビューアー
     favorite : お気に入り
     queue : あとで見る
-
-    state "管理者" as Admin {
-        entry : メディア登録
-        edit : メディア編集
-    }
 }
 
 ' 共通
@@ -28,10 +23,5 @@ Signin.viewer --> Signin.detail : ビューアーを閉じる
 ' ユーザー
 Signin.favorite --> Signin.detail : メディアを選択
 Signin.queue --> Signin.detail : メディアを選択
-
-' 管理者
-Signin.summary --> Signin.Admin.edit : 編集を押下
-Signin.detail --> Signin.Admin.edit : 編集を押下
-Signin.Admin.entry --> Signin.summary : メディアを登録
 
 @enduml

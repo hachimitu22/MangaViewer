@@ -26,8 +26,11 @@
 | [ナビゲーター](./parts/ナビゲーター/index.md) | 各画面へのショートカット一覧 | 全画面の上部、ヘッダー |
 
 ## 画面遷移図
-### メインの遷移
-@import "./flow/main.puml"
+### ユーザーの遷移
+@import "./flow/user.puml"
+
+### 管理者の遷移
+@import "./flow/admin.puml"
 
 ### ナビゲーションからの遷移
 @import "./flow/navigation.puml"
