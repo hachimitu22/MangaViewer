@@ -1,6 +1,0 @@
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: SESSIONID

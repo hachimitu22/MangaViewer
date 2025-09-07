@@ -33,6 +33,8 @@ put:
               value: {
                 code: 1
               }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
 delete:
   summary: お気に入りから削除
   security:
@@ -59,3 +61,5 @@ delete:
               value: {
                 code: 1
               }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'

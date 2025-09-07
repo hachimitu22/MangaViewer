@@ -25,3 +25,5 @@ get:
         text/html:
           schema:
             type: string
+    "301":
+      $ref: '../../openapi.yaml#/components/responses/RedirectError'

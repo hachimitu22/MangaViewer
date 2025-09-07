@@ -58,3 +58,5 @@ post:
               value: {
                 code: 1
               }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'

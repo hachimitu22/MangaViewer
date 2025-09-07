@@ -42,4 +42,33 @@ paths:
     $ref: './paths/api/queue.mediaId.yaml'
 
 components:
-  $ref: './components/securitySchemes.yaml'
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionID
+  responses:
+    RedirectError:
+      description: エラー画面リダイレクト
+      headers:
+        Location:
+          description: リダイレクト先のURL
+          schema:
+            type: string
+            example: /error
+    UnauthorizedApi:
+      description: セッションIDが無効、または未送信
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                description: 認証失敗メッセージ
+                type: string
+          examples:
+            fail:
+              summary: 認証失敗
+              value: {
+                message: 認証に失敗しました
+              }
