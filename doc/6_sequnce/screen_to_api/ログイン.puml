@@ -1,0 +1,19 @@
+@startuml
+
+title ログイン
+
+actor ユーザー
+participant クライアント
+participant サーバー
+
+ユーザー -> クライアント: ログインボタン押下
+クライアント -> サーバー: ログイン認証\npost /login
+クライアント <-- サーバー: ログイン結果
+alt ログイン成功
+    クライアント -> サーバー: メディア一覧画面取得\nget /summary
+    クライアント <-- サーバー: 画面HTML
+else
+    クライアント -> クライアント: ログイン失敗を表示
+end
+
+@enduml

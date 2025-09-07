@@ -1,0 +1,17 @@
+@startuml
+
+title get /viewer/{mediaId}/{page}
+
+participant クライアント
+participant サーバー
+database データベース
+
+クライアント -> サーバー: リクエスト
+!include ./auth_guard.puml
+
+サーバー -> データベース: メディアページ情報取得
+サーバー <-- データベース: メディアページ情報
+
+クライアント <-- サーバー: ビューアー画面HTML
+
+@enduml
