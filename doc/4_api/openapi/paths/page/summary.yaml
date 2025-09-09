@@ -4,6 +4,12 @@ get:
   security:
     - cookieAuth: []
   parameters:
+    - name: page
+      description: ページ番号
+      in: query
+      schema:
+        type: integer
+      example: 1
     - name: title
       description: タイトルを部分一致で検索する文字列
       in: query
