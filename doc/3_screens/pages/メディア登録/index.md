@@ -12,4 +12,4 @@
 
 ---
 
-@import "./events.md"
+@import "./events/index.md"
