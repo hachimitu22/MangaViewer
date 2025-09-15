@@ -1,4 +1,4 @@
-# /viewer/{mediaId}/{page}
+# /viewer/{mediaId}/{mediaPage}
 get:
   summary: ビューアー画面
   security:
@@ -11,7 +11,7 @@ get:
       schema:
         type: string
       example: 1
-    - name: page
+    - name: mediaPage
       in: path
       description: 対象のメディアのページ番号
       required: true

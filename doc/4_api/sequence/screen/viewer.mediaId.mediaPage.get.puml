@@ -1,6 +1,6 @@
 @startuml
 
-title get /viewer/{mediaId}/{page}
+title get /viewer/{mediaId}/{mediaPage}
 
 participant クライアント
 participant サーバー

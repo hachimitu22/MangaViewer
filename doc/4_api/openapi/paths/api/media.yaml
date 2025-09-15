@@ -23,7 +23,7 @@ post:
                     description: ファイル
                     type: string
                     format: binary
-                  page:
+                  mediaPage:
                     description: ページ番号
                     type: integer
         examples:
@@ -33,9 +33,9 @@ post:
               title: サンプルタイトル
               files:
                 - file: example1.jpg
-                  count: 1
+                  mediaPage: 1
                 - file: example2.png
-                  count: 2
+                  mediaPage: 2
   responses:
     "200":
       description: メディア登録成功

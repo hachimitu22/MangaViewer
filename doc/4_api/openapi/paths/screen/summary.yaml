@@ -4,8 +4,8 @@ get:
   security:
     - cookieAuth: []
   parameters:
-    - name: page
-      description: ページ番号
+    - name: summaryPage
+      description: メディア一覧ページ番号
       in: query
       schema:
         type: integer
@@ -16,7 +16,7 @@ get:
       schema:
         type: string
       example: ジョジョの奇妙な
-    - name: tag
+    - name: tags
       description: 検索するタグ
       in: query
       schema:
@@ -46,7 +46,7 @@ get:
           value: date_asc
         date_desc:
           summary: 登録の古い順
-          value: date_asc
+          value: date_desc
         random:
           summary: ランダム
           value: random

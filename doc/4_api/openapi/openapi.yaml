@@ -6,26 +6,26 @@ servers:
   - url: https://example.com
 paths:
   # ページURL
-  /page/login:
-    $ref: './paths/page/login.yaml'
-  /page/summary:
-    $ref: './paths/page/summary.yaml'
-  /page/detail/{mediaId}:
-    $ref: './paths/page/detail.mediaId.yaml'
-  /page/viewer/{mediaId}/{page}:
-    $ref: './paths/page/viewer.mediaId.page.yaml'
-  /page/search:
-    $ref: './paths/page/search.yaml'
-  /page/favorite:
-    $ref: './paths/page/favorite.yaml'
-  /page/queue:
-    $ref: './paths/page/queue.yaml'
-  /page/error:
-    $ref: './paths/page/error.yaml'
-  /page/entry:
-    $ref: './paths/page/entry.yaml'
-  /page/edit/{mediaId}:
-    $ref: './paths/page/edit.mediaId.yaml'
+  /screen/login:
+    $ref: './paths/screen/login.yaml'
+  /screen/summary:
+    $ref: './paths/screen/summary.yaml'
+  /screen/detail/{mediaId}:
+    $ref: './paths/screen/detail.mediaId.yaml'
+  /screen/viewer/{mediaId}/{mediaPage}:
+    $ref: './paths/screen/viewer.mediaId.mediaPage.yaml'
+  /screen/search:
+    $ref: './paths/screen/search.yaml'
+  /screen/favorite:
+    $ref: './paths/screen/favorite.yaml'
+  /screen/queue:
+    $ref: './paths/screen/queue.yaml'
+  /screen/error:
+    $ref: './paths/screen/error.yaml'
+  /screen/entry:
+    $ref: './paths/screen/entry.yaml'
+  /screen/edit/{mediaId}:
+    $ref: './paths/screen/edit.mediaId.yaml'
 
   # WebAPI
   /api/login:

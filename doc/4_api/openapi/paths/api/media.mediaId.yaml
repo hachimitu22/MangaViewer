@@ -32,8 +32,8 @@ patch:
                     description: ファイル
                     type: string
                     format: binary
-                  page:
-                    description: ページ番号
+                  mediaPage:
+                    description: メディアページ番号
                     type: integer
             update:
               description: ページ更新一覧
@@ -52,7 +52,7 @@ patch:
               description: 削除一覧
               type: array
               items:
-                page: ページ番号
+                mediaPage: ページ番号
                 type: integer
         examples:
           changeTitle:
@@ -79,7 +79,7 @@ patch:
             summary: 画像1枚を削除する
             value:
               remove:
-                - page: 2
+                - mediaPage: 2
   responses:
     "200":
       description: メディア更新成功

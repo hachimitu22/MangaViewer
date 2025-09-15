@@ -7,7 +7,7 @@ participant ブラウザ
 participant サーバー
 
 ユーザー -> ブラウザ: 前ページエリア
-ブラウザ -> サーバー: ビューアー画面取得\nget /viewer/{mediaId}/{page}
+ブラウザ -> サーバー: ビューアー画面取得\nget /viewer/{mediaId}/{mediaPage}
 ブラウザ <-- サーバー: ビューアー画面HTML
 ユーザー <- ブラウザ: ビューアー画面を表示
 
