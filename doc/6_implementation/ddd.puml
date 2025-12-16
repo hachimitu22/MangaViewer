@@ -1,0 +1,17 @@
+@startuml
+
+!include ./ApplicationLayer/applicationLayer.puml
+!include ./DomainLayer/domainLayer.puml
+!include ./InfrastructureLayer/infrastructureLayer.puml
+
+MediaRepository -u-|> MediaRepositoryImplement
+TagRepository -u-|> TagRepositoryImplement
+FavoriteRepository -u-|> FavoriteRepositoryImplement
+QueueRepository -u-|> QueueRepositoryImplement
+MediaTagRepository -u-|> MediaTagRepositoryImplement
+UserRepository -u-|> UserRepositoryImplement
+SessionRepository -u-|> SessionRepositoryImplement
+MediaQueryService -d-|> MediaQueryServiceImplement
+
+
+@enduml

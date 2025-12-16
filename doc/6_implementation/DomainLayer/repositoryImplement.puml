@@ -1,0 +1,44 @@
+@startuml
+package "Repository Implement" {
+    interface MediaRepositoryImplement {
+        +void save(Media)
+        +Media findById(MediaId)
+        +void remove(Media)
+    }
+    interface TagRepositoryImplement {
+        +void save(Tag)
+        +Tag find(CategoryName, TagName)
+        +Tag findById(TagId)
+    }
+    interface FavoriteRepositoryImplement {
+        +void save(Favorite)
+        +Favorite find(UserId, MediaId)
+        +Favorite findById(FavoriteId)
+        +void remove(Favorite)
+        +void removeUser(UserId)
+        +void removeMedia(MediaId)
+    }
+    interface QueueRepositoryImplement {
+        +void save(Queue)
+        +Queue find(UserId, MediaId)
+        +Queue findById(QueueId)
+        +void remove(Queue)
+        +void removeUser(UserId)
+        +void removeMedia(MediaId)
+    }
+    interface MediaTagRepositoryImplement {
+        +void save(MediaTag)
+        +MediaTag find(MediaId, TagId)
+    }
+    interface UserRepositoryImplement {
+        +void save(User)
+        +User find(UserName)
+        +User findById(UserId)
+    }
+    interface SessionRepositoryImplement {
+        +void save(Session)
+        +Session find(SessionToken)
+        +void remove(Session)
+    }
+}
+@enduml

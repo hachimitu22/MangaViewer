@@ -1,0 +1,127 @@
+@startuml
+package "Aggregate" {
+  package "Media Aggregate" {
+    class Media {
+      +MediaId mediaId
+      +Title title
+      +Date createdAt
+      +Array contents<content>
+      +List tags<Tag>
+      +update()
+    }
+
+    class MediaId <<ValueObject>>
+    class Title <<ValueObject>>
+
+    class content {
+      +contentId id
+      +Path contentPath
+      +Path thumbnailPath
+      +Order order
+      +update()
+    }
+
+    class contentId <<ValueObject>>
+    class Path <<ValueObject>>
+    class Order <<ValueObject>>
+  }
+
+  package "Tag Aggregate" {
+    class Tag {
+      +TagId id
+      +Name name
+      +Category category
+    }
+    class TagId <<ValueObject>>
+    class Name <<ValueObject>>
+
+    class Category {
+      +CategoryId id
+      +Name name
+    }
+    class CategoryId <<ValueObject>>
+  }
+
+  package "User Aggregate" {
+    class User {
+      +UserId id
+      +Hash hash
+      +Salt salt
+      +Date created_at
+    }
+
+    class UserId <<ValueObject>>
+  }
+
+  package "Favorite Aggregate" {
+    class Favorite {
+      +FavoriteId id
+      +UserId userId
+      +MediaId mediaId
+      +Date added_at
+    }
+
+    class FavoriteId <<ValueObject>>
+  }
+
+  package "Queue Aggregate" {
+    class Queue {
+      +QueueId id
+      +UserId userId
+      +MediaId mediaId
+      +Date added_at
+    }
+
+    class QueueId <<ValueObject>>
+  }
+
+  package "Session Aggregate" {
+    class Session {
+      +SessionToken sessionToken
+      +UserId userId
+      +Date expiresAt
+      +SessionStatus status
+      +void refresh(Date now)
+      +void revoke()
+      +Boolean isActive(Date now)
+      +String getSessionToken()
+    }
+
+    class SessionToken <<ValueObject>>
+
+    enum SessionStatus {
+      +ACTIVE
+      +REVOKED
+      +EXPIRED
+    }
+  }
+
+  Media *-u- MediaId
+  Media *-- "1..*" content
+  Media *-- "0..*" TagId
+  Media *-- Title
+  content *-- contentId
+  content *-- Path
+  content *-- Order
+
+  "Tag Aggregate.Tag" *-- TagId
+  Category *-- CategoryId
+  "Tag Aggregate.Tag" *-- Category
+  "Tag Aggregate.Tag" *-- Name
+  Category *-- Name
+
+  User *-- UserId
+
+  Favorite *-- FavoriteId
+  Favorite *-u- UserId
+  Favorite *-- MediaId
+
+  Queue *-- QueueId
+  Queue *-u- UserId
+  Queue *-- MediaId
+
+  Session *-- SessionToken
+  Session *-- UserId
+  Session *-- SessionStatus
+}
+@enduml

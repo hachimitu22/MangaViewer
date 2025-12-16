@@ -1,0 +1,45 @@
+@startuml
+
+title delete /media/{mediaId}
+
+!include ../participants.puml
+
+クライアント -> Controller: リクエスト
+
+note over Controller, データベース
+    セッションチェック
+end note
+
+Controller -> Service: メディア削除処理
+Service -> infrastructure: トランザクション開始
+infrastructure -> データベース: トランザクション開始
+
+Service -> Repository: メディア取得
+Repository -> データベース: メディア取得
+Service <-- Repository: メディアドメイン
+
+
+Service -> Domain: メディア無効化
+Service -> Repository: メディア保存
+Repository -> データベース: メディア保存
+Service <-- Repository: メディア保存完了
+
+break メディア削除に失敗
+    Service -> infrastructure: ロールバック
+    infrastructure -> データベース: ロールバック
+    Controller <-- Service: メディア削除失敗
+    クライアント <-- Controller: 200 失敗
+end
+
+Service -> infrastructure: コミット
+infrastructure -> データベース: コミット
+Service -> infrastructure: コンテンツ削除
+infrastructure -> ストレージ: コンテンツ削除
+note over Service, ストレージ
+    コンテンツの削除に失敗してもメディア削除の失敗として扱わない。
+    コンテンツが残っていてもユーザーに参照されることは無いため問題ない。
+end note
+Controller <-- Service: メディア削除成功
+クライアント <-- Controller: 200 成功
+
+@enduml

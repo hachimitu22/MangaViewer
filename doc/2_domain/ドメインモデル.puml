@@ -1,0 +1,81 @@
+@startuml
+' skinparam linetype ortho
+
+package コア {
+
+    package メディア集約 {
+
+        entity メディア {
+            <<aggregate-root>>
+        }
+
+        object メディアID {
+            <<value-object>>
+        }
+
+        object メディアタイトル {
+            <<value-object>>
+        }
+
+        object コンテンツ {
+            <<value-object>>
+        }
+
+        メディア "1" o-- "1" メディアID
+        メディア "1" o-- "1" メディアタイトル
+        メディア "1" o-- "1..*" コンテンツ
+    }
+
+    package タグ集約 {
+
+        entity タグ {
+            <<aggregate-root>>
+        }
+
+        object タグID {
+            <<value-object>>
+        }
+
+        object カテゴリー {
+            <<value-object>>
+        }
+
+        object ラベル {
+            <<value-object>>
+        }
+
+        タグ "1" o-- "1" タグID
+        タグ "1" o-- "1" カテゴリー
+        タグ "1" o-- "1" ラベル
+    }
+}
+
+package ユーザー集約 {
+
+    entity ユーザー {
+        <<aggregate-root>>
+    }
+
+    object ユーザーID {
+        <<value-object>>
+    }
+
+    object お気に入り {
+        <<value-object>>
+    }
+
+    object あとで見る {
+        <<value-object>>
+    }
+
+    ユーザー "1" o-- "1" ユーザーID
+    ユーザー "1" o-- "0..*" お気に入り
+    ユーザー "1" o-- "0..*" あとで見る
+}
+
+' 集約を跨ぐ参照（弱い参照）
+ユーザー集約.お気に入り --> コア.メディア集約.メディア
+ユーザー集約.あとで見る --> コア.メディア集約.メディア
+コア.メディア集約.メディア --> コア.タグ集約.タグ
+
+@enduml

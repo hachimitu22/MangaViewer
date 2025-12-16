@@ -1,0 +1,42 @@
+@startuml
+
+title post /media
+
+!include ../participants.puml
+
+クライアント -> Controller: リクエスト
+
+note over Controller, データベース
+    セッションチェック
+end note
+
+Controller -> Service: メディア登録処理
+
+Service -> infrastructure: メディアID作成
+Service <-- infrastructure: メディアID作成
+Service -> Domain: メディア作成
+Service <-- Domain: メディアドメイン
+
+Service -> infrastructure: コンテンツ保存
+infrastructure -> ストレージ: コンテンツ保存
+
+Service -> Repository: メディア保存
+Repository -> データベース: メディア保存
+Service <-- Repository: メディア保存完了
+
+Service -> Domain: タグ作成
+Service <-- Domain: タグドメイン
+Service -> Repository: タグ保存
+Repository -> データベース: タグ保存
+Service <-- Repository: タグ保存完了
+
+Service -> Domain: メディア付与タグ作成
+Service <-- Domain: メディア付与タグドメイン
+Service -> Repository: メディア付与タグ保存
+Repository -> データベース: メディア付与タグ保存
+Service <-- Repository: メディア付与タグ保存完了
+
+Controller <-- Service: メディアID
+クライアント <-- Controller: 200 成功, メディアID
+
+@enduml

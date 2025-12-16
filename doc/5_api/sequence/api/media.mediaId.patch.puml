@@ -1,0 +1,44 @@
+@startuml
+
+title patch /api/media/{mediaId}
+
+
+!include ../participants.puml
+
+クライアント -> Controller: リクエスト
+
+note over Controller, データベース
+    セッションチェック
+end note
+
+Controller -> Service: メディア更新処理
+Service -> infrastructure: トランザクション開始
+infrastructure -> データベース: トランザクション開始
+
+Service -> Repository: メディア取得
+Repository -> データベース: メディア取得
+Service <-- Repository: メディアドメイン
+
+
+Service -> Domain: メディア更新
+Service -> Repository: メディア保存
+Repository -> データベース: メディア保存
+Service <-- Repository: メディア保存完了
+Service -> infrastructure: コンテンツ保存
+infrastructure -> ストレージ: コンテンツ保存
+
+break メディア、コンテンツ保存に失敗
+    Service -> infrastructure: コンテンツ削除
+    infrastructure -> ストレージ: コンテンツ削除
+    Service -> infrastructure: ロールバック
+    infrastructure -> データベース: ロールバック
+    Controller <-- Service: メディア登録失敗
+    クライアント <-- Controller: 200 失敗
+end
+
+Service -> infrastructure: コミット
+infrastructure -> データベース: コミット
+Controller <-- Service: メディアID
+クライアント <-- Controller: 200 成功
+
+@enduml
