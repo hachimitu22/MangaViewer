@@ -1,0 +1,47 @@
+@startuml
+
+title put /api/queue/{mediaId}
+
+!include ../participants.puml
+
+クライアント -> Controller: リクエスト
+
+note over Controller, データベース
+    セッションチェック
+end note
+
+Controller -> Service: あとで見る追加処理
+Service -> infrastructure: トランザクション開始
+infrastructure -> データベース: トランザクション開始
+
+Service -> Repository: メディアの存在チェック
+Repository -> データベース: メディアの存在チェック
+Repository <-- データベース: メディアの存在結果
+Service <-- Repository: メディアの存在結果
+
+break メディアが存在しない
+    Service -> infrastructure: ロールバック
+    infrastructure -> データベース: ロールバック
+    Controller <-- Service: あとで見る追加失敗
+    クライアント <-- Controller: 200 失敗
+end
+
+Service -> Domain: あとで見る作成
+Service <-- Domain: あとで見るドメイン
+Service -> Repository: あとで見る保存
+Repository -> データベース: あとで見る保存
+Service <-- Repository: あとで見る保存完了
+
+break あとで見る保存に失敗
+    Service -> infrastructure: ロールバック
+    infrastructure -> データベース: ロールバック
+    Controller <-- Service: あとで見る追加失敗
+    クライアント <-- Controller: 200 失敗
+end
+
+Service -> infrastructure: コミット
+infrastructure -> データベース: コミット
+Controller <-- Service: あとで見る追加成功
+クライアント <-- Controller: 200 成功
+
+@enduml

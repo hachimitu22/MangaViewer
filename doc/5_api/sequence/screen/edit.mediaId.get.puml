@@ -1,0 +1,17 @@
+@startuml
+
+title get /edit/{mediaId}
+
+participant クライアント
+participant サーバー
+database データベース
+
+クライアント -> サーバー: リクエスト
+!include ./auth_guard.puml
+
+サーバー -> データベース: メディアを取得
+サーバー <-- データベース: メディア情報
+
+クライアント <-- サーバー: メディア編集画面HTML
+
+@enduml

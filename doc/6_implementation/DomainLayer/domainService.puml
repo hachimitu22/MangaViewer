@@ -1,0 +1,18 @@
+@startuml
+package "Domain Service" {
+  class "TagService" {
+    +constructor(TagRepositoryImplement)
+    +boolean isExists(Tag)
+  }
+
+  class "FavoriteService" {
+    +constructor(FavoriteRepositoryImplement)
+    +boolean isDuplicate(Favorite)
+  }
+
+  class "QueueService" {
+    +constructor(QueueRepositoryImplement)
+    +boolean isDuplicate(Queue)
+  }
+}
+@enduml

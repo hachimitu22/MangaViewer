@@ -1,0 +1,14 @@
+@startuml
+
+title タグ押下
+
+actor ユーザー
+participant ブラウザ
+participant サーバー
+
+ユーザー -> ブラウザ: タグ押下
+ブラウザ -> サーバー: メディア一覧画面取得\nget /summary?tags=[{カテゴリー名}:{タグ名}]
+ブラウザ <-- サーバー: メディア一覧画面HTML
+ユーザー <- ブラウザ: メディア一覧画面を表示
+
+@enduml

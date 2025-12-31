@@ -1,0 +1,74 @@
+@startuml
+
+package Global <<Rectangle>> {
+  class MediaId {}
+  class SessionId {}
+}
+
+package Controller <<Rectangle>> {
+  class ApplicationServiceDataConverter {
+    MediaDetail MediaInformationToMediaDetail(MediaInformation)
+  }
+}
+
+
+package ApplicationService <<Rectangle>> {
+  class Auth {
+    + SessionId login(id, password)
+    + boolean logout(sessionId)
+    + boolean hasSession(sessionId)
+  }
+  class MediaService {
+    + MediaInformation[] getSummary(title, tags, sort)
+    + MediaInformation getDetail(mediaId)
+    + MediaId entry(media)
+    + MediaId update(mediaId, media)
+    + boolean delete(mediaId)
+  }
+  class FavoriteService {
+    + MediaInformation getSummary(sessionId)
+    + boolean add(mediaId)
+    + boolean remove(mediaId)
+  }
+  class QueueService {
+    + MediaInformation getSummary(sessionId)
+    + boolean add(mediaId)
+    + boolean remove(mediaId)
+  }
+
+  package Data <<Rectangle>> {
+    class MediaInformation {}
+  }
+}
+ApplicationService.Auth -u-> Global.SessionId
+
+package Domain <<Rectangle>> {
+  class User {}
+  class Media {}
+  class content {}
+  class Tag {}
+  class Favorite {}
+  class Queue {}
+}
+Domain.Media -u-> Global.MediaId
+Domain.Media --> Domain.content
+Domain.Media --> Domain.Tag
+Domain.Tag -u-> Global.MediaId
+Domain.Favorite -u-> Global.MediaId
+Domain.Queue -u-> Global.MediaId
+
+package Repository <<Rectangle>> {
+  class mediaRepository {
+    + boolean save(media)
+    + Media findById(mediaId)
+  }
+  class FavoriteRepository {
+    + boolean save(favorite)
+    + Media[] findListById(sessionId)
+  }
+  class QueueRepository {
+    + boolean save(queue)
+    + Media[] findListById(sessionId)
+  }
+}
+@enduml

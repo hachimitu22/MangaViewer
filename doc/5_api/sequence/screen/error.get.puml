@@ -1,0 +1,14 @@
+@startuml
+
+title get /error
+
+participant クライアント
+participant サーバー
+database データベース
+
+クライアント -> サーバー: リクエスト
+!include ./auth_guard.puml
+
+クライアント <-- サーバー: エラー画面HTML
+
+@enduml

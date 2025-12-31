@@ -1,0 +1,26 @@
+@startuml
+
+!include ../participants.puml
+
+Controller -> Service: セッションチェック
+break リクエストにセッションIDを含まない
+    Controller <-- Service: セッションID不正
+    クライアント <-- Controller: 401 認証失敗
+end
+Service -> Repository: セッション取得
+Repository -> データベース: セッション取得
+Repository <-- データベース: セッション
+Service <-- Repository: セッションドメイン
+Service -> Domain: セッションが有効か？
+Service <-- Domain: 有効/無効
+break セッション無効
+    Controller <-- Service: セッション無効
+    クライアント <-- Controller: 401 認証失敗
+end
+Service -> Repository: セッションの有効期限を更新
+Repository -> データベース: セッション更新
+Repository <-- データベース: セッション更新完了
+Service <-- Repository: セッションの有効期限を更新完了
+Controller <-- Service: セッションチェック完了
+
+@enduml

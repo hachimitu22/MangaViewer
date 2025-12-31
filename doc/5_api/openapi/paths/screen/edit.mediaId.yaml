@@ -1,0 +1,22 @@
+# /edit/{mediaId}
+get:
+  summary: メディア編集画面
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: mediaId
+      in: path
+      description: 対象のメディアID
+      required: true
+      schema:
+        type: integer
+      example: 1
+  responses:
+    "200":
+      description: メディア編集HTML
+      content:
+        text/html:
+          schema:
+            type: string
+    "301":
+      $ref: '../../openapi.yaml#/components/responses/RedirectError'

@@ -1,0 +1,8 @@
+@startuml
+package "Query Service" {
+    class MediaQueryService {
+        +MediaDetail findDetail(MediaId)
+        +MediaList findList(MediaSearchCondition)
+    }
+}
+@enduml

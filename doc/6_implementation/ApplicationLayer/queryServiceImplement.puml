@@ -1,0 +1,29 @@
+@startuml
+package "Query Service Implement" {
+  interface "MediaQueryServiceImplement" {
+    +MediaDetail findDetail(MediaId)
+    +MediaList findList(MediaSearchCondition)
+  }
+
+  class "MediaSearchCondition" {
+    +title
+    +tags
+    +count
+  }
+
+  class "MediaDetail" {
+    +mediaId
+    +thumbnails
+    +tags
+    +created_at
+  }
+
+  class "MediaList" {
+    +medias
+  }
+
+  MediaQueryServiceImplement *-- MediaSearchCondition
+  MediaQueryServiceImplement *-- MediaDetail
+  MediaQueryServiceImplement *-- MediaList
+}
+@enduml

@@ -1,0 +1,28 @@
+@startuml
+left to right direction
+actor "ユーザー" as User
+actor "管理者" as Admin
+
+note bottom of Admin
+    ユーザーと
+    同じユースケースも
+    実行可能
+end note
+
+package "MediaViewer" {
+    User <|- Admin
+    package "メディア参照" {
+        User --> (メディア一覧表示)
+        User --> (メディア検索)
+        (メディア検索) -> (メディア一覧表示)
+        (メディア一覧表示) --> (メディア詳細表示)
+        (メディア詳細表示) ..> (漫画閲覧) : 漫画のとき
+        (メディア詳細表示) ..> (動画再生) : 動画のとき
+    }
+    package "管理者によるメディア管理" {
+        Admin --> (メディア登録)
+        Admin --> (メディア更新)
+        Admin --> (メディア削除)
+    }
+}
+@enduml

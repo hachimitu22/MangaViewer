@@ -1,0 +1,75 @@
+@startuml
+package "Application Service" {
+  class "MediaApplicationService" {
+    +void add()
+    +void update()
+    +void delete(String mediaId)
+    +MediaListData search(Condition condition)
+    +MediaDetailData detail(String mediaId)
+  }
+  struct "Condition" {
+    +String title
+    +Tag[] tags
+    +String sortOrder
+  }
+  struct "MediaListData" {
+    +Number mediaId
+    +String title
+    +Date created_at
+    +String topThumbnailPath
+    +Tag[] tags
+  }
+  struct "MediaDetailData" {
+    +Number mediaId
+    +String title
+    +Date created_at
+    +Thumbnail[] thumbnails
+    +Tag[] tags
+  }
+  struct "Thumbnail" {
+    +Number contentId
+    +String path
+  }
+  struct "Tag" {
+    +String categoryName
+    +String tagName
+    +Number tagId
+  }
+  class "FavoriteApplicationService" {
+    +void add(String userId, String mediaId)
+    +void remove(String userId, String mediaId)
+    +MediaListData findList(String userId)
+  }
+  class "QueueApplicationService" {
+    +void add(String userId, String mediaId)
+    +void remove(String userId, String mediaId)
+    +MediaListData findList(String userId)
+  }
+  class "AuthApplicationService" {
+    +SessionData login(String userId, String password)
+    +void logout(String sessionToken)
+  }
+  struct "SessionData" {
+    +String sessionToken
+  }
+  class "UserApplicationService" {
+    +void create(String userId, String password)
+    +void delete(String userId)
+  }
+
+  Condition *-- Tag
+  MediaListData *-- Tag
+  MediaDetailData *-- Tag
+  MediaDetailData *-- Thumbnail
+
+  MediaApplicationService *-- Condition
+  MediaApplicationService *-- MediaListData
+  MediaApplicationService *-- MediaDetailData
+
+  AuthApplicationService *-- SessionData
+
+  FavoriteApplicationService *-- MediaListData
+
+  QueueApplicationService *-- MediaListData
+}
+@enduml

@@ -1,0 +1,27 @@
+@startuml
+
+title post /logout
+
+!include ../participants.puml
+
+クライアント -> Controller: リクエスト
+
+note over Controller, データベース
+    セッションチェック
+end note
+
+Controller -> Service: ログアウト処理
+
+Service -> Repository: セッション取得
+Repository -> データベース: セッション取得
+Repository <-- データベース: セッション
+Service <-- Repository: セッションドメイン
+
+Service -> Domain: セッション無効化
+Service -> Repository: セッション無効化
+Repository -> データベース: セッション無効化
+
+Controller <-- Service: ログアウト終了
+クライアント <-- Controller: 200 ログアウト成功
+
+@enduml

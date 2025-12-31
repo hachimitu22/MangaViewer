@@ -1,0 +1,60 @@
+@startuml
+' skinparam linetype ortho
+
+package メディア集約 {
+
+    entity メディア {
+        <<aggregate-root>>
+    }
+
+    object メディアID {
+        <<value-object>>
+    }
+
+    object メディアタイトル {
+        <<value-object>>
+    }
+
+    object コンテンツ {
+        <<value-object>>
+    }
+
+    object タグ {
+        <<value-object>>
+    }
+
+    object カテゴリー {
+        <<value-object>>
+    }
+
+    object ラベル {
+        <<value-object>>
+    }
+
+    メディア "1" o-- "1" メディアID
+    メディア "1" o-- "1" メディアタイトル
+    メディア "1" o-- "1..*" コンテンツ
+    メディア "1" o-- "0..*" タグ
+    メディア "1" o-l- "0..*" カテゴリー : カテゴリー優先順
+
+    タグ "1" o-- "1" カテゴリー
+    タグ "1" o-- "1" ラベル
+}
+
+package ユーザー集約 {
+
+    entity ユーザー {
+        <<aggregate-root>>
+    }
+
+    object ユーザーID {
+        <<value-object>>
+    }
+
+    ユーザー "1" o-- "1" ユーザーID
+}
+
+' 集約を跨ぐ参照（弱い参照）
+ユーザー集約.ユーザー "0..*" o-- "0..*" メディア集約.メディアID : お気に入り、あとでみる
+
+@enduml

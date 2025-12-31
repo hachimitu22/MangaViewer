@@ -1,0 +1,17 @@
+@startuml
+
+title get /queue
+
+participant クライアント
+participant サーバー
+database データベース
+
+クライアント -> サーバー: リクエスト
+!include ./auth_guard.puml
+
+サーバー -> データベース: あとで見るを取得
+サーバー <-- データベース: あとで見る一覧
+
+クライアント <-- サーバー: あとで見る画面HTML
+
+@enduml

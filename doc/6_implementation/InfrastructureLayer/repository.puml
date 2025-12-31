@@ -1,0 +1,38 @@
+@startuml
+package "Repository" {
+    class MediaRepository {
+        +void save(Media)
+        +Media findById(MediaId)
+    }
+    class TagRepository {
+        +void save(Tag)
+        +Tag find(CategoryName, TagName)
+        +Tag findById(TagId)
+    }
+    class FavoriteRepository {
+        +void save(Favorite)
+        +Favorite find(UserId, MediaId)
+        +Favorite findById(FavoriteId)
+    }
+    class QueueRepository {
+        +void save(Queue)
+        +Queue find(UserId, MediaId)
+        +Queue findById(QueueId)
+    }
+    class MediaTagRepository {
+        +void save(MediaTag)
+        +MediaTag find(MediaId, TagId)
+    }
+    class UserRepository {
+        +void save(User)
+        +User find(UserName)
+        +User findById(UserId)
+    }
+    class SessionRepository {
+        +void save(Session)
+        +Session find(SessionToken)
+        +void remove(Session)
+    }
+}
+
+@enduml

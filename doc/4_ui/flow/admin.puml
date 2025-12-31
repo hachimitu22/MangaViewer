@@ -1,0 +1,21 @@
+@startuml
+
+state "ログイン済" as Signin {
+    summary : メディア一覧
+    detail : メディア詳細
+
+    state "管理者" as Admin {
+        entry : メディア登録
+        edit : メディア編集
+    }
+}
+
+' 管理者
+Signin.summary --> Signin.Admin.edit : 編集を押下
+Signin.detail --> Signin.Admin.edit : 編集を押下
+Signin.Admin.entry --> Signin.detail : メディアを登録
+Signin.Admin.edit --> Signin.detail : メディアを更新
+Signin.summary --> Signin.summary : メディアを削除
+Signin.detail -r-> Signin.summary : メディアを削除
+
+@enduml

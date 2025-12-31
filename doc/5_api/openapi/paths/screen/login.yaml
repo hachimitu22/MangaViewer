@@ -1,0 +1,10 @@
+# /login
+get:
+  summary: ログイン画面
+  responses:
+    "200":
+      description: ログインページHTML
+      content:
+        text/html:
+          schema:
+            type: string

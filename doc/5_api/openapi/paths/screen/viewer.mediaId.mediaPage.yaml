@@ -1,0 +1,29 @@
+# /viewer/{mediaId}/{mediaPage}
+get:
+  summary: ビューアー画面
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: mediaId
+      in: path
+      description: 対象のメディアID
+      required: true
+      schema:
+        type: string
+      example: 1
+    - name: mediaPage
+      in: path
+      description: 対象のメディアのページ番号
+      required: true
+      schema:
+        type: integer
+      example: 1
+  responses:
+    "200":
+      description: ビューアーページHTML
+      content:
+        text/html:
+          schema:
+            type: string
+    "301":
+      $ref: '../../openapi.yaml#/components/responses/RedirectError'

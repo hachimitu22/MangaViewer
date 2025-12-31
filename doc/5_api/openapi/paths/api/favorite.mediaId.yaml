@@ -1,0 +1,65 @@
+# /api/favorite/{mediaId}
+parameters:
+  - name: mediaId
+    in: path
+    description: 対象のメディアID
+    required: true
+    schema:
+      type: integer
+    example: 1
+put:
+  summary: お気に入りに追加
+  security:
+    - cookieAuth: []
+  responses:
+    "200":
+      description: お気に入りに追加の成否
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                description: 追加成否
+          examples:
+            success:
+              summary: 追加成功
+              value: {
+                code: 0
+              }
+            fail:
+              summary: 追加失敗
+              value: {
+                code: 1
+              }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+delete:
+  summary: お気に入りから削除
+  security:
+    - cookieAuth: []
+  responses:
+    "200":
+      description: お気に入りから削除の成否
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                description: 削除成否
+          examples:
+            success:
+              summary: 削除成功
+              value: {
+                code: 0
+              }
+            fail:
+              summary: 削除失敗
+              value: {
+                code: 1
+              }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'

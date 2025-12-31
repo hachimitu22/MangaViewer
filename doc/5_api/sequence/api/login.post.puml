@@ -1,0 +1,44 @@
+@startuml
+
+title post /login
+
+!include ../participants.puml
+
+クライアント -> Controller: リクエスト
+
+== ユーザーチェック ==
+
+Controller -> Service: ログイン処理
+Service -> Repository: ユーザー取得
+Repository -> データベース: ユーザー取得
+Repository <-- データベース: ユーザー情報
+Service <-- Repository: ユーザードメイン
+break ユーザーが存在しない
+    Controller <-- Service: ユーザーが存在しない
+    クライアント <-- Controller: 200 ログイン失敗
+end
+
+== パスワードチェック ==
+Service -> Domain: パスワードチェック
+Service <-- Domain: 結果
+break パスワードが正しくない
+    Controller <-- Service: パスワード不正
+    クライアント <-- Controller: 200 ログイン失敗
+end
+
+== セッション保存 ==
+Service -> infrastructure: セッションID作成
+Service <-- infrastructure: セッションID
+Service -> Domain: セッション作成
+Service <-- Domain: セッション
+Service -> Repository: セッション保存
+Repository -> データベース: セッション保存
+Repository <-- データベース: セッション保存完了
+break セッション保存失敗
+    Controller <-- Service: セッション保存失敗
+    クライアント <-- Controller: 200 ログイン失敗
+end
+Controller <-- Service: セッションID
+クライアント <-- Controller: 200 ログイン成功、セッションID
+
+@enduml
