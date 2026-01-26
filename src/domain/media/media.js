@@ -6,9 +6,7 @@ class Content {
     this.#value = value;
   }
   getValue() {
-    return {
-      ...this.#value,
-    };
+    return this.#value;
   }
 }
 
