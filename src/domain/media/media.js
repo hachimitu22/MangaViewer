@@ -1,4 +1,7 @@
+const MediaId = require('./mediaId');
+const MediaTitle = require('./mediaTitle');
 const Tag = require('./tag');
+const Category = require('./category');
 
 class Content {
   #value;
@@ -16,57 +19,73 @@ module.exports = class Media {
   #contents = [];
   #tags = [];
   #priorityCategories = [];
-  constructor(id, title, contents) {
-    if (!(contents instanceof Array) || contents.length === 0) {
+  constructor(id, title, contents, tags, priorityCategories) {
+    if (!(id instanceof MediaId)) {
       throw new Error();
     }
 
     this.#id = id;
-    this.#title = title;
-    this.setContents(contents);
+    this.changeTitle(title);
+    this.changeContents(contents);
+    this.changeTags(tags);
+    this.changePriorityCategories(priorityCategories);
   }
   getId() {
     return this.#id;
   }
+  changeTitle(title) {
+    if (!(title instanceof MediaTitle)) {
+      throw new Error();
+    }
+    this.#title = title;
+  }
   getTitle() {
     return this.#title;
   }
-  setContents(contents) {
+  changeContents(contents) {
+    if (!(contents instanceof Array) || contents.length === 0) {
+      throw new Error();
+    }
     this.#contents = contents.map(content => new Content(content));
   }
   getContents() {
     return [...this.#contents.map(content => content.getValue())];
   }
-  addTag(tag) {
-    if (!(tag instanceof Tag)) {
+  changeTags(tags) {
+    if (!(tags instanceof Array) || !tags.every(tag => tag instanceof Tag)) {
       throw new Error();
     }
 
-    // 重複チェック
-    if (this.#tags.some(t => t.equals(tag))) {
-      throw new Error();
-    }
-    this.#tags.push(tag);
+    this.#tags = tags.reduce((arr, tag) => {
+      if (!arr.some(t => t.equals(tag))) {
+        arr.push(tag);
+      }
 
-    // カテゴリー優先度が未指定のタグカテゴリーだった場合、カテゴリー優先度を最下位に設定する
-    if (!this.#priorityCategories.some(p => p.equals(tag.getCategory()))) {
-      this.#priorityCategories.push(tag.getCategory());
-    }
+      return arr;
+    }, []);
   }
   getTags() {
     return this.#tags;
   }
-  setPriorityCategories(categories) {
-    this.#priorityCategories = categories;
+  changePriorityCategories(priorityCategories) {
+    if (!(priorityCategories instanceof Array)) {
+      throw new Error();
+    }
+    if (!priorityCategories.every(category => category instanceof Category)) {
+      throw new Error();
+    }
 
-    this.#tags.forEach(tag => {
-      const category = tag.getCategory();
-      if (!this.#priorityCategories.some(p => p.equals(category))) {
-        this.#priorityCategories.push(tag.getCategory());
-      }
-    });
+    this.#priorityCategories = priorityCategories;
   }
   getPriorityCategories() {
-    return this.#priorityCategories;
+    const arr = [...this.#priorityCategories];
+    this.#tags.forEach(tag => {
+      const category = tag.getCategory();
+      const hasPriorityCategory = arr.some(p => p.equals(category));
+      if (!hasPriorityCategory) {
+        arr.push(category);
+      }
+    });
+    return arr;
   }
 }
