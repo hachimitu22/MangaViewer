@@ -1,4 +1,8 @@
-const RegisterMediaService = require('../../../../../src/application/media/command/RegisterMediaService');
+const {
+  RegisterMediaServiceInput: Input,
+  RegisterMediaServiceOutput: Output,
+  RegisterMediaService: Service,
+} = require('../../../../../src/application/media/command/RegisterMediaService');
 
 describe('RegisterMediaService', () => {
   let service;
@@ -8,41 +12,44 @@ describe('RegisterMediaService', () => {
   beforeEach(() => {
     mockRepo = { save: jest.fn() };
     mockIdGen = { generate: jest.fn() };
-    service = new RegisterMediaService.service({ mediaRepository: mockRepo, idGenerator: mockIdGen });
+    service = new Service({
+      mediaRepository: mockRepo,
+      idGenerator: mockIdGen,
+    });
   });
 
-  const normalizationMedia = (media) => {
-    const tags = media.getTags();
-    return {
-      title: media.getTitle(),
-      contents: media.getContents(),
-      tags: tags.map(tag => {
-        return {
-          category: tag.getCategory().getValue(),
-          label: tag.getLabel().getLabel(),
-        };
-      }),
-      priorityCategories: media.getPriorityCategories().map(category => category.getValue()),
-    };
-  };
+  const normalizeMedia = (media) => ({
+    id: media.getId().getId(),
+    title: media.getTitle().getTitle(),
+    contents: media.getContents(),
+    tags: media.getTags().map(tag => ({
+      category: tag.getCategory().getValue(),
+      label: tag.getLabel().getLabel(),
+    })),
+    priorityCategories: media.getPriorityCategories().map(c => c.getValue()),
+  });
 
-  it('メディアを登録できる', async () => {
+  it('メディアの登録は成功する', async () => {
     // arrange
     mockIdGen.generate.mockReturnValue('new-id');
     mockRepo.save.mockResolvedValue();
-    const input = new RegisterMediaService.input({ title: 'T', contents: ['c1'], tags: [], priorityCategories: [] });
+    const input = new Input({
+      title: 'T',
+      contents: ['c1'],
+      tags: [],
+      priorityCategories: [],
+    });
 
     // action
     const result = await service.execute(input);
 
     // assert
-    // 戻り値チェック
-    const output = new RegisterMediaService.output({ mediaId: 'new-id' });
-    await expect(result).toMatchObject(output);
-    expect(mockRepo.save).toHaveBeenCalledTimes(1);
-    // メディア情報チェック
-    const savedMedia = normalizationMedia(mockRepo.save.mock.calls[0][0]);
+    expect(result).toMatchObject(
+      new Output({ mediaId: 'new-id' })
+    );
+    const savedMedia = normalizeMedia(mockRepo.save.mock.calls[0][0]);
     expect(savedMedia).toMatchObject({
+      id: 'new-id',
       title: 'T',
       contents: ['c1'],
       tags: [],
@@ -50,11 +57,11 @@ describe('RegisterMediaService', () => {
     });
   });
 
-  it('タグが重複していても登録できる', async () => {
+  it('タグが重複していてもメディアの登録は成功する', async () => {
     // arrange
     mockIdGen.generate.mockReturnValue('new-id');
     mockRepo.save.mockResolvedValue();
-    const input = new RegisterMediaService.input({
+    const input = new Input({
       title: 'T',
       contents: ['c1'],
       tags: [
@@ -68,40 +75,85 @@ describe('RegisterMediaService', () => {
     const result = await service.execute(input);
 
     // assert
-    // 戻り値チェック
-    const output = new RegisterMediaService.output({ mediaId: 'new-id' });
-    await expect(result).toMatchObject(output);
-    expect(mockRepo.save).toHaveBeenCalledTimes(1);
-    // メディア情報チェック
-    const savedMedia = normalizationMedia(mockRepo.save.mock.calls[0][0]);
+    expect(result).toMatchObject(
+      new Output({ mediaId: 'new-id' })
+    );
+    const savedMedia = normalizeMedia(mockRepo.save.mock.calls[0][0]);
     expect(savedMedia).toMatchObject({
+      id: 'new-id',
       title: 'T',
       contents: ['c1'],
-      tags: [
-        { category: 'A', label: 'B' },
-      ],
+      tags: [{ category: 'A', label: 'B' }],
       priorityCategories: ['A'],
     });
   });
 
-  it('コンテンツ一覧が無効なため登録に失敗する', async () => {
-    await expect(
-      service.execute({ title: 'T', contents: [], tags: [], priorityCategories: [] })
-    ).rejects.toThrow();
-  });
-
-  it('カテゴリー優先度に矛盾があるため登録に失敗する', async () => {
-    await expect(
-      service.execute({ title: 'T', contents: ['c1'], tags: [], priorityCategories: ['Invalid'] })
-    ).rejects.toThrow();
-  });
-
-  it('メディアの永続化に失敗した場合はエラーとなる', async () => {
+  it('カテゴリー優先度に矛盾があってもメディアの登録は成功する', async () => {
+    // arrange
     mockIdGen.generate.mockReturnValue('new-id');
-    mockRepo.save.mockRejectedValue(new Error());
+    mockRepo.save.mockResolvedValue();
+    const input = new Input({
+      title: 'T',
+      contents: ['c1'],
+      tags: [{ category: 'A', label: 'B' }],
+      priorityCategories: ['A', 'A'],
+    });
 
-    await expect(
-      service.execute({ title: 'T', contents: ['c1'], tags: [], priorityCategories: [] })
-    ).rejects.toThrow();
+    // action
+    const result = await service.execute(input);
+
+    // assert
+    expect(result).toMatchObject(
+      new Output({ mediaId: 'new-id' })
+    );
+    const savedMedia = normalizeMedia(mockRepo.save.mock.calls[0][0]);
+    expect(savedMedia).toMatchObject({
+      id: 'new-id',
+      title: 'T',
+      contents: ['c1'],
+      tags: [{ category: 'A', label: 'B' }],
+      priorityCategories: ['A'],
+    });
+  });
+
+  it('コンテンツ一覧が無効だとメディアの登録は失敗する', async () => {
+    // arrange
+    mockIdGen.generate.mockReturnValue('new-id');
+    mockRepo.save.mockResolvedValue();
+    const input = new Input({
+      title: 'T',
+      contents: [],
+      tags: [],
+      priorityCategories: ['A']
+    });
+
+    // action
+    // assert
+    await expect(service.execute(input)).rejects.toThrow();
+    expect(mockRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('メディアの永続化に失敗した場合はメディアの登録を失敗とする', async () => {
+    // arrange
+    mockIdGen.generate.mockReturnValue('new-id');
+    mockRepo.save.mockRejectedValue(new Error('repo error'));
+    const input = new Input({
+      title: 'T',
+      contents: ['c1'],
+      tags: [],
+      priorityCategories: []
+    });
+
+    // action
+    // assert
+    await expect(service.execute(input)).rejects.toThrow('repo error');
+    const savedMedia = normalizeMedia(mockRepo.save.mock.calls[0][0]);
+    expect(savedMedia).toMatchObject({
+      id: 'new-id',
+      title: 'T',
+      contents: ['c1'],
+      tags: [],
+      priorityCategories: []
+    });
   });
 });

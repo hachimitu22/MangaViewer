@@ -75,7 +75,13 @@ module.exports = class Media {
       throw new Error();
     }
 
-    this.#priorityCategories = priorityCategories;
+    this.#priorityCategories = priorityCategories.reduce((arr, category) => {
+      if (!arr.some(t => t.equals(category))) {
+        arr.push(category);
+      }
+
+      return arr;
+    }, []);
   }
   getPriorityCategories() {
     const arr = [...this.#priorityCategories];
