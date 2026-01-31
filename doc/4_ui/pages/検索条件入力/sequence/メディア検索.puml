@@ -7,7 +7,7 @@ participant ブラウザ
 
 ユーザー -> ブラウザ: 検索ボタン押下
 
-ブラウザ -> サーバー: メディア一覧画面取得\nget /summary?title={タイトル}&tags=[{カテゴリー名}:{タグ名}]
+ブラウザ -> サーバー: メディア一覧画面取得\nget /summary?title={タイトル}&tags=[{カテゴリー名}:{ラベル名}]
 note over ブラウザ
     summaryPage、sortはデフォルト値を使うので不要
 end note
