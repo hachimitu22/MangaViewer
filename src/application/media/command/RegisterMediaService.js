@@ -21,11 +21,15 @@ class RegisterMediaServiceOutput {
 }
 
 class RegisterMediaService {
-  #idGenerator;
+  #mediaIdValueGenerator;
   #mediaRepository;
 
-  constructor({ idGenerator, mediaRepository }) {
-    this.#idGenerator = idGenerator;
+  constructor({ mediaIdValueGenerator, mediaRepository }) {
+    if (!mediaIdValueGenerator || typeof mediaIdValueGenerator.generate !== 'function') {
+      throw new Error();
+    }
+
+    this.#mediaIdValueGenerator = mediaIdValueGenerator;
     this.#mediaRepository = mediaRepository;
   }
 
@@ -34,7 +38,7 @@ class RegisterMediaService {
       throw new Error();
     }
 
-    const mediaId = new MediaId(this.#idGenerator.generate());
+    const mediaId = new MediaId(this.#mediaIdValueGenerator.generate());
     const mediaTitle = new MediaTitle(input.title);
     const tags = input.tags.map(t =>
       new Tag(new Category(t.category), new Label(t.label))

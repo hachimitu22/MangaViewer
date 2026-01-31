@@ -3,6 +3,8 @@ const {
   RegisterMediaServiceOutput: Output,
   RegisterMediaService: Service,
 } = require('../../../../../src/application/media/command/RegisterMediaService');
+// mock
+const MockMediaIdValueGenerator = require('../../__mocks__/MockMediaIdValueGenerator');
 
 describe('RegisterMediaService', () => {
   let service;
@@ -11,10 +13,10 @@ describe('RegisterMediaService', () => {
 
   beforeEach(() => {
     mockRepo = { save: jest.fn() };
-    mockIdGen = { generate: jest.fn() };
+    mockIdGen = new MockMediaIdValueGenerator();
     service = new Service({
       mediaRepository: mockRepo,
-      idGenerator: mockIdGen,
+      mediaIdValueGenerator: mockIdGen,
     });
   });
 

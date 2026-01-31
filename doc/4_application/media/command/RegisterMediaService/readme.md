@@ -1,4 +1,4 @@
-# RegisterMedia
+# RegisterMediaService
 
 ## 概要
 - 1つのメディアを登録する。
