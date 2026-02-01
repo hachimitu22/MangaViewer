@@ -5,4 +5,7 @@ module.exports = class IMediaRepository {
   async findByMediaId() {
     throw new Error();
   }
+  async delete() {
+    throw new Error();
+  }
 };

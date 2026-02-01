@@ -1,7 +1,8 @@
-# DeleteMedia
+# DeleteMediaService
 
 ## 概要
-- 1メディアを削除する。
+- 1つのメディアを削除する。
+- 削除成功時のみ永続化される。
 
 ## 種別
 - Command
@@ -15,7 +16,7 @@
 ## 入力
 
 ```plantuml
-struct DeleteMediaInput #pink {
+struct DeleteMediaServiceInput #pink {
     + メディアID : string
 }
 ```
@@ -24,8 +25,8 @@ struct DeleteMediaInput #pink {
 なし
 
 ## エラー処理
-- 指定されたメディアが存在しない場合はエラーとする。
-- 削除失敗時はエラーとする。
+- 指定されたメディアが存在しない場合は削除失敗とする。
+- 永続化の失敗時は削除失敗とする。
 
 ## シーケンス図
 
@@ -39,8 +40,5 @@ participant Infrastructure
 
 Controller -> Application: DeleteMedia
 Application -> Infrastructure: メディアを削除する
+Controller <-- Application
 ```
-
-## 責務
-- メディアの存在チェックはリポジトリで行う。
-- メディアの削除はリポジトリで行う。

@@ -7,6 +7,7 @@ module.exports = class MockMediaRepository extends IMediaRepository {
     [
       'save',
       'findByMediaId',
+      'delete',
     ].forEach(propertyName => {
       if (!(propertyName in this)) {
         throw new Error();
