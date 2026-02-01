@@ -28,6 +28,9 @@ class RegisterMediaService {
     if (!mediaIdValueGenerator || typeof mediaIdValueGenerator.generate !== 'function') {
       throw new Error();
     }
+    if (!mediaRepository || typeof mediaRepository.save !== 'function') {
+      throw new Error();
+    }
 
     this.#mediaIdValueGenerator = mediaIdValueGenerator;
     this.#mediaRepository = mediaRepository;
