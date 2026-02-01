@@ -6,7 +6,6 @@
   - [RegisterMedia](./media/command/RegisterMedia/readme.md)
   - [UpdateMedia](./media/command/UpdateMedia/readme.md)
   - [DeleteMedia](./media/command/DeleteMedia/readme.md)
-  - [UploadContent](./media/command/UploadContent/readme.md)
 - query
   - [SearchMedia](./media/query/SearchMedia/readme.md)
   - [GetMedia](./media/query/GetMedia/readme.md)
