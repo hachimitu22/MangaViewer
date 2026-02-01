@@ -3,9 +3,9 @@
 ## サービス一覧
 ### メディア
 - command
-  - [RegisterMedia](./media/command/RegisterMedia/readme.md)
-  - [UpdateMedia](./media/command/UpdateMedia/readme.md)
-  - [DeleteMedia](./media/command/DeleteMedia/readme.md)
+  - [RegisterMediaService](./media/command/RegisterMediaService/readme.md)
+  - [UpdateMediaService](./media/command/UpdateMediaService/readme.md)
+  - [DeleteMediaService](./media/command/DeleteMediaService/readme.md)
 - query
   - [SearchMedia](./media/query/SearchMedia/readme.md)
   - [GetMedia](./media/query/GetMedia/readme.md)
@@ -13,7 +13,8 @@
   - [GetCategories](./media/query/GetCategories/readme.md)
   - [GetTags](./media/query/GetTags/readme.md)
 - port
-  - [MediaIdGenerator](./media/port/MediaIdGenerator/readme.md)
+  - [IMediaIdValueGenerator](./media/port/IMediaIdValueGenerator/readme.md)
+  - [IMediaRepository](./media/port/IMediaRepository/readme.md)
 
 ### ユーザー
 - command
