@@ -1,6 +1,7 @@
 const Media = require('../../../domain/media/media');
 const MediaId = require('../../../domain/media/mediaId');
 const MediaTitle = require('../../../domain/media/mediaTitle');
+const ContentId = require('../../../domain/media/contentId');
 const Tag = require('../../../domain/media/tag');
 const Category = require('../../../domain/media/category');
 const Label = require('../../../domain/media/label');
@@ -43,6 +44,7 @@ class RegisterMediaService {
 
     const mediaId = new MediaId(this.#mediaIdValueGenerator.generate());
     const mediaTitle = new MediaTitle(input.title);
+    const contents = input.contents.map(c => new ContentId(c));
     const tags = input.tags.map(t =>
       new Tag(new Category(t.category), new Label(t.label))
     );
@@ -53,7 +55,7 @@ class RegisterMediaService {
     const media = new Media(
       mediaId,
       mediaTitle,
-      input.contents,
+      contents,
       tags,
       priorityCategories
     );

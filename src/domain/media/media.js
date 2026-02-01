@@ -1,17 +1,8 @@
 const MediaId = require('./mediaId');
 const MediaTitle = require('./mediaTitle');
+const ContentId = require('./contentId');
 const Tag = require('./tag');
 const Category = require('./category');
-
-class Content {
-  #value;
-  constructor(value) {
-    this.#value = value;
-  }
-  getValue() {
-    return this.#value;
-  }
-}
 
 module.exports = class Media {
   #id;
@@ -43,13 +34,13 @@ module.exports = class Media {
     return this.#title;
   }
   changeContents(contents) {
-    if (!(contents instanceof Array) || contents.length === 0) {
+    if (!(contents instanceof Array) || contents.length === 0 || !contents.every(content => content instanceof ContentId)) {
       throw new Error();
     }
-    this.#contents = contents.map(content => new Content(content));
+    this.#contents = contents;
   }
   getContents() {
-    return [...this.#contents.map(content => content.getValue())];
+    return this.#contents;
   }
   changeTags(tags) {
     if (!(tags instanceof Array) || !tags.every(tag => tag instanceof Tag)) {

@@ -1,6 +1,7 @@
 const Media = require('../../../domain/media/media');
 const MediaId = require('../../../domain/media/mediaId');
 const MediaTitle = require('../../../domain/media/mediaTitle');
+const ContentId = require('../../../domain/media/contentId');
 const Tag = require('../../../domain/media/tag');
 const Category = require('../../../domain/media/category');
 const Label = require('../../../domain/media/label');
@@ -37,6 +38,7 @@ class UpdateMediaService {
 
     // メディア更新
     const mediaTitle = new MediaTitle(input.title);
+    const contents = input.contents.map(c => new ContentId(c));
     const tags = input.tags.map(t =>
       new Tag(new Category(t.category), new Label(t.label))
     );
@@ -44,7 +46,7 @@ class UpdateMediaService {
       c => new Category(c)
     );
     media.changeTitle(mediaTitle);
-    media.changeContents(input.contents);
+    media.changeContents(contents);
     media.changeTags(tags);
     media.changePriorityCategories(priorityCategories);
 

@@ -24,7 +24,7 @@ describe('RegisterMediaService', () => {
   const normalizeMedia = (media) => ({
     id: media.getId().getId(),
     title: media.getTitle().getTitle(),
-    contents: media.getContents(),
+    contents: media.getContents().map(content => content.getId()),
     tags: media.getTags().map(tag => ({
       category: tag.getCategory().getValue(),
       label: tag.getLabel().getLabel(),
