@@ -3,6 +3,15 @@ const IMediaRepository = require('../../../../src/application/media/port/IMediaR
 module.exports = class MockMediaRepository extends IMediaRepository {
   constructor() {
     super();
-    this.save = jest.fn();
+
+    [
+      'save',
+      'findByMediaId',
+    ].forEach(propertyName => {
+      if (!(propertyName in this)) {
+        throw new Error();
+      }
+      this[propertyName] = jest.fn();
+    });
   }
 };

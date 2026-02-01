@@ -1,8 +1,7 @@
-# UpdateMedia
+# UpdateMediaService
 
 ## 概要
-- 1メディアを更新する。
-- タグの関連付けも同時に更新する。
+- 1つのメディアを更新する。
 - 更新成功時のみ永続化される。
 
 ## 種別
@@ -19,14 +18,14 @@
 ```plantuml
 left to right direction
 
-struct UpdateMediaInput #pink {
+struct UpdateMediaServiceInput #pink {
     + メディアID : string
     + タイトル : string
     + コンテンツ一覧 : array<string>
     + タグ一覧 : array<TagInput>
     + カテゴリー優先度 : array<string>
 }
-Note right of UpdateMediaInput
+Note right of UpdateMediaServiceInput
   コンテンツ一覧：パス文字列の配列
   カテゴリー優先度：カテゴリー名の配列、配列順=優先度
 End Note
@@ -36,25 +35,19 @@ struct TagInput {
     + ラベル名 : string
 }
 
-UpdateMediaInput o- TagInput
+UpdateMediaServiceInput o- TagInput
 ```
 
 ## 出力
 
-```plantuml
-left to right direction
-
-struct UpdateMediaOutput #pink {
-    + メディアID : string
-}
-```
+なし
 
 ## エラー処理
-- メディアが存在しない場合はエラーとする。
-- 無効なコンテンツが存在する場合はエラーとする。
-- タグの重複はメディア集約の不変条件として排除するためエラーとしない。
-- カテゴリー優先度に矛盾が存在する場合はエラーとする。
-- 永続化の失敗時はエラーとする。
+- メディアが存在しない場合は更新失敗とする。
+- 無効なコンテンツが存在する場合は更新失敗とする。
+- タグの重複はメディア集約の不変条件として排除するため更新失敗としない。
+- カテゴリー優先度に矛盾はメディア集約の不変条件として排除するため更新失敗としない。
+- 永続化の失敗時は更新失敗とする。
 
 ## シーケンス図
 
@@ -66,13 +59,10 @@ box Domain #LightBlue
 end box
 participant Infrastructure
 
-Controller -> Application: UpdateMedia
+Controller -> Application: UpdateMediaService
 Application -> Infrastructure: メディア取得
 Application <-- Infrastructure: メディア
 Application -> Media: メディアを更新
 Application -> Infrastructure: メディアを上書きする
-Controller <-- Application: メディアID
+Controller <-- Application
 ```
-
-## 責務
-- コンテンツ、タグ、カテゴリー優先度の整合性チェックはドメインが行う。
