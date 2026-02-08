@@ -7,14 +7,15 @@
   - [UpdateMediaService](./media/command/UpdateMediaService/readme.md)
   - [DeleteMediaService](./media/command/DeleteMediaService/readme.md)
 - query
-  - [SearchMedia](./media/query/SearchMedia/readme.md)
-  - [GetMedia](./media/query/GetMedia/readme.md)
-  - [GetMediaPage](./media/query/GetMediaPage/readme.md)
-  - [GetCategories](./media/query/GetCategories/readme.md)
-  - [GetTags](./media/query/GetTags/readme.md)
+  - [SearchMediaService](./media/query/SearchMediaService/readme.md)
+  - [GetMediaService](./media/query/GetMediaService/readme.md)
+  - [GetMediaPageService](./media/query/GetMediaPageService/readme.md)
+  - [GetCategoriesService](./media/query/GetCategoriesService/readme.md)
+  - [GetTagsService](./media/query/GetTagsService/readme.md)
 - port
   - [IMediaIdValueGenerator](./media/port/IMediaIdValueGenerator/readme.md)
   - [IMediaRepository](./media/port/IMediaRepository/readme.md)
+  - [IMediaQueryRepository](./media/port/IMediaQueryRepository/readme.md)
 
 ### ユーザー
 - command

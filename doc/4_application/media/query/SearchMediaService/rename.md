@@ -1,7 +1,8 @@
-# SearchMedia
+# SearchMediaService
 
 ## 概要
 - 条件に合うメディアを検索する。
+- 検索で取得できる件数は20件までとする。
 
 ## 種別
 - Query
@@ -17,27 +18,38 @@
 ```plantuml
 left to right direction
 
-struct SearchMediaInput #pink {
+struct Input #pink {
     + タイトル : string
-    + タグ一覧 : array<TagInput>
-    + ソート方法 : SortType
+    + タグ一覧 : array<InputTag>
+    + ソート方法 : InputSortType
+    + 取得開始位置 : number
+    + 取得数 : number
 }
 
-struct TagInput {
+Note right of Input
+    デフォルト値
+        タイトル: なし
+        タグ一覧 : なし
+        ソート方法 : 登録日新しい順
+        取得開始位置 : 必須
+        取得数 : 必須
+End Note
+
+object InputTag {
     + カテゴリー名 : string
     + ラベル名 : string
 }
 
-enum SortType {
-    + 登録日順
-    + 登録日逆順
+enum InputSortType {
+    + 登録日新しい順
+    + 登録日古い順
     + タイトル順
     + タイトル逆順
     + ランダム
 }
 
-SearchMediaInput o- TagInput
-SearchMediaInput o- SortType
+Input o- InputTag
+Input o- InputSortType
 ```
 
 ## 出力
@@ -45,35 +57,36 @@ SearchMediaInput o- SortType
 ```plantuml
 left to right direction
 
-struct SearchMediaOutput #pink {
+struct Output #pink {
     + メディア一覧 : array<MediaOverview>
+    + 検索結果合計数 : number
 }
 
 struct MediaOverview {
     + メディアID : string
     + タイトル : string
     + サムネイル : string
-    + タグ一覧 : array<TagOutput>
+    + タグ一覧 : array<MediaOverviewTag>
     + カテゴリー優先度 : array<string>
 }
 
-struct TagOutput {
-  + カテゴリー名 : string
-  + ラベル名 : string
+struct MediaOverviewTag {
+    + カテゴリー名 : string
+    + ラベル名 : string
 }
 
 Note right of MediaOverview
-  サムネイル：パス文字列
-  カテゴリー優先度：カテゴリー名の配列、配列順=優先度
+    サムネイル：パス文字列
+    カテゴリー優先度：カテゴリー名の配列、配列順=優先度
 End Note
 
-SearchMediaOutput o- MediaOverview
-MediaOverview o- TagOutput
+Output o- MediaOverview
+MediaOverview o- MediaOverviewTag
 ```
 
 ## エラー処理
 - 検索失敗時はエラーとする。
-  - 検索結果が0件の場合は失敗扱いしない。
+- 検索結果が0件の場合は失敗扱いしない。
 
 ## シーケンス図
 
@@ -85,11 +98,8 @@ box Domain #LightBlue
 end box
 participant Infrastructure
 
-Controller -> Application: SearchMedia
+Controller -> Application: SearchMediaService
 Application -> Infrastructure: メディア検索
 Application <-- Infrastructure: メディア一覧
 Controller <-- Application: メディア一覧
 ```
-
-## 責務
-- 検索性能・取得方法の最適化はインフラ層に委譲する。
