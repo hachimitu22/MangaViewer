@@ -5,6 +5,8 @@ const ContentId = require('../../../../src/domain/media/contentId');
 const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
+const FoundContent = require('../../../../src/domain/media/foundContent');
+const NotFoundContent = require('../../../../src/domain/media/notFoundContent');
 
 describe('[Domain][Aggregate][Media]', () => {
   // -------------------------
@@ -362,6 +364,52 @@ describe('[Domain][Aggregate][Media]', () => {
       const priorities = media.getPriorityCategories();
       expect(priorities.length).toEqual(1);
       expect(priorities[0]).toEqual(category1);
+    });
+  });
+
+  // -------------------------
+  // getContentsByPositions
+  // -------------------------
+  describe('Media.getContentsByPositions', () => {
+    it('コンテンツ位置がコンテンツの範囲内であればコンテンツ取得に成功する', () => {
+      // arrange
+      const id = new MediaId('id');
+      const title = new MediaTitle('タイトル');
+      const contents = [
+        new ContentId('first'),
+        new ContentId('second'),
+        new ContentId('third'),
+      ];
+      const media = new Media(id, title, contents, [], []);
+
+      // action
+      const contentIds = media.getContentsByPositions([1]);
+
+      // assert
+      expect(contentIds).toEqual([
+        new FoundContent({
+          position: 1,
+          contentId: new ContentId('first'),
+        }),
+      ]);
+    });
+
+    it('コンテンツ位置がコンテンツの範囲外であればコンテンツ取得に失敗する', () => {
+      // arrange
+      const id = new MediaId('id');
+      const title = new MediaTitle('タイトル');
+      const contents = [
+        new ContentId('first'),
+        new ContentId('second'),
+        new ContentId('third'),
+      ];
+      const media = new Media(id, title, contents, [], []);
+
+      // action
+      const contentIds = media.getContentsByPositions([4]);
+
+      // assert
+      expect(contentIds).toEqual([new NotFoundContent({ position: 4 })]);
     });
   });
 });

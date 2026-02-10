@@ -3,6 +3,8 @@ const MediaTitle = require('./mediaTitle');
 const ContentId = require('./contentId');
 const Tag = require('./tag');
 const Category = require('./category');
+const FoundContent = require('./foundContent');
+const NotFoundContent = require('./notFoundContent');
 
 module.exports = class Media {
   #id;
@@ -84,5 +86,14 @@ module.exports = class Media {
       }
     });
     return arr;
+  }
+  getContentsByPositions(positions) {
+    return positions.map(position => {
+      if (1 <= position && position <= this.#contents.length) {
+        return new FoundContent({ position, contentId: this.#contents[position - 1] });
+      } else {
+        return new NotFoundContent({ position });
+      }
+    });
   }
 }
