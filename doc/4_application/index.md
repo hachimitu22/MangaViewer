@@ -8,10 +8,8 @@
   - [DeleteMediaService](./media/command/DeleteMediaService/readme.md)
 - query
   - [SearchMediaService](./media/query/SearchMediaService/readme.md)
-  - [GetMediaService](./media/query/GetMediaService/readme.md)
-  - [GetMediaPageService](./media/query/GetMediaPageService/readme.md)
-  - [GetCategoriesService](./media/query/GetCategoriesService/readme.md)
-  - [GetTagsService](./media/query/GetTagsService/readme.md)
+  - [GetMediaDetailService](./media/query/GetMediaDetailService/readme.md)
+  - [GetMediaContentWithNavigationService](./media/query/GetMediaContentWithNavigationService/rename.md)
 - port
   - [IMediaIdValueGenerator](./media/port/IMediaIdValueGenerator/readme.md)
   - [IMediaRepository](./media/port/IMediaRepository/readme.md)
