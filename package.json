@@ -14,8 +14,8 @@
     "test:unit": "jest unit",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
     "test:all:coverage": "start-server-and-test start http://localhost:3000 jest __tests__/ --coverage",
-    "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -o ./doc/api/api.html",
-    "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/api/api.md -s"
+    "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
+    "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s"
   },
   "author": "",
   "license": "MIT",

@@ -1,6 +1,0 @@
-@startuml
-package "Infrastructure Layer" {
-  !include ./queryService.puml
-  !include ./repository.puml
-}
-@enduml

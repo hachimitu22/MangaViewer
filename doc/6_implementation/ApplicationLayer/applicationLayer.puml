@@ -1,6 +1,0 @@
-@startuml
-package "Application Layer" {
-  !include ./applicationService.puml
-  !include ./queryServiceImplement.puml
-}
-@enduml
