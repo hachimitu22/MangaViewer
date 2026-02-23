@@ -9,8 +9,7 @@
 @import "./ドメインモデル.puml"
 
 ## 集約設計
-- [メディア集約](./aggregates/media.md)
-- [タグ集約](./aggregates/tag.md)
-- [ユーザー集約](./aggregates/user.md)
+- [メディア集約](./aggregates/media/readme.md)
+- [ユーザー集約](./aggregates/user/readme.md)
 
 @import "./境界づけられたコンテキスト.md"
