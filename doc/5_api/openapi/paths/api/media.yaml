@@ -13,29 +13,34 @@ post:
             title:
               description: メディアタイトル
               type: string
-            files:
+            contents:
+              description: コンテンツ一覧
               type: array
               items:
-                description: メディアファイル
                 type: object
                 properties:
                   file:
                     description: ファイル
                     type: string
                     format: binary
-                  mediaPage:
-                    description: ページ番号
+                  position:
+                    description: コンテンツ位置
                     type: integer
         examples:
           sample1:
             summary: 画像2枚で登録
             value:
               title: サンプルタイトル
-              files:
-                - file: example1.jpg
-                  mediaPage: 1
-                - file: example2.png
-                  mediaPage: 2
+              contents: [
+                {
+                  file: example1.jpg,
+                  position: 1,
+                },
+                {
+                  file: example2.png,
+                  position: 2,
+                },
+              ]
   responses:
     "200":
       description: メディア登録成功
