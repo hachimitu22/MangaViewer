@@ -47,6 +47,12 @@ get:
         date_desc:
           summary: 登録の古い順
           value: date_desc
+        title_asc:
+          summary: タイトル名の昇順
+          value: title_asc
+        title_desc:
+          summary: タイトル名の降順
+          value: title_desc
         random:
           summary: ランダム
           value: random
