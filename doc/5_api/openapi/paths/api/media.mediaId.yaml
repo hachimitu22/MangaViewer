@@ -40,6 +40,18 @@ patch:
                     type: integer
                 required:
                   - position
+            tags:
+              description: タグ一覧
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    description: タグのカテゴリー
+                    type: string
+                  label:
+                    description: タグのラベル
+                    type: string
         examples:
           changeTitle:
             summary: タイトルを変更
@@ -53,6 +65,16 @@ patch:
                 {
                   id: a2,
                   position: 2,
+                },
+              ]
+              tags: [
+                {
+                  category: 作者,
+                  label: 荒木飛呂彦,
+                },
+                {
+                  file: 雑誌,
+                  position: ジャンプ,
                 },
               ]
           updateOrderWithAdd:
@@ -71,6 +93,16 @@ patch:
                 {
                   id: a1,
                   position: 3,
+                },
+              ]
+              tags: [
+                {
+                  category: 作者,
+                  label: 荒木飛呂彦,
+                },
+                {
+                  file: 雑誌,
+                  position: ジャンプ,
                 },
               ]
   responses:

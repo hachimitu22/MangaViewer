@@ -26,6 +26,18 @@ post:
                   position:
                     description: コンテンツ位置
                     type: integer
+            tags:
+              description: タグ一覧
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    description: タグのカテゴリー
+                    type: string
+                  label:
+                    description: タグのラベル
+                    type: string
         examples:
           sample1:
             summary: 画像2枚で登録
@@ -39,6 +51,16 @@ post:
                 {
                   file: example2.png,
                   position: 2,
+                },
+              ]
+              tags: [
+                {
+                  category: 作者,
+                  label: 新井太郎,
+                },
+                {
+                  file: ジャンル,
+                  position: アクション,
                 },
               ]
   responses:
