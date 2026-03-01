@@ -1,4 +1,4 @@
-const IMediaRepository = require('../../../../src/application/media/port/IMediaRepository');
+const IMediaRepository = require('../../../../src/domain/media/IMediaRepository');
 
 module.exports = class MockMediaRepository extends IMediaRepository {
   constructor() {

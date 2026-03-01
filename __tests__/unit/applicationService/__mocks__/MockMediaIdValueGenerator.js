@@ -1,4 +1,4 @@
-const IMediaIdValueGenerator = require('../../../../src/application/media/port/IMediaIdValueGenerator');
+const IMediaIdValueGenerator = require('../../../../src/domain/media/IMediaIdValueGenerator');
 
 module.exports = class MockMediaIdValueGenerator extends IMediaIdValueGenerator {
   constructor() {

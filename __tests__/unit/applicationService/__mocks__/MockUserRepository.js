@@ -1,4 +1,4 @@
-const IUserRepository = require('../../../../src/application/user/port/IUserRepository');
+const IUserRepository = require('../../../../src/domain/user/IUserRepository');
 
 module.exports = class MockUserRepository extends IUserRepository {
   constructor() {
