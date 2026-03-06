@@ -9,15 +9,24 @@ post:
       multipart/form-data:
         schema:
           type: object
+          required:
+            - title
+            - contents
+            - tags
           properties:
             title:
               description: メディアタイトル
               type: string
+              minLength: 1
             contents:
               description: コンテンツ一覧
               type: array
+              minItems: 1
               items:
                 type: object
+                required:
+                  - file
+                  - position
                 properties:
                   file:
                     description: ファイル
@@ -29,15 +38,21 @@ post:
             tags:
               description: タグ一覧
               type: array
+              minItems: 0
               items:
                 type: object
+                required:
+                  - category
+                  - label
                 properties:
                   category:
                     description: タグのカテゴリー
                     type: string
+                    minLength: 1
                   label:
                     description: タグのラベル
                     type: string
+                    minLength: 1
         examples:
           sample1:
             summary: 画像2枚で登録
@@ -59,8 +74,8 @@ post:
                   label: 新井太郎,
                 },
                 {
-                  file: ジャンル,
-                  position: アクション,
+                  category: ジャンル,
+                  label: アクション,
                 },
               ]
   responses:
