@@ -2,19 +2,21 @@
 
 ## 概要
 - `POST /api/media` のHTTPリクエストを受け取り、メディア登録ユースケースへ橋渡しする。
-- セッション認証およびコンテンツ保存はミドルウェアで完了している前提で、リクエストコンテキストの `contentIds` と入力値（`title` / `tags`）から登録入力を組み立て、`RegisterMediaService` を呼び出してAPIレスポンス（成功 / 失敗）を整形する。
-- `contentIds` は1件以上存在することを前提とする。
+- セッション認証およびコンテンツ保存はミドルウェアで完了している前提で、リクエストコンテキストの `contentIds` と入力値（`title` / `tags`）から登録入力を組み立て、`RegisterMediaService` を呼び出してAPIレスポンス（成功 / 失敗）を整形する。`contentIds` は `contents[n].position` 順に並んでいるものを受け取る。
+- `contentIds` は1件以上存在し、要素は `string` かつ空文字ではなく、重複しないことを前提とする。
 
 ## 対象API
 - `POST /api/media`
 
 ## バリデーション
-- `title` は空文字を許可しない。
-- `tags` は空配列を許可する。
-- `tags` の未指定は許可する（未指定には `null` を含む）。
-- `tags` 配列要素に `null` は許可しない。
-- `tags[n].category` は空文字を許可しない。
-- `tags[n].label` は空文字を許可しない。
+- `title` は `string` かつ空文字以外であること。
+- `tags` は配列であり、要素数は0以上であること。
+- `tags` の各要素は `{ category: string, label: string }` 構造であり、`category` / `label` は空文字以外であること。
+- `tags` は同一 `category` + `label` の重複を許可する。
+- `contentIds` は配列であり、要素数は1以上であること。
+- `contentIds` の各要素は `string` かつ空文字以外であること。
+- `contentIds` は重複を許可しない。
+- `contentIds` の順序は `contents[n].position` の順序と一致していること。
 
 ## 依存
 - [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware.md)
@@ -64,4 +66,4 @@ Controller --> Client: 200 レスポンス
 
 ## 関連ドキュメント
 - [OpenAPI](/doc/5_api/openapi/paths/api/media.yaml)
-- [APIテストケース](/doc/5_api/testcase/api/media.post.md)
+- [Controllerテストケース](/doc/5_api/controller/MediaPostController/testcase.md)
