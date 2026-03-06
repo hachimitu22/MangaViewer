@@ -17,9 +17,9 @@
 - `tags[n].label` は空文字を許可しない。
 
 ## 依存
-- SessionAuthMiddleware: `doc/5_api/controller/middleware/SessionAuthMiddleware.md`
-- ContentSaveMiddleware: `doc/5_api/controller/middleware/ContentSaveMiddleware.md`
-- Application Service: `RegisterMediaService`
+- [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware.md)
+- [ContentSaveMiddleware](/doc/5_api/controller/middleware/ContentSaveMiddleware.md)
+- [RegisterMediaService](/doc/4_application/media/command/RegisterMediaService/readme.md)
 
 ## 処理フロー
 ```plantuml
@@ -63,9 +63,5 @@ Controller --> Client: 200 レスポンス
 - 永続化失敗: `200` + `code: 1`（Application）
 
 ## 関連ドキュメント
-- SessionAuthMiddleware: `doc/5_api/controller/middleware/SessionAuthMiddleware.md`
-- ContentSaveMiddleware: `doc/5_api/controller/middleware/ContentSaveMiddleware.md`
-- OpenAPI: `doc/5_api/openapi/paths/api/media.yaml`
-- シーケンス図: `doc/5_api/sequence/api/media.post.puml`
-- APIテストケース: `doc/5_api/testcase/api/media.post.md`
-- Application設計: `doc/4_application/media/command/RegisterMediaService/readme.md`
+- [OpenAPI](/doc/5_api/openapi/paths/api/media.yaml)
+- [APIテストケース](/doc/5_api/testcase/api/media.post.md)
