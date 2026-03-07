@@ -63,18 +63,18 @@ class MediaPostController {
       return false;
     }
 
-    return tags.every((tag, index) => {
-      if (!Object.hasOwn(tags, index)) {
-        return false;
-      }
-
+    for (const tag of tags) {
       if (!tag || typeof tag !== 'object') {
         return false;
       }
 
-      return typeof tag.category === 'string' && tag.category.length > 0
-        && typeof tag.label === 'string' && tag.label.length > 0;
-    });
+      if (!(typeof tag.category === 'string' && tag.category.length > 0
+        && typeof tag.label === 'string' && tag.label.length > 0)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   #validateContentIds(contentIds) {
@@ -82,10 +82,10 @@ class MediaPostController {
       return false;
     }
 
-    if (!contentIds.every((id, index) => Object.hasOwn(contentIds, index)
-      && typeof id === 'string'
-      && id.length > 0)) {
-      return false;
+    for (const id of contentIds) {
+      if (!(typeof id === 'string' && id.length > 0)) {
+        return false;
+      }
     }
 
     return new Set(contentIds).size === contentIds.length;
