@@ -1,7 +1,7 @@
-const MediaPostController = require('../../../src/controller/MediaPostController');
+const MediaPostController = require('../../../../src/controller/MediaPostController');
 const {
   RegisterMediaServiceInput,
-} = require('../../../src/application/media/command/RegisterMediaService');
+} = require('../../../../src/application/media/command/RegisterMediaService');
 
 describe('MediaPostController', () => {
   let registerMediaService;
