@@ -38,7 +38,7 @@ title ContentSaveMiddleware フロー
 participant Client
 box "Controller Layer" #LightBlue
   participant ContentSaveMiddleware as Middleware
-  participant Controller
+  participant NextHandler as "Next Middleware / Controller"
 end box
 box "Infrastructure Layer" #LightGray
   participant ContentStorage as Storage
@@ -64,7 +64,8 @@ opt 保存失敗
 end
 
 Middleware -> Middleware: リクエストコンテキストへ contentIds を設定
-Middleware -> Controller: 処理を委譲
+Middleware -> NextHandler: 次のミドルウェア / Controller へ処理を委譲
+NextHandler --> Client: 処理結果レスポンス
 @enduml
 ```
 
