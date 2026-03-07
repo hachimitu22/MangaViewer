@@ -5,6 +5,7 @@
 - [tagsが空配列でもメディア登録に成功する](#tagsが空配列でもメディア登録に成功する)
 - [重複タグを含んでもメディア登録に成功する](#重複タグを含んでもメディア登録に成功する)
 - [contentIdsの順序を維持して処理される](#contentidsの順序を維持して処理される)
+- [priorityCategoriesはtags.categoryの出現順で重複なく生成される](#prioritycategoriesはtagscategoryの出現順で重複なく生成される)
 - [RegisterMediaServiceが失敗した場合はcode=1を返す](#registermediaserviceが失敗した場合はcode1を返す)
 - [titleが空文字の場合は登録失敗を返す](#titleが空文字の場合は登録失敗を返す)
 - [titleがstring以外の場合は登録失敗を返す](#titleがstring以外の場合は登録失敗を返す)
@@ -41,6 +42,7 @@
   - `MediaPostController` を実行する。
 - **結果**
   - `RegisterMediaService` に `title` / `tags` / `contentIds` を渡して呼び出す。
+  - `RegisterMediaService` に渡す `priorityCategories` は `tags[n].category` を先頭から見た出現順で重複除去した値となる。
   - HTTPステータス `200` を返す。
   - レスポンスボディに `code: 0` と `mediaId` を含む。
 
@@ -89,6 +91,23 @@
   - `MediaPostController` を実行する。
 - **結果**
   - `RegisterMediaService` に `contentIds` が順序を保持したまま渡される。
+
+---
+
+### priorityCategoriesはtags.categoryの出現順で重複なく生成される
+
+- **前提**
+  - `title` は `string` かつ空文字ではない。
+  - `tags` に異なる `category` と重複する `category` が混在する。
+  - 各タグの `category` / `label` は `string` かつ空文字ではない。
+  - `contentIds` は1件以上で、各要素は `string` かつ空文字ではない（要素数1以上）。
+  - `contentIds` に重複はない。
+  - `RegisterMediaService` は成功する。
+- **操作**
+  - `MediaPostController` を実行する。
+- **結果**
+  - `RegisterMediaService` に渡す `priorityCategories` は、`tags[n].category` を先頭から見て重複除去した順序となる。
+  - 例: `['作者', 'ジャンル', '作者', 'シリーズ', 'ジャンル']` を入力した場合、`['作者', 'ジャンル', 'シリーズ']` を渡す。
 
 ---
 
