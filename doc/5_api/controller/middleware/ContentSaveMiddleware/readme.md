@@ -31,12 +31,42 @@
 - 受信順が `2, 1, 3` のように不規則でも、`1..N` を満たす場合は有効（保存時に `position` 昇順へ正規化する）。
 
 ## 処理フロー
-1. `contents` の構造（配列・件数・必須項目）を検証する。
-2. `file` の有無を検証する。
-3. `position` の妥当性（整数・重複なし・`1..N`）を検証する。
-4. `contents` を `position` 昇順で並べ替える。
-5. 並べ替え後の順序でファイルを保存し、保存結果の `contentId` を収集する。
-6. `contentIds` をリクエストコンテキストへ設定し、次のControllerへ処理を委譲する。
+```plantuml
+@startuml
+title ContentSaveMiddleware フロー
+
+participant Client
+box "Controller Layer" #LightBlue
+  participant ContentSaveMiddleware as Middleware
+  participant Controller
+end box
+box "Infrastructure Layer" #LightGray
+  participant ContentStorage as Storage
+end box
+
+Client -> Middleware: POST /api/media
+Middleware -> Middleware: contents 構造チェック
+Middleware -> Middleware: file チェック
+Middleware -> Middleware: position チェック（整数・重複なし・1..N）
+
+opt バリデーション失敗
+  Middleware --> Client: 失敗レスポンス
+  destroy Middleware
+end
+
+Middleware -> Middleware: contents を position 昇順に整列
+Middleware -> Storage: 整列順でコンテンツ保存
+Storage --> Middleware: contentIds
+
+opt 保存失敗
+  Middleware --> Client: 失敗レスポンス
+  destroy Middleware
+end
+
+Middleware -> Middleware: リクエストコンテキストへ contentIds を設定
+Middleware -> Controller: 処理を委譲
+@enduml
+```
 
 ## エラーハンドリング
 - 以下の場合は失敗レスポンスを返し、後続のControllerへ進めない。
