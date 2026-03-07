@@ -39,6 +39,9 @@ describe('MediaPostController', () => {
   });
 
   it('contentIdsを使ってメディア登録に成功する', async () => {
+    // arrange
+
+    // action
     const { res } = await execute({
       body: {
         title: 'title',
@@ -47,6 +50,7 @@ describe('MediaPostController', () => {
       contentIds: ['c1', 'c2'],
     });
 
+    // assert
     expect(registerMediaService.execute).toHaveBeenCalledTimes(1);
     const input = registerMediaService.execute.mock.calls[0][0];
     expect(input).toBeInstanceOf(RegisterMediaServiceInput);
@@ -64,6 +68,9 @@ describe('MediaPostController', () => {
   });
 
   it('tagsが空配列でもメディア登録に成功する', async () => {
+    // arrange
+
+    // action
     const { res } = await execute({
       body: {
         title: 'title',
@@ -72,6 +79,7 @@ describe('MediaPostController', () => {
       contentIds: ['c1'],
     });
 
+    // assert
     expect(registerMediaService.execute).toHaveBeenCalledTimes(1);
     expect(res.json).toHaveBeenCalledWith({
       code: 0,
@@ -80,6 +88,9 @@ describe('MediaPostController', () => {
   });
 
   it('重複タグを含んでもメディア登録に成功する', async () => {
+    // arrange
+
+    // action
     const { res } = await execute({
       body: {
         title: 'title',
@@ -91,6 +102,7 @@ describe('MediaPostController', () => {
       contentIds: ['c1'],
     });
 
+    // assert
     expect(registerMediaService.execute).toHaveBeenCalledTimes(1);
     const input = registerMediaService.execute.mock.calls[0][0];
     expect(input.tags).toMatchObject([
@@ -105,6 +117,9 @@ describe('MediaPostController', () => {
   });
 
   it('contentIdsの順序を維持して処理される', async () => {
+    // arrange
+
+    // action
     await execute({
       body: {
         title: 'title',
@@ -113,12 +128,15 @@ describe('MediaPostController', () => {
       contentIds: ['c3', 'c1', 'c2'],
     });
 
+    // assert
     const input = registerMediaService.execute.mock.calls[0][0];
     expect(input.contents).toEqual(['c3', 'c1', 'c2']);
   });
 
-
   it('priorityCategoriesはtags.categoryの出現順で重複なく生成される', async () => {
+    // arrange
+
+    // action
     await execute({
       body: {
         title: 'title',
@@ -133,13 +151,16 @@ describe('MediaPostController', () => {
       contentIds: ['c1'],
     });
 
+    // assert
     const input = registerMediaService.execute.mock.calls[0][0];
     expect(input.priorityCategories).toEqual(['作者', 'ジャンル', 'シリーズ']);
   });
 
   it('RegisterMediaServiceが失敗した場合はcode=1を返す', async () => {
+    // arrange
     registerMediaService.execute.mockRejectedValue(new Error('fail'));
 
+    // action
     const { res } = await execute({
       body: {
         title: 'title',
@@ -148,6 +169,7 @@ describe('MediaPostController', () => {
       contentIds: ['c1'],
     });
 
+    // assert
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       code: 1,
@@ -172,8 +194,12 @@ describe('MediaPostController', () => {
     ['contentIds要素が空文字', { title: 'title', tags: [] }, ['']],
     ['contentIdsに重複がある', { title: 'title', tags: [] }, ['c1', 'c1']],
   ])('%sの場合は登録失敗を返す', async (_name, body, contentIds) => {
+    // arrange
+
+    // action
     const { res } = await execute({ body, contentIds });
 
+    // assert
     expect(registerMediaService.execute).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
@@ -182,6 +208,7 @@ describe('MediaPostController', () => {
   });
 
   it('想定外例外発生時も失敗レスポンス形式を維持する', async () => {
+    // arrange
     const req = {
       body: {
         get title() {
@@ -194,8 +221,10 @@ describe('MediaPostController', () => {
     };
     const res = createRes();
 
+    // action
     await controller.execute(req, res);
 
+    // assert
     expect(registerMediaService.execute).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
