@@ -63,8 +63,12 @@ class MediaPostController {
       return false;
     }
 
-    return tags.every((tag) => {
-      if (!tag || typeof tag !== 'object' || Array.isArray(tag)) {
+    return tags.every((tag, index) => {
+      if (!Object.hasOwn(tags, index)) {
+        return false;
+      }
+
+      if (!tag || typeof tag !== 'object') {
         return false;
       }
 
@@ -78,7 +82,9 @@ class MediaPostController {
       return false;
     }
 
-    if (!contentIds.every(id => typeof id === 'string' && id.length > 0)) {
+    if (!contentIds.every((id, index) => Object.hasOwn(contentIds, index)
+      && typeof id === 'string'
+      && id.length > 0)) {
       return false;
     }
 

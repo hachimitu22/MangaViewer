@@ -183,6 +183,7 @@ describe('MediaPostController', () => {
     ['tagsが配列以外', { title: 'title', tags: {} }, ['c1']],
     ['tags配列要素がnull', { title: 'title', tags: [null] }, ['c1']],
     ['tags配列要素がオブジェクト以外', { title: 'title', tags: [1] }, ['c1']],
+    ['tags配列が疎配列', (() => { const tags = []; tags[1] = { category: '作者', label: 'A' }; return { title: 'title', tags }; })(), ['c1']],
     ['tagsのcategoryがstring以外', { title: 'title', tags: [{ category: 1, label: 'A' }] }, ['c1']],
     ['tagsのcategoryが空文字', { title: 'title', tags: [{ category: '', label: 'A' }] }, ['c1']],
     ['tagsのlabelがstring以外', { title: 'title', tags: [{ category: 'A', label: 1 }] }, ['c1']],
@@ -192,6 +193,7 @@ describe('MediaPostController', () => {
     ['contentIdsが空配列', { title: 'title', tags: [] }, []],
     ['contentIds要素がstring以外', { title: 'title', tags: [] }, [1]],
     ['contentIds要素が空文字', { title: 'title', tags: [] }, ['']],
+    ['contentIds配列が疎配列', { title: 'title', tags: [] }, (() => { const ids = []; ids[1] = 'c1'; return ids; })()],
     ['contentIdsに重複がある', { title: 'title', tags: [] }, ['c1', 'c1']],
   ])('%sの場合は登録失敗を返す', async (_name, body, contentIds) => {
     // arrange
