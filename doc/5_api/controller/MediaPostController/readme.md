@@ -3,6 +3,7 @@
 ## 概要
 - `POST /api/media` のHTTPリクエストを受け取り、メディア登録ユースケースへ橋渡しする。
 - セッション認証およびコンテンツ保存はミドルウェアで完了している前提で、リクエストコンテキストの `contentIds` と入力値（`title` / `tags`）から登録入力を組み立て、`RegisterMediaService` を呼び出してAPIレスポンス（成功 / 失敗）を整形する。`contentIds` は `contents[n].position` 順に並んでいるものを受け取る。
+- `RegisterMediaServiceInput.priorityCategories` は `tags[n].category` から生成する。重複は除去し、先頭から見た出現順を維持する。
 - `contentIds` は1件以上存在し、要素は `string` かつ空文字ではなく、重複しないことを前提とする。
 
 ## 対象API
@@ -39,6 +40,7 @@ end box
 Client -> Controller: POST /api/media
 Controller -> Controller: title / tags / contentIds を取得
 Controller -> Controller: リクエストバリデーションチェック
+Controller -> Controller: priorityCategories を tags.category から生成
 
 opt バリデーションチェック失敗
   Controller --> Controller: code=1 を生成
