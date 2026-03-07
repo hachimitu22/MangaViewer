@@ -2,7 +2,7 @@
 
 ## 概要
 - `POST /api/media` のHTTPリクエストを受け取り、メディア登録ユースケースへ橋渡しする。
-- セッション認証およびコンテンツ保存はミドルウェアで完了している前提で、リクエストコンテキストの `contentIds` と入力値（`title` / `tags`）から登録入力を組み立て、`RegisterMediaService` を呼び出してAPIレスポンス（成功 / 失敗）を整形する。`contentIds` は `contents[n].position` 順に並んでいるものを受け取る。
+- セッション認証およびコンテンツ保存はミドルウェアで完了している前提で、リクエストコンテキストの `contentIds` と `request.context.userId`、入力値（`title` / `tags`）から登録入力を組み立て、`RegisterMediaService` を呼び出してAPIレスポンス（成功 / 失敗）を整形する。`contentIds` は `contents[n].position` 順に並んでいるものを受け取る。
 - `RegisterMediaServiceInput.priorityCategories` は `tags[n].category` から生成する。重複は除去し、先頭から見た出現順を維持する。
 - `contentIds` は1件以上存在し、要素は `string` かつ空文字ではなく、重複しないことを前提とする。
 
@@ -18,10 +18,11 @@
 - `contentIds` の各要素は `string` かつ空文字以外であること。
 - `contentIds` は重複を許可しない。
 - `contentIds` の順序は `contents[n].position` の順序と一致していること。
+- `request.context.userId` は `string` かつ空文字以外であること（SessionAuthMiddleware設定値）。
 
 ## 依存
-- [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware.md)
-- [ContentSaveMiddleware](/doc/5_api/controller/middleware/ContentSaveMiddleware.md)
+- [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware/readme.md)
+- [ContentSaveMiddleware](/doc/5_api/controller/middleware/ContentSaveMiddleware/readme.md)
 - [RegisterMediaService](/doc/4_application/media/command/RegisterMediaService/readme.md)
 
 ## 処理フロー

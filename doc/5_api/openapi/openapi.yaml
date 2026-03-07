@@ -46,7 +46,7 @@ components:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: sessionID
+      name: sessionId
   responses:
     RedirectError:
       description: エラー画面リダイレクト
