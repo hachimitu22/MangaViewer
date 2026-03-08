@@ -2,7 +2,6 @@ const SessionAuthMiddleware = require('../../../../src/controller/middleware/Ses
 
 describe('SessionAuthMiddleware', () => {
   let resolveUserIdBySessionToken;
-  let logger;
   let middleware;
 
   const createRes = () => {
@@ -25,13 +24,9 @@ describe('SessionAuthMiddleware', () => {
 
   beforeEach(() => {
     resolveUserIdBySessionToken = jest.fn().mockResolvedValue('u1');
-    logger = {
-      warn: jest.fn(),
-    };
 
     middleware = new SessionAuthMiddleware({
       resolveUserIdBySessionToken,
-      logger,
     });
   });
 
@@ -45,7 +40,6 @@ describe('SessionAuthMiddleware', () => {
     expect(req.context.userId).toBe('u1');
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
-    expect(logger.warn).not.toHaveBeenCalled();
   });
 
   it('request.contextが未作成でも初期化してuserIdを設定できる', async () => {
@@ -74,7 +68,6 @@ describe('SessionAuthMiddleware', () => {
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ message: '認証に失敗しました' });
     expect(req.context.userId).toBe('existing');
-    expect(logger.warn).toHaveBeenCalledTimes(1);
   });
 
   it('session_tokenは有効でもuserIdを解決できない場合は401を返す', async () => {
@@ -90,16 +83,9 @@ describe('SessionAuthMiddleware', () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ message: '認証に失敗しました' });
-    expect(logger.warn).toHaveBeenCalledWith(
-      'SessionAuthMiddleware authentication failed',
-      expect.objectContaining({
-        reason: 'user-not-resolved',
-        sessionToken: 'to****34',
-      }),
-    );
   });
 
-  it('想定外例外時も401を返しtokenの生値をログ出力しない', async () => {
+  it('想定外例外時も401を返す', async () => {
     resolveUserIdBySessionToken.mockRejectedValue(new Error('boom'));
 
     const { res, next } = await execute({
@@ -110,16 +96,5 @@ describe('SessionAuthMiddleware', () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ message: '認証に失敗しました' });
-
-    expect(logger.warn).toHaveBeenCalledWith(
-      'SessionAuthMiddleware authentication failed',
-      expect.objectContaining({
-        reason: 'unexpected-error',
-      }),
-    );
-
-    const loggedMeta = logger.warn.mock.calls[0][1];
-    expect(loggedMeta.sessionToken).not.toBe('raw-secret-token');
-    expect(loggedMeta.sessionToken).toBe('ra****en');
   });
 });

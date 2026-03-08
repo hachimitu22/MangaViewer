@@ -29,8 +29,3 @@
 - レスポンスボディ: `{ "message": "認証に失敗しました" }`
 - レスポンス仕様は [OpenAPI UnauthorizedApi](/doc/5_api/openapi/openapi.yaml) に準拠する。
 - 追加ヘッダは特別に定義せず、必要になった場合は OpenAPI へ追記してから適用する。
-
-## ログ / 責務境界
-- 監査・運用ログには `req.session.session_token` の生値を出力しない（必要な場合はマスクした識別子のみを利用する）。
-- 認証失敗時は、詳細な機密情報ではなく失敗理由の種別（例: `expired` / `invalid-signature`）を記録する。
-- Cookie 属性（`Secure` / `HttpOnly` / `SameSite`）とセッションクッキー名の管理は `express-session` の設定責務とし、本ミドルウェアは `req.session.session_token` の検証と検証結果の扱いを責務範囲とする。

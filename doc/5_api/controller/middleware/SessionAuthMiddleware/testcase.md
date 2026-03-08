@@ -16,7 +16,6 @@
 - [session_tokenは有効でもuserIdを解決できない場合は401を返す](#session_tokenは有効でもuseridを解決できない場合は401を返す)
 - [認証失敗時レスポンスはUnauthorizedApi準拠を維持する](#認証失敗時レスポンスはunauthorizedapi準拠を維持する)
 - [認証失敗時はrequest.context.userIdを設定しない](#認証失敗時はrequestcontextuseridを設定しない)
-- [認証失敗時ログはsession_token生値を出力しない](#認証失敗時ログはsession_token生値を出力しない)
 
 ---
 
@@ -212,16 +211,4 @@
 - **結果**
   - `request.context.userId` は未設定のままである。
   - 既存値がある場合は上書きしない。
-
----
-
-### 認証失敗時ログはsession_token生値を出力しない
-
-- **前提**
-  - 認証失敗が発生する。
-- **操作**
-  - `SessionAuthMiddleware` を実行し、ログ出力を確認する。
-- **結果**
-  - `req.session.session_token` の生値はログに出力されない。
-  - 失敗理由は種別（例: `expired` / `invalid-signature`）で記録される。
 
