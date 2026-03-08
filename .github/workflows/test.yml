@@ -3,7 +3,8 @@ name: Test
 on:
   push:
     branches:
-      - '**'
+      - '__test__/**'
+      - 'src/**'
   workflow_dispatch:
 
 jobs:
