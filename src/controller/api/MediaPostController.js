@@ -1,6 +1,6 @@
 const {
   RegisterMediaServiceInput,
-} = require('../application/media/command/RegisterMediaService');
+} = require('../../application/media/command/RegisterMediaService');
 
 class MediaPostController {
   #registerMediaService;
