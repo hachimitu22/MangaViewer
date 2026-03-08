@@ -1,13 +1,8 @@
 module.exports = {
   projects: [
     {
-      displayName: 'unit',
-      testMatch: ['<rootDir>/__tests__/unit/**/*.test.js'],
-      testEnvironment: 'node',
-    },
-    {
-      displayName: 'integration',
-      testMatch: ['<rootDir>/__tests__/integration/**/*.test.js'],
+      displayName: 'small',
+      testMatch: ['<rootDir>/__tests__/small/**/*.test.js'],
       testEnvironment: 'node',
     },
     {
