@@ -52,6 +52,22 @@ describe('SessionAuthMiddleware', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 
+  it('authResolverを直接渡した場合でも認証に成功する', async () => {
+    const directResolver = {
+      execute: jest.fn().mockResolvedValue('u1'),
+    };
+    middleware = new SessionAuthMiddleware(directResolver);
+
+    const { req, next } = await execute({
+      session: { session_token: 'token1234' },
+      context: {},
+    });
+
+    expect(directResolver.execute).toHaveBeenCalledWith('token1234');
+    expect(req.context.userId).toBe('u1');
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
   it.each([
     ['req.sessionが未生成', undefined],
     ['session_tokenが未設定', {}],

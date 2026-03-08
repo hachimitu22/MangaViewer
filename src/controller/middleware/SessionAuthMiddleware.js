@@ -1,12 +1,22 @@
 class SessionAuthMiddleware {
   #resolveUserIdBySessionToken;
 
-  constructor({ resolveUserIdBySessionToken } = {}) {
+  constructor(authResolverOrOptions = {}) {
+    const resolveUserIdBySessionToken = this.#resolve(authResolverOrOptions);
     if (typeof resolveUserIdBySessionToken !== 'function') {
       throw new Error('resolveUserIdBySessionToken must be a function');
     }
 
     this.#resolveUserIdBySessionToken = resolveUserIdBySessionToken;
+  }
+
+
+  #resolve(authResolverOrOptions) {
+    if (authResolverOrOptions && typeof authResolverOrOptions.execute === 'function') {
+      return authResolverOrOptions.execute.bind(authResolverOrOptions);
+    }
+
+    return authResolverOrOptions?.resolveUserIdBySessionToken;
   }
 
   async execute(req, res, next) {

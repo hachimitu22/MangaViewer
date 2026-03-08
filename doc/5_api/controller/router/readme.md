@@ -24,7 +24,7 @@
 - `saveResolver`
   - `contents` を保存し、`contentIds` を返すアダプタ。
   - `execute(contents)` を持つ。
-- `mediaIdGenerator`
+- `mediaIdValueGenerator`
   - メディアID生成。
   - `generate()` を持つ。
 - `mediaRepository`

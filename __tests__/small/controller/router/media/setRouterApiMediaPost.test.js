@@ -37,7 +37,7 @@ describe('setRouterApiMediaPost', () => {
     const saveResolver = {
       execute: jest.fn().mockResolvedValue(['c1', 'c2']),
     };
-    const mediaIdGenerator = {
+    const mediaIdValueGenerator = {
       generate: jest.fn().mockReturnValue('m1'),
     };
     const mediaRepository = {
@@ -48,7 +48,7 @@ describe('setRouterApiMediaPost', () => {
       router,
       authResolver,
       saveResolver,
-      mediaIdGenerator,
+      mediaIdValueGenerator,
       mediaRepository,
     });
 
@@ -75,7 +75,7 @@ describe('setRouterApiMediaPost', () => {
       { file: { name: '2.png' }, position: 2 },
     ]);
 
-    expect(mediaIdGenerator.generate).toHaveBeenCalledTimes(1);
+    expect(mediaIdValueGenerator.generate).toHaveBeenCalledTimes(1);
     expect(mediaRepository.save).toHaveBeenCalledTimes(1);
 
     expect(res.status).toHaveBeenCalledWith(200);
@@ -95,7 +95,7 @@ describe('setRouterApiMediaPost', () => {
         router,
         authResolver: {},
         saveResolver: { execute: jest.fn() },
-        mediaIdGenerator: { generate: jest.fn().mockReturnValue('m1') },
+        mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
         mediaRepository: { save: jest.fn() },
       });
     }).toThrow();
@@ -111,7 +111,7 @@ describe('setRouterApiMediaPost', () => {
         router,
         authResolver: { execute: jest.fn().mockResolvedValue('u1') },
         saveResolver: {},
-        mediaIdGenerator: { generate: jest.fn().mockReturnValue('m1') },
+        mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
         mediaRepository: { save: jest.fn() },
       });
     }).toThrow();

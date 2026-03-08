@@ -12,7 +12,7 @@
 
 - **前提**
   - `router.post` をモック化する。
-  - `authResolver` / `saveResolver` / `mediaIdGenerator` / `mediaRepository` は有効な依存を注入する。
+  - `authResolver` / `saveResolver` / `mediaIdValueGenerator` / `mediaRepository` は有効な依存を注入する。
 - **操作**
   - `setRouterApiMediaPost` を実行する。
 - **結果**
@@ -27,7 +27,7 @@
 - **前提**
   - `authResolver.execute` は `userId` を返す。
   - `saveResolver.execute` は `contentIds` を返す。
-  - `mediaIdGenerator.generate` は `mediaId` を返す。
+  - `mediaIdValueGenerator.generate` は `mediaId` を返す。
   - `mediaRepository.save` は保存成功とする。
 - **操作**
   - ルーターに登録された3ハンドラーを `next` で順に実行する。
