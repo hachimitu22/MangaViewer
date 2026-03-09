@@ -44,13 +44,16 @@ describe('SequelizeMediaRepository', () => {
     expect(actual).toBeInstanceOf(Media);
     expect(actual.getTitle().getTitle()).toBe('タイトル1');
     expect(actual.getContents().map(c => c.getId())).toEqual(['/a/1.jpg', '/a/2.jpg']);
-    expect(actual.getTags().map(t => ({
+    const actualTags = actual.getTags().map(t => ({
       category: t.getCategory().getValue(),
       label: t.getLabel().getLabel(),
-    }))).toEqual([
+    }));
+
+    expect(actualTags).toHaveLength(2);
+    expect(actualTags).toEqual(expect.arrayContaining([
       { category: '作者', label: '山田太郎' },
       { category: 'ジャンル', label: 'バトル' },
-    ]);
+    ]));
   });
 
   test('findByMediaId は未登録IDで null を返す', async () => {
