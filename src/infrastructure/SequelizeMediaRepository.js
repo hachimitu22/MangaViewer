@@ -38,8 +38,9 @@ function defineModels(sequelize) {
   });
 
   const MediaTagModel = sequelize.define('media_tag', {
-    media_id: { type: DataTypes.STRING, primaryKey: true },
-    tag_id: { type: DataTypes.INTEGER, primaryKey: true },
+    media_id: { type: DataTypes.STRING, allowNull: false },
+    category_id: { type: DataTypes.INTEGER, allowNull: false },
+    tag_id: { type: DataTypes.INTEGER, allowNull: true },
     priority: { type: DataTypes.INTEGER, allowNull: false },
   }, { tableName: 'media_tag', timestamps: false });
 
@@ -64,6 +65,7 @@ function defineModels(sequelize) {
 
   MediaTagModel.belongsTo(TagModel, { foreignKey: 'tag_id', as: 'tag' });
   MediaTagModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media' });
+  MediaTagModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category' });
 
   return {
     MediaModel,
@@ -122,15 +124,37 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         .getPriorityCategories()
         .map(category => category.getValue());
 
-      for (const tag of media.getTags()) {
-        const categoryName = tag.getCategory().getValue();
-        const labelName = tag.getLabel().getLabel();
-
+      const categoryRows = new Map();
+      for (const [index, categoryName] of priorityCategories.entries()) {
         const [category] = await CategoryModel.findOrCreate({
           where: { name: categoryName },
           defaults: { name: categoryName },
           transaction,
         });
+
+        categoryRows.set(categoryName, category);
+
+        await MediaTagModel.create({
+          media_id: mediaId,
+          category_id: category.category_id,
+          tag_id: null,
+          priority: index + 1,
+        }, { transaction });
+      }
+
+      for (const tag of media.getTags()) {
+        const categoryName = tag.getCategory().getValue();
+        const labelName = tag.getLabel().getLabel();
+
+        let category = categoryRows.get(categoryName);
+        if (!category) {
+          [category] = await CategoryModel.findOrCreate({
+            where: { name: categoryName },
+            defaults: { name: categoryName },
+            transaction,
+          });
+          categoryRows.set(categoryName, category);
+        }
 
         const [tagRow] = await TagModel.findOrCreate({
           where: {
@@ -146,6 +170,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
 
         await MediaTagModel.create({
           media_id: mediaId,
+          category_id: category.category_id,
           tag_id: tagRow.tag_id,
           priority: priorityCategories.indexOf(categoryName) + 1,
         }, { transaction });
@@ -177,6 +202,9 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         model: TagModel,
         as: 'tag',
         include: [{ model: CategoryModel, as: 'category' }],
+      }, {
+        model: CategoryModel,
+        as: 'category',
       }],
       order: [['priority', 'ASC']],
     });
@@ -185,13 +213,23 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       .sort((a, b) => a.page - b.page)
       .map(content => new ContentId(content.path));
 
-    const tags = mediaTags.map(mediaTag => new Tag(
-      new Category(mediaTag.tag.category.name),
-      new Label(mediaTag.tag.name)
-    ));
+    const tags = mediaTags
+      .filter(mediaTag => mediaTag.tag)
+      .map(mediaTag => new Tag(
+        new Category(mediaTag.tag.category.name),
+        new Label(mediaTag.tag.name)
+      ));
 
-    const priorityCategories = mediaTags
-      .map(mediaTag => new Category(mediaTag.tag.category.name));
+    const priorityCategories = mediaTags.reduce((categories, mediaTag) => {
+      const categoryName = mediaTag.category?.name || mediaTag.tag?.category?.name;
+
+      if (!categoryName || categories.some(category => category.getValue() === categoryName)) {
+        return categories;
+      }
+
+      categories.push(new Category(categoryName));
+      return categories;
+    }, []);
 
     return new Media(
       new MediaId(mediaRow.media_id),

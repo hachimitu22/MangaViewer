@@ -94,4 +94,25 @@ describe('SequelizeMediaRepository', () => {
       label: t.getLabel().getLabel(),
     }))).toEqual([{ category: 'シリーズ', label: '第一部' }]);
   });
+
+  test('タグに存在しない priorityCategories も保存・復元できる', async () => {
+    const media = new Media(
+      new MediaId('media-002'),
+      new MediaTitle('タイトル3'),
+      [new ContentId('/c/1.jpg')],
+      [new Tag(new Category('作者'), new Label('田中花子'))],
+      [new Category('ジャンル'), new Category('作者')]
+    );
+
+    await repository.save(media);
+
+    const actual = await repository.findByMediaId(new MediaId('media-002'));
+
+    expect(actual.getTags().map(t => ({
+      category: t.getCategory().getValue(),
+      label: t.getLabel().getLabel(),
+    }))).toEqual([{ category: '作者', label: '田中花子' }]);
+
+    expect(actual.getPriorityCategories().map(c => c.getValue())).toEqual(['ジャンル', '作者']);
+  });
 });
