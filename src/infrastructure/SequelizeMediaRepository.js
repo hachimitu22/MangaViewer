@@ -16,10 +16,9 @@ function defineModels(sequelize) {
   }, { tableName: 'media', timestamps: false });
 
   const ContentModel = sequelize.define('content', {
-    content_id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+    content_id: { type: DataTypes.TEXT, primaryKey: true },
     media_id: { type: DataTypes.STRING, allowNull: false },
-    path: { type: DataTypes.TEXT, allowNull: false },
-    page: { type: DataTypes.INTEGER, allowNull: false },
+    position: { type: DataTypes.INTEGER, allowNull: false },
   }, { tableName: 'content', timestamps: false });
 
   const CategoryModel = sequelize.define('category', {
@@ -49,19 +48,6 @@ function defineModels(sequelize) {
 
   CategoryModel.hasMany(TagModel, { foreignKey: 'category_id', as: 'tags' });
   TagModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category' });
-
-  MediaModel.belongsToMany(TagModel, {
-    through: MediaTagModel,
-    foreignKey: 'media_id',
-    otherKey: 'tag_id',
-    as: 'tags',
-  });
-
-  TagModel.belongsToMany(MediaModel, {
-    through: MediaTagModel,
-    foreignKey: 'tag_id',
-    otherKey: 'media_id',
-  });
 
   MediaTagModel.belongsTo(TagModel, { foreignKey: 'tag_id', as: 'tag' });
   MediaTagModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media' });
@@ -113,8 +99,8 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       await ContentModel.destroy({ where: { media_id: mediaId }, transaction });
       const contentRecords = media.getContents().map((content, index) => ({
         media_id: mediaId,
-        path: content.getId(),
-        page: index + 1,
+        content_id: content.getId(),
+        position: index + 1,
       }));
       await ContentModel.bulkCreate(contentRecords, { transaction });
 
@@ -210,8 +196,8 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
     });
 
     const contents = mediaRow.contents
-      .sort((a, b) => a.page - b.page)
-      .map(content => new ContentId(content.path));
+      .sort((a, b) => a.position - b.position)
+      .map(content => new ContentId(content.content_id));
 
     const tags = mediaTags
       .filter(mediaTag => mediaTag.tag)

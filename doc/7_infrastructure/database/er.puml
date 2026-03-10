@@ -4,7 +4,7 @@ hide circle
 
 note as G1
   ・テーブル名は単数形で統一する
-  ・全てのカラムがNOT NULLなので記述を省略している
+  ・原則NOT NULL（例外は <<nullable>> で明示）
 end note
 
 entity session {
@@ -33,13 +33,11 @@ entity media {
 }
 
 entity content {
-  *content_id : int <<PK>>
+  *content_id : text <<PK>>
   --
   media_id : int <<FK>>
-  content_path : text
-  thumbnail_path : text
-  page : int
-  <<unique(media_id, page)>>
+  position : int
+  <<unique(media_id, position)>>
 }
 
 entity favorite {
@@ -83,8 +81,12 @@ note right
 end note
 
 entity media_tag {
-  *media_id : int <<PK>> <<FK>>
-  *tag_id : int <<PK>> <<FK>>
+  media_id : int <<FK>>
+  category_id : int <<FK>>
+  tag_id : int <<FK>> <<nullable>>
+  priority : int
+  <<unique(media_id, category_id, tag_id)>>
+  <<unique(media_id, category_id, priority)>>
 }
 
 session |o--|| user
@@ -95,5 +97,6 @@ media ||--o{ favorite
 media ||--o{ queue
 media ||--o{ media_tag
 tag ||--o{ media_tag
+category ||--o{ media_tag
 category ||--o{ tag
 @enduml
