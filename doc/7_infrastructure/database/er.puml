@@ -81,11 +81,14 @@ note right
 end note
 
 entity media_tag {
+  *media_id : int <<PK>> <<FK>>
+  *tag_id : int <<PK>> <<FK>>
+}
+
+entity media_category {
   media_id : int <<FK>>
   category_id : int <<FK>>
-  tag_id : int <<FK>> <<nullable>>
   priority : int
-  <<unique(media_id, category_id, tag_id)>>
   <<unique(media_id, category_id, priority)>>
 }
 
@@ -96,7 +99,8 @@ media ||-u-|{ content
 media ||--o{ favorite
 media ||--o{ queue
 media ||--o{ media_tag
+media ||--o{ media_category
 tag ||--o{ media_tag
-category ||--o{ media_tag
+category ||--o{ media_category
 category ||--o{ tag
 @enduml

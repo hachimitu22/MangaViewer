@@ -10,6 +10,7 @@
 - [favorite](./tables/favorite.md)
 - [queue](./tables/queue.md)
 - [media_tag](./tables/media_tag.md)
+- [media_category](./tables/media_category.md)
 
 ## ER図
 

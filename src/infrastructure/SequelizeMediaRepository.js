@@ -37,11 +37,19 @@ function defineModels(sequelize) {
   });
 
   const MediaTagModel = sequelize.define('media_tag', {
+    media_id: { type: DataTypes.STRING, primaryKey: true },
+    tag_id: { type: DataTypes.INTEGER, primaryKey: true },
+  }, { tableName: 'media_tag', timestamps: false });
+
+  const MediaCategoryModel = sequelize.define('media_category', {
     media_id: { type: DataTypes.STRING, allowNull: false },
     category_id: { type: DataTypes.INTEGER, allowNull: false },
-    tag_id: { type: DataTypes.INTEGER, allowNull: true },
     priority: { type: DataTypes.INTEGER, allowNull: false },
-  }, { tableName: 'media_tag', timestamps: false });
+  }, {
+    tableName: 'media_category',
+    timestamps: false,
+    indexes: [{ unique: true, fields: ['media_id', 'category_id', 'priority'] }],
+  });
 
   MediaModel.hasMany(ContentModel, { foreignKey: 'media_id', as: 'contents', onDelete: 'CASCADE' });
   ContentModel.belongsTo(MediaModel, { foreignKey: 'media_id' });
@@ -51,7 +59,9 @@ function defineModels(sequelize) {
 
   MediaTagModel.belongsTo(TagModel, { foreignKey: 'tag_id', as: 'tag' });
   MediaTagModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media' });
-  MediaTagModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category' });
+
+  MediaCategoryModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media' });
+  MediaCategoryModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category' });
 
   return {
     MediaModel,
@@ -59,6 +69,7 @@ function defineModels(sequelize) {
     CategoryModel,
     TagModel,
     MediaTagModel,
+    MediaCategoryModel,
   };
 }
 
@@ -86,7 +97,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       throw new Error();
     }
 
-    const { MediaModel, ContentModel, CategoryModel, TagModel, MediaTagModel } = this.#models;
+    const { MediaModel, ContentModel, CategoryModel, TagModel, MediaTagModel, MediaCategoryModel } = this.#models;
 
     await this.#sequelize.transaction(async transaction => {
       const mediaId = media.getId().getId();
@@ -105,6 +116,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       await ContentModel.bulkCreate(contentRecords, { transaction });
 
       await MediaTagModel.destroy({ where: { media_id: mediaId }, transaction });
+      await MediaCategoryModel.destroy({ where: { media_id: mediaId }, transaction });
 
       const priorityCategories = media
         .getPriorityCategories()
@@ -120,10 +132,9 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
 
         categoryRows.set(categoryName, category);
 
-        await MediaTagModel.create({
+        await MediaCategoryModel.create({
           media_id: mediaId,
           category_id: category.category_id,
-          tag_id: null,
           priority: index + 1,
         }, { transaction });
       }
@@ -156,9 +167,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
 
         await MediaTagModel.create({
           media_id: mediaId,
-          category_id: category.category_id,
           tag_id: tagRow.tag_id,
-          priority: priorityCategories.indexOf(categoryName) + 1,
         }, { transaction });
       }
     });
@@ -169,7 +178,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       throw new Error();
     }
 
-    const { MediaModel, ContentModel, TagModel, CategoryModel, MediaTagModel } = this.#models;
+    const { MediaModel, ContentModel, TagModel, CategoryModel, MediaTagModel, MediaCategoryModel } = this.#models;
 
     const mediaRow = await MediaModel.findByPk(mediaId.getId(), {
       include: [{
@@ -188,7 +197,12 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         model: TagModel,
         as: 'tag',
         include: [{ model: CategoryModel, as: 'category' }],
-      }, {
+      }],
+    });
+
+    const mediaCategories = await MediaCategoryModel.findAll({
+      where: { media_id: mediaRow.media_id },
+      include: [{
         model: CategoryModel,
         as: 'category',
       }],
@@ -199,23 +213,13 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       .sort((a, b) => a.position - b.position)
       .map(content => new ContentId(content.content_id));
 
-    const tags = mediaTags
-      .filter(mediaTag => mediaTag.tag)
-      .map(mediaTag => new Tag(
-        new Category(mediaTag.tag.category.name),
-        new Label(mediaTag.tag.name)
-      ));
+    const tags = mediaTags.map(mediaTag => new Tag(
+      new Category(mediaTag.tag.category.name),
+      new Label(mediaTag.tag.name)
+    ));
 
-    const priorityCategories = mediaTags.reduce((categories, mediaTag) => {
-      const categoryName = mediaTag.category?.name || mediaTag.tag?.category?.name;
-
-      if (!categoryName || categories.some(category => category.getValue() === categoryName)) {
-        return categories;
-      }
-
-      categories.push(new Category(categoryName));
-      return categories;
-    }, []);
+    const priorityCategories = mediaCategories
+      .map(mediaCategory => new Category(mediaCategory.category.name));
 
     return new Media(
       new MediaId(mediaRow.media_id),
