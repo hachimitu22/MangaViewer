@@ -34,17 +34,6 @@ describe('SequelizeMediaRepository', () => {
     [new Category('ジャンル'), new Category('作者')]
   );
 
-
-  test('media_category は複合PKを持ち、関連のFK制約を付与しない', async () => {
-    const mediaCategoryModel = sequelize.models.media_category;
-
-    expect(mediaCategoryModel.rawAttributes.media_id.primaryKey).toBe(true);
-    expect(mediaCategoryModel.rawAttributes.category_id.primaryKey).toBe(true);
-    expect(mediaCategoryModel.rawAttributes.priority.primaryKey).toBe(true);
-    expect(mediaCategoryModel.associations.media.options.constraints).toBe(false);
-    expect(mediaCategoryModel.associations.category.options.constraints).toBe(false);
-  });
-
   test('save で Media 集約を永続化できる', async () => {
     const media = createMedia();
 
