@@ -95,6 +95,20 @@ describe('SequelizeMediaRepository', () => {
     }))).toEqual([{ category: 'シリーズ', label: '第一部' }]);
   });
 
+
+
+  test('save は Media 以外を受け取ると例外を送出する', async () => {
+    await expect(repository.save({})).rejects.toThrow(Error);
+  });
+
+  test('findByMediaId は MediaId 以外を受け取ると例外を送出する', async () => {
+    await expect(repository.findByMediaId('media-001')).rejects.toThrow(Error);
+  });
+
+  test('delete は Media 以外を受け取ると例外を送出する', async () => {
+    await expect(repository.delete({})).rejects.toThrow(Error);
+  });
+
   test('タグに存在しない priorityCategories も保存・復元できる', async () => {
     const media = new Media(
       new MediaId('media-002'),

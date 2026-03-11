@@ -229,10 +229,15 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       throw new Error();
     }
 
-    const { MediaModel } = this.#models;
+    const { MediaModel, MediaTagModel, MediaCategoryModel, ContentModel } = this.#models;
+    const mediaId = media.getId().getId();
+
+    await MediaTagModel.destroy({ where: { media_id: mediaId } });
+    await MediaCategoryModel.destroy({ where: { media_id: mediaId } });
+    await ContentModel.destroy({ where: { media_id: mediaId } });
 
     await MediaModel.destroy({
-      where: { media_id: media.getId().getId() },
+      where: { media_id: mediaId },
     });
   }
 };
