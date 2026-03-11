@@ -14,20 +14,24 @@ const User = require('../../../../../src/domain/user/user');
 const UserId = require('../../../../../src/domain/user/userId');
 // mock
 const MockMediaRepository = require('../../__mocks__/MockMediaRepository');
+const MockUnitOfWork = require('../../__mocks__/MockUnitOfWork');
 const MockUserRepository = require('../../__mocks__/MockUserRepository');
 
 describe('AddFavoriteService', () => {
   let service;
   let mockMediaRepo;
   let mockUserRepo;
+  let mockUnitOfWork;
 
   beforeEach(() => {
     mockMediaRepo = new MockMediaRepository();
     mockUserRepo = new MockUserRepository();
+    mockUnitOfWork = new MockUnitOfWork();
 
     service = new Service({
       mediaRepository: mockMediaRepo,
       userRepository: mockUserRepo,
+      unitOfWork: mockUnitOfWork,
     });
   });
 

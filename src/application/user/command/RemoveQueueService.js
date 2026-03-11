@@ -37,8 +37,9 @@ class QueueRemovedResult extends Result {
 
 class RemoveQueueService {
   #userRepository;
+  #unitOfWork;
 
-  constructor({ userRepository }) {
+  constructor({ userRepository, unitOfWork }) {
     if (!userRepository || typeof userRepository.findByUserId !== 'function') {
       throw new Error();
     }
@@ -46,7 +47,12 @@ class RemoveQueueService {
       throw new Error();
     }
 
+    if (!unitOfWork || typeof unitOfWork.run !== 'function') {
+      throw new Error();
+    }
+
     this.#userRepository = userRepository;
+    this.#unitOfWork = unitOfWork;
   }
 
   async execute(query) {
@@ -54,7 +60,8 @@ class RemoveQueueService {
       throw new Error();
     }
 
-    // ユーザー存在チェック
+    return this.#unitOfWork.run(async () => {
+      // ユーザー存在チェック
     const userId = new UserId(query.userId);
     const user = await this.#userRepository.findByUserId(userId);
     if (user === null) {
@@ -71,7 +78,8 @@ class RemoveQueueService {
     // ユーザー更新
     await this.#userRepository.save(user);
 
-    return new QueueRemovedResult();
+      return new QueueRemovedResult();
+    });
   }
 }
 

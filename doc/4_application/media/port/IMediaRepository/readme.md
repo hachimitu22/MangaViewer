@@ -5,6 +5,13 @@
 
 ---
 
+## トランザクション境界の方針
+- 境界は Application Service の `execute` で開始する。
+- Repository は引数で受け取らず、実行コンテキストから取得して利用する。
+- Application 層ではインフラ依存語彙を避け、`transaction` という語を使わない。
+
+---
+
 ## 機能
 ### 保存
 メディアを永続化する

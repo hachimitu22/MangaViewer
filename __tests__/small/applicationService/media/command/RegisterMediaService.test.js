@@ -6,18 +6,22 @@ const {
 // mock
 const MockMediaIdValueGenerator = require('../../__mocks__/MockMediaIdValueGenerator');
 const MockMediaRepository = require('../../__mocks__/MockMediaRepository');
+const MockUnitOfWork = require('../../__mocks__/MockUnitOfWork');
 
 describe('RegisterMediaService', () => {
   let service;
   let mockRepo;
+  let mockUnitOfWork;
   let mockIdGen;
 
   beforeEach(() => {
     mockRepo = new MockMediaRepository();
     mockIdGen = new MockMediaIdValueGenerator();
+    mockUnitOfWork = new MockUnitOfWork();
     service = new Service({
       mediaRepository: mockRepo,
       mediaIdValueGenerator: mockIdGen,
+      unitOfWork: mockUnitOfWork,
     });
   });
 

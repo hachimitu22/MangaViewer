@@ -1,6 +1,7 @@
 const { Sequelize } = require('sequelize');
 
 const SequelizeMediaRepository = require('../../../src/infrastructure/SequelizeMediaRepository');
+const SequelizeUnitOfWork = require('../../../src/infrastructure/SequelizeUnitOfWork');
 const Media = require('../../../src/domain/media/media');
 const MediaId = require('../../../src/domain/media/mediaId');
 const MediaTitle = require('../../../src/domain/media/mediaTitle');
@@ -12,10 +13,12 @@ const Label = require('../../../src/domain/media/label');
 describe('SequelizeMediaRepository', () => {
   let sequelize;
   let repository;
+  let unitOfWork;
 
   beforeEach(async () => {
     sequelize = new Sequelize('sqlite::memory:', { logging: false });
-    repository = new SequelizeMediaRepository({ sequelize });
+    unitOfWork = new SequelizeUnitOfWork({ sequelize });
+    repository = new SequelizeMediaRepository({ sequelize, unitOfWorkContext: unitOfWork });
     await repository.sync();
   });
 
@@ -98,16 +101,17 @@ describe('SequelizeMediaRepository', () => {
 
 
 
-  test('外部トランザクションを受け取り rollback できる', async () => {
+  test('Service境界で開始した実行文脈を使って rollback できる', async () => {
     const media = createMedia();
-    const transaction = await sequelize.transaction();
 
-    await repository.save(media, transaction);
+    await expect(unitOfWork.run(async () => {
+      await repository.save(media);
 
-    const inTransaction = await repository.findByMediaId(new MediaId('media-001'), transaction);
-    expect(inTransaction).toBeInstanceOf(Media);
+      const inExecutionScope = await repository.findByMediaId(new MediaId('media-001'));
+      expect(inExecutionScope).toBeInstanceOf(Media);
 
-    await transaction.rollback();
+      throw new Error('rollback');
+    })).rejects.toThrow('rollback');
 
     const actual = await repository.findByMediaId(new MediaId('media-001'));
     expect(actual).toBeNull();

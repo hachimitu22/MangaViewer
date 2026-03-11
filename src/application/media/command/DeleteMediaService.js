@@ -8,13 +8,19 @@ class DeleteMediaServiceInput {
 
 class DeleteMediaService {
   #mediaRepository;
+  #unitOfWork;
 
-  constructor({ mediaRepository }) {
+  constructor({ mediaRepository, unitOfWork }) {
     if (!mediaRepository || typeof mediaRepository.delete !== 'function' || typeof mediaRepository.findByMediaId !== 'function') {
       throw new Error();
     }
 
+    if (!unitOfWork || typeof unitOfWork.run !== 'function') {
+      throw new Error();
+    }
+
     this.#mediaRepository = mediaRepository;
+    this.#unitOfWork = unitOfWork;
   }
 
   async execute(input) {
@@ -22,7 +28,8 @@ class DeleteMediaService {
       throw new Error();
     }
 
-    // メディア存在チェック
+    return this.#unitOfWork.run(async () => {
+      // メディア存在チェック
     const mediaId = new MediaId(input.id);
     const media = await this.#mediaRepository.findByMediaId(mediaId);
     if (!media) {
@@ -30,7 +37,8 @@ class DeleteMediaService {
     }
 
     // メディア削除
-    await this.#mediaRepository.delete(media);
+      await this.#mediaRepository.delete(media);
+    });
   }
 }
 

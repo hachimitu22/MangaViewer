@@ -24,8 +24,9 @@ class RegisterMediaServiceOutput {
 class RegisterMediaService {
   #mediaIdValueGenerator;
   #mediaRepository;
+  #unitOfWork;
 
-  constructor({ mediaIdValueGenerator, mediaRepository }) {
+  constructor({ mediaIdValueGenerator, mediaRepository, unitOfWork }) {
     if (!mediaIdValueGenerator || typeof mediaIdValueGenerator.generate !== 'function') {
       throw new Error();
     }
@@ -33,8 +34,13 @@ class RegisterMediaService {
       throw new Error();
     }
 
+    if (!unitOfWork || typeof unitOfWork.run !== 'function') {
+      throw new Error();
+    }
+
     this.#mediaIdValueGenerator = mediaIdValueGenerator;
     this.#mediaRepository = mediaRepository;
+    this.#unitOfWork = unitOfWork;
   }
 
   async execute(input) {
@@ -42,7 +48,8 @@ class RegisterMediaService {
       throw new Error();
     }
 
-    const mediaId = new MediaId(this.#mediaIdValueGenerator.generate());
+    return this.#unitOfWork.run(async () => {
+      const mediaId = new MediaId(this.#mediaIdValueGenerator.generate());
     const mediaTitle = new MediaTitle(input.title);
     const contents = input.contents.map(c => new ContentId(c));
     const tags = input.tags.map(t =>
@@ -62,8 +69,9 @@ class RegisterMediaService {
 
     await this.#mediaRepository.save(media);
 
-    return new RegisterMediaServiceOutput({
-      mediaId: mediaId.getId(),
+      return new RegisterMediaServiceOutput({
+        mediaId: mediaId.getId(),
+      });
     });
   }
 }
