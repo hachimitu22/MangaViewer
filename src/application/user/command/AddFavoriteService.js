@@ -42,9 +42,10 @@ class FavoriteAddedResult extends Result {
 
 class AddFavoriteService {
   #mediaRepository;
+  #unitOfWork;
   #userRepository;
 
-  constructor({ mediaRepository, userRepository }) {
+  constructor({ mediaRepository, userRepository, unitOfWork }) {
     if (!mediaRepository || typeof mediaRepository.findByMediaId !== 'function') {
       throw new Error();
     }
@@ -55,7 +56,12 @@ class AddFavoriteService {
       throw new Error();
     }
 
+    if (!unitOfWork || typeof unitOfWork.run !== 'function') {
+      throw new Error();
+    }
+
     this.#mediaRepository = mediaRepository;
+    this.#unitOfWork = unitOfWork;
     this.#userRepository = userRepository;
   }
 
@@ -64,7 +70,8 @@ class AddFavoriteService {
       throw new Error();
     }
 
-    // ユーザー存在チェック
+    return this.#unitOfWork.run(async () => {
+      // ユーザー存在チェック
     const userId = new UserId(query.userId);
     const user = await this.#userRepository.findByUserId(userId);
     if (user === null) {
@@ -88,7 +95,8 @@ class AddFavoriteService {
     // ユーザー更新
     await this.#userRepository.save(user);
 
-    return new FavoriteAddedResult();
+      return new FavoriteAddedResult();
+    });
   }
 }
 

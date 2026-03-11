@@ -11,6 +11,7 @@ const setRouterApiMediaPost = ({
   saveResolver,
   mediaIdValueGenerator,
   mediaRepository,
+  unitOfWork,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
 
@@ -23,6 +24,7 @@ const setRouterApiMediaPost = ({
   const application = new RegisterMediaService({
     mediaIdValueGenerator,
     mediaRepository,
+    unitOfWork,
   });
 
   const controller = new MediaPostController({

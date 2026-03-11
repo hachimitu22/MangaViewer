@@ -75,45 +75,51 @@ function defineModels(sequelize) {
 module.exports = class SequelizeMediaRepository extends IMediaRepository {
   #sequelize;
   #models;
+  #unitOfWorkContext;
 
-  constructor({ sequelize, models } = {}) {
+  constructor({ sequelize, models, unitOfWorkContext } = {}) {
     super();
 
     if (!sequelize || typeof sequelize.transaction !== 'function') {
       throw new Error();
     }
+    if (!unitOfWorkContext || typeof unitOfWorkContext.getCurrent !== 'function') {
+      throw new Error();
+    }
 
     this.#sequelize = sequelize;
     this.#models = models || defineModels(sequelize);
+    this.#unitOfWorkContext = unitOfWorkContext;
   }
 
   async sync() {
     await this.#sequelize.sync();
   }
 
-  async save(media, transaction = null) {
+  async save(media) {
     if (!(media instanceof Media)) {
       throw new Error();
     }
 
+    const executionScope = this.#unitOfWorkContext.getCurrent();
     const { MediaModel, ContentModel, CategoryModel, TagModel, MediaTagModel, MediaCategoryModel } = this.#models;
     const mediaId = media.getId().getId();
 
     await MediaModel.upsert({
       media_id: mediaId,
       title: media.getTitle().getTitle(),
-    }, { transaction });
+    }, { transaction: executionScope });
 
-    await ContentModel.destroy({ where: { media_id: mediaId }, transaction });
+    await ContentModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
     const contentRecords = media.getContents().map((content, index) => ({
       media_id: mediaId,
       content_id: content.getId(),
       position: index + 1,
     }));
-    await ContentModel.bulkCreate(contentRecords, { transaction });
+    await ContentModel.bulkCreate(contentRecords, { transaction: executionScope });
 
-    await MediaTagModel.destroy({ where: { media_id: mediaId }, transaction });
-    await MediaCategoryModel.destroy({ where: { media_id: mediaId }, transaction });
+    await MediaTagModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
+    await MediaCategoryModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
 
     const priorityCategories = media
       .getPriorityCategories()
@@ -124,7 +130,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       const [category] = await CategoryModel.findOrCreate({
         where: { name: categoryName },
         defaults: { name: categoryName },
-        transaction,
+        transaction: executionScope,
       });
 
       categoryRows.set(categoryName, category);
@@ -133,7 +139,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         media_id: mediaId,
         category_id: category.category_id,
         priority: index + 1,
-      }, { transaction });
+      }, { transaction: executionScope });
     }
 
     for (const tag of media.getTags()) {
@@ -145,7 +151,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         [category] = await CategoryModel.findOrCreate({
           where: { name: categoryName },
           defaults: { name: categoryName },
-          transaction,
+          transaction: executionScope,
         });
         categoryRows.set(categoryName, category);
       }
@@ -159,21 +165,22 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
           category_id: category.category_id,
           name: labelName,
         },
-        transaction,
+        transaction: executionScope,
       });
 
       await MediaTagModel.create({
         media_id: mediaId,
         tag_id: tagRow.tag_id,
-      }, { transaction });
+      }, { transaction: executionScope });
     }
   }
 
-  async findByMediaId(mediaId, transaction = null) {
+  async findByMediaId(mediaId) {
     if (!(mediaId instanceof MediaId)) {
       throw new Error();
     }
 
+    const executionScope = this.#unitOfWorkContext.getCurrent();
     const { MediaModel, ContentModel, TagModel, CategoryModel, MediaTagModel, MediaCategoryModel } = this.#models;
 
     const mediaRow = await MediaModel.findByPk(mediaId.getId(), {
@@ -181,7 +188,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         model: ContentModel,
         as: 'contents',
       }],
-      transaction,
+      transaction: executionScope,
     });
 
     if (!mediaRow) {
@@ -195,7 +202,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         as: 'tag',
         include: [{ model: CategoryModel, as: 'category' }],
       }],
-      transaction,
+      transaction: executionScope,
     });
 
     const mediaCategories = await MediaCategoryModel.findAll({
@@ -205,7 +212,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
         as: 'category',
       }],
       order: [['priority', 'ASC']],
-      transaction,
+      transaction: executionScope,
     });
 
     const contents = mediaRow.contents
@@ -229,21 +236,22 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
     );
   }
 
-  async delete(media, transaction = null) {
+  async delete(media) {
     if (!(media instanceof Media)) {
       throw new Error();
     }
 
+    const executionScope = this.#unitOfWorkContext.getCurrent();
     const { MediaModel, MediaTagModel, MediaCategoryModel, ContentModel } = this.#models;
     const mediaId = media.getId().getId();
 
-    await MediaTagModel.destroy({ where: { media_id: mediaId }, transaction });
-    await MediaCategoryModel.destroy({ where: { media_id: mediaId }, transaction });
-    await ContentModel.destroy({ where: { media_id: mediaId }, transaction });
+    await MediaTagModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
+    await MediaCategoryModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
+    await ContentModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
 
     await MediaModel.destroy({
       where: { media_id: mediaId },
-      transaction,
+      transaction: executionScope,
     });
   }
 };

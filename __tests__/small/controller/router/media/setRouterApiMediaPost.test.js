@@ -43,6 +43,9 @@ describe('setRouterApiMediaPost', () => {
     const mediaRepository = {
       save: jest.fn().mockResolvedValue(undefined),
     };
+    const unitOfWork = {
+      run: jest.fn(async work => work()),
+    };
 
     setRouterApiMediaPost({
       router,
@@ -50,6 +53,7 @@ describe('setRouterApiMediaPost', () => {
       saveResolver,
       mediaIdValueGenerator,
       mediaRepository,
+      unitOfWork,
     });
 
     expect(router.post).toHaveBeenCalledTimes(1);
@@ -97,6 +101,7 @@ describe('setRouterApiMediaPost', () => {
         saveResolver: { execute: jest.fn() },
         mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
         mediaRepository: { save: jest.fn() },
+        unitOfWork: { run: jest.fn(async work => work()) },
       });
     }).toThrow();
   });
@@ -113,6 +118,7 @@ describe('setRouterApiMediaPost', () => {
         saveResolver: {},
         mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
         mediaRepository: { save: jest.fn() },
+        unitOfWork: { run: jest.fn(async work => work()) },
       });
     }).toThrow();
   });

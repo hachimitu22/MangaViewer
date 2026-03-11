@@ -11,15 +11,19 @@ const Category = require('../../../../../src/domain/media/category');
 const Label = require('../../../../../src/domain/media/label');
 // mock
 const MockMediaRepository = require('../../__mocks__/MockMediaRepository');
+const MockUnitOfWork = require('../../__mocks__/MockUnitOfWork');
 
 describe('DeleteMediaService', () => {
   let service;
   let mockRepo;
+  let mockUnitOfWork;
 
   beforeEach(() => {
     mockRepo = new MockMediaRepository();
+    mockUnitOfWork = new MockUnitOfWork();
     service = new Service({
       mediaRepository: mockRepo,
+      unitOfWork: mockUnitOfWork,
     });
   });
 

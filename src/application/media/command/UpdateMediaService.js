@@ -18,13 +18,19 @@ class UpdateMediaServiceInput {
 
 class UpdateMediaService {
   #mediaRepository;
+  #unitOfWork;
 
-  constructor({ mediaRepository }) {
+  constructor({ mediaRepository, unitOfWork }) {
     if (!mediaRepository || typeof mediaRepository.save !== 'function' || typeof mediaRepository.findByMediaId !== 'function') {
       throw new Error();
     }
 
+    if (!unitOfWork || typeof unitOfWork.run !== 'function') {
+      throw new Error();
+    }
+
     this.#mediaRepository = mediaRepository;
+    this.#unitOfWork = unitOfWork;
   }
 
   async execute(input) {
@@ -32,7 +38,8 @@ class UpdateMediaService {
       throw new Error();
     }
 
-    // メディア取得
+    return this.#unitOfWork.run(async () => {
+      // メディア取得
     const mediaId = new MediaId(input.id);
     const media = await this.#mediaRepository.findByMediaId(mediaId);
 
@@ -51,7 +58,8 @@ class UpdateMediaService {
     media.changePriorityCategories(priorityCategories);
 
     // メディア上書き
-    await this.#mediaRepository.save(media);
+      await this.#mediaRepository.save(media);
+    });
   }
 }
 

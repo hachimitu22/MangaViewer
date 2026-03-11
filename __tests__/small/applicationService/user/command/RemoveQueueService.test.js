@@ -10,16 +10,20 @@ const User = require('../../../../../src/domain/user/user');
 const UserId = require('../../../../../src/domain/user/userId');
 // mock
 const MockUserRepository = require('../../__mocks__/MockUserRepository');
+const MockUnitOfWork = require('../../__mocks__/MockUnitOfWork');
 
 describe('RemoveQueueService', () => {
   let service;
   let mockUserRepo;
+  let mockUnitOfWork;
 
   beforeEach(() => {
     mockUserRepo = new MockUserRepository();
+    mockUnitOfWork = new MockUnitOfWork();
 
     service = new Service({
       userRepository: mockUserRepo,
+      unitOfWork: mockUnitOfWork,
     });
   });
 
