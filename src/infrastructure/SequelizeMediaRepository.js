@@ -100,71 +100,76 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
     const { MediaModel, ContentModel, CategoryModel, TagModel, MediaTagModel, MediaCategoryModel } = this.#models;
     const mediaId = media.getId().getId();
 
-    await MediaModel.upsert({
-      media_id: mediaId,
-      title: media.getTitle().getTitle(),
-    });
-
-    await ContentModel.destroy({ where: { media_id: mediaId } });
-    const contentRecords = media.getContents().map((content, index) => ({
-      media_id: mediaId,
-      content_id: content.getId(),
-      position: index + 1,
-    }));
-    await ContentModel.bulkCreate(contentRecords);
-
-    await MediaTagModel.destroy({ where: { media_id: mediaId } });
-    await MediaCategoryModel.destroy({ where: { media_id: mediaId } });
-
-    const priorityCategories = media
-      .getPriorityCategories()
-      .map(category => category.getValue());
-
-    const categoryRows = new Map();
-    for (const [index, categoryName] of priorityCategories.entries()) {
-      const [category] = await CategoryModel.findOrCreate({
-        where: { name: categoryName },
-        defaults: { name: categoryName },
-      });
-
-      categoryRows.set(categoryName, category);
-
-      await MediaCategoryModel.create({
+    await this.#sequelize.transaction(async (transaction) => {
+      await MediaModel.upsert({
         media_id: mediaId,
-        category_id: category.category_id,
-        priority: index + 1,
-      });
-    }
+        title: media.getTitle().getTitle(),
+      }, { transaction });
 
-    for (const tag of media.getTags()) {
-      const categoryName = tag.getCategory().getValue();
-      const labelName = tag.getLabel().getLabel();
+      await ContentModel.destroy({ where: { media_id: mediaId }, transaction });
+      const contentRecords = media.getContents().map((content, index) => ({
+        media_id: mediaId,
+        content_id: content.getId(),
+        position: index + 1,
+      }));
+      await ContentModel.bulkCreate(contentRecords, { transaction });
 
-      let category = categoryRows.get(categoryName);
-      if (!category) {
-        [category] = await CategoryModel.findOrCreate({
+      await MediaTagModel.destroy({ where: { media_id: mediaId }, transaction });
+      await MediaCategoryModel.destroy({ where: { media_id: mediaId }, transaction });
+
+      const priorityCategories = media
+        .getPriorityCategories()
+        .map(category => category.getValue());
+
+      const categoryRows = new Map();
+      for (const [index, categoryName] of priorityCategories.entries()) {
+        const [category] = await CategoryModel.findOrCreate({
           where: { name: categoryName },
           defaults: { name: categoryName },
+          transaction,
         });
+
         categoryRows.set(categoryName, category);
+
+        await MediaCategoryModel.create({
+          media_id: mediaId,
+          category_id: category.category_id,
+          priority: index + 1,
+        }, { transaction });
       }
 
-      const [tagRow] = await TagModel.findOrCreate({
-        where: {
-          category_id: category.category_id,
-          name: labelName,
-        },
-        defaults: {
-          category_id: category.category_id,
-          name: labelName,
-        },
-      });
+      for (const tag of media.getTags()) {
+        const categoryName = tag.getCategory().getValue();
+        const labelName = tag.getLabel().getLabel();
 
-      await MediaTagModel.create({
-        media_id: mediaId,
-        tag_id: tagRow.tag_id,
-      });
-    }
+        let category = categoryRows.get(categoryName);
+        if (!category) {
+          [category] = await CategoryModel.findOrCreate({
+            where: { name: categoryName },
+            defaults: { name: categoryName },
+            transaction,
+          });
+          categoryRows.set(categoryName, category);
+        }
+
+        const [tagRow] = await TagModel.findOrCreate({
+          where: {
+            category_id: category.category_id,
+            name: labelName,
+          },
+          defaults: {
+            category_id: category.category_id,
+            name: labelName,
+          },
+          transaction,
+        });
+
+        await MediaTagModel.create({
+          media_id: mediaId,
+          tag_id: tagRow.tag_id,
+        }, { transaction });
+      }
+    });
   }
 
   async findByMediaId(mediaId) {
