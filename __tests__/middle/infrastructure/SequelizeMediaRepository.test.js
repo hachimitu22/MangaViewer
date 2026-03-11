@@ -97,6 +97,22 @@ describe('SequelizeMediaRepository', () => {
 
 
 
+
+  test('外部トランザクションを受け取り rollback できる', async () => {
+    const media = createMedia();
+    const transaction = await sequelize.transaction();
+
+    await repository.save(media, transaction);
+
+    const inTransaction = await repository.findByMediaId(new MediaId('media-001'), transaction);
+    expect(inTransaction).toBeInstanceOf(Media);
+
+    await transaction.rollback();
+
+    const actual = await repository.findByMediaId(new MediaId('media-001'));
+    expect(actual).toBeNull();
+  });
+
   test('save は Media 以外を受け取ると例外を送出する', async () => {
     await expect(repository.save({})).rejects.toThrow(Error);
   });
