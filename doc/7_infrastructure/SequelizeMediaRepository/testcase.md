@@ -8,6 +8,7 @@
 - [save は Media 以外を受け取ると例外を送出する](#save-は-media-以外を受け取ると例外を送出する)
 - [findByMediaId は MediaId 以外を受け取ると例外を送出する](#findbymediaid-は-mediaid-以外を受け取ると例外を送出する)
 - [delete は Media 以外を受け取ると例外を送出する](#delete-は-media-以外を受け取ると例外を送出する)
+- [外部トランザクションを受け取り rollback できる](#外部トランザクションを受け取り-rollback-できる)
 
 ---
 
@@ -70,3 +71,16 @@
   - `delete` に `Media` 以外の値を渡して実行する
 - 期待結果
   - `Error` が送出される
+
+
+### 外部トランザクションを受け取り rollback できる
+- 前提
+  - リポジトリが生成済みである
+  - 呼び出し側で開始した Sequelize のトランザクションがある
+- 操作
+  - `save(media, transaction)` で保存し、同一 `transaction` を渡して `findByMediaId(mediaId, transaction)` を実行する
+  - その後 `transaction.rollback()` を実行し、トランザクションなしで `findByMediaId(mediaId)` を実行する
+- 期待結果
+  - トランザクション内の `findByMediaId` では保存した `Media` が取得できる
+  - rollback 後にトランザクション外からは対象 `Media` が取得できず `null` になる
+
