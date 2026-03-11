@@ -42,13 +42,12 @@ function defineModels(sequelize) {
   }, { tableName: 'media_tag', timestamps: false });
 
   const MediaCategoryModel = sequelize.define('media_category', {
-    media_id: { type: DataTypes.STRING, allowNull: false },
-    category_id: { type: DataTypes.INTEGER, allowNull: false },
-    priority: { type: DataTypes.INTEGER, allowNull: false },
+    media_id: { type: DataTypes.STRING, allowNull: false, primaryKey: true },
+    category_id: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },
+    priority: { type: DataTypes.INTEGER, allowNull: false, primaryKey: true },
   }, {
     tableName: 'media_category',
     timestamps: false,
-    indexes: [{ unique: true, fields: ['media_id', 'category_id', 'priority'] }],
   });
 
   MediaModel.hasMany(ContentModel, { foreignKey: 'media_id', as: 'contents', onDelete: 'CASCADE' });
@@ -60,8 +59,8 @@ function defineModels(sequelize) {
   MediaTagModel.belongsTo(TagModel, { foreignKey: 'tag_id', as: 'tag' });
   MediaTagModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media' });
 
-  MediaCategoryModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media' });
-  MediaCategoryModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category' });
+  MediaCategoryModel.belongsTo(MediaModel, { foreignKey: 'media_id', as: 'media', constraints: false });
+  MediaCategoryModel.belongsTo(CategoryModel, { foreignKey: 'category_id', as: 'category', constraints: false });
 
   return {
     MediaModel,
