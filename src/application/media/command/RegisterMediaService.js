@@ -50,24 +50,24 @@ class RegisterMediaService {
 
     return this.#unitOfWork.run(async () => {
       const mediaId = new MediaId(this.#mediaIdValueGenerator.generate());
-    const mediaTitle = new MediaTitle(input.title);
-    const contents = input.contents.map(c => new ContentId(c));
-    const tags = input.tags.map(t =>
-      new Tag(new Category(t.category), new Label(t.label))
-    );
-    const priorityCategories = input.priorityCategories.map(
-      c => new Category(c)
-    );
+      const mediaTitle = new MediaTitle(input.title);
+      const contents = input.contents.map(c => new ContentId(c));
+      const tags = input.tags.map(t =>
+        new Tag(new Category(t.category), new Label(t.label))
+      );
+      const priorityCategories = input.priorityCategories.map(
+        c => new Category(c)
+      );
 
-    const media = new Media(
-      mediaId,
-      mediaTitle,
-      contents,
-      tags,
-      priorityCategories
-    );
+      const media = new Media(
+        mediaId,
+        mediaTitle,
+        contents,
+        tags,
+        priorityCategories
+      );
 
-    await this.#mediaRepository.save(media);
+      await this.#mediaRepository.save(media);
 
       return new RegisterMediaServiceOutput({
         mediaId: mediaId.getId(),
