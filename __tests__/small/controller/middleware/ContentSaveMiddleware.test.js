@@ -1,7 +1,7 @@
 const ContentSaveMiddleware = require('../../../../src/controller/middleware/ContentSaveMiddleware');
 
 describe('ContentSaveMiddleware', () => {
-  let contentStorage;
+  let contentUploadAdapter;
   let middleware;
 
   const createRes = () => {
@@ -13,15 +13,14 @@ describe('ContentSaveMiddleware', () => {
     return res;
   };
 
-  const createReq = contents => ({
-    body: {
-      contents,
+  const createReq = () => ({
+    context: {
+      contentIds: ['c1', 'c2'],
     },
-    context: {},
   });
 
-  const execute = async ({ contents, req, next }) => {
-    const targetReq = req ?? createReq(contents);
+  const execute = async ({ req, next }) => {
+    const targetReq = req ?? createReq();
     const res = createRes();
     const targetNext = next ?? jest.fn();
 
@@ -35,83 +34,46 @@ describe('ContentSaveMiddleware', () => {
   };
 
   beforeEach(() => {
-    contentStorage = {
-      save: jest.fn().mockImplementation(async contents => contents.map((_, index) => `c${index + 1}`)),
+    contentUploadAdapter = {
+      execute: jest.fn((_req, _res, cb) => cb()),
     };
 
-    middleware = new ContentSaveMiddleware({ contentStorage });
+    middleware = new ContentSaveMiddleware({ contentUploadAdapter });
   });
 
-  it('contentsをposition昇順で保存しcontentIdsを設定して委譲する', async () => {
-    const contents = [
-      { file: { name: '2.png' }, position: 2 },
-      { file: { name: '1.png' }, position: 1 },
-      { file: { name: '3.png' }, position: 3 },
-    ];
+  it('uploadAdapter成功かつcontentIds正常時は後続へ委譲する', async () => {
+    const { req, res, next } = await execute({});
 
-    const { req, res, next } = await execute({ contents });
-
-    expect(contentStorage.save).toHaveBeenCalledTimes(1);
-    expect(contentStorage.save).toHaveBeenCalledWith([
-      { file: { name: '1.png' }, position: 1 },
-      { file: { name: '2.png' }, position: 2 },
-      { file: { name: '3.png' }, position: 3 },
-    ]);
-    expect(req.context.contentIds).toEqual(['c1', 'c2', 'c3']);
+    expect(contentUploadAdapter.execute).toHaveBeenCalledTimes(1);
+    expect(contentUploadAdapter.execute).toHaveBeenCalledWith(req, res, expect.any(Function));
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
   });
 
   it.each([
-    ['contentsが未指定', undefined],
-    ['contentsが配列以外', {}],
-    ['contentsが空配列', []],
-    ['contents要素がnull', [null]],
-    ['contents要素がオブジェクト以外', ['invalid']],
-    ['fileが未指定', [{ position: 1 }]],
-    ['fileがnull', [{ file: null, position: 1 }]],
-    ['fileが空文字', [{ file: '', position: 1 }]],
-    ['fileが空配列', [{ file: [], position: 1 }]],
-    ['positionが小数', [{ file: { name: '1.png' }, position: 1.1 }]],
-    ['positionが文字列', [{ file: { name: '1.png' }, position: '1' }]],
-    ['positionがnull', [{ file: { name: '1.png' }, position: null }]],
-    ['positionに重複がある', [{ file: { name: '1.png' }, position: 1 }, { file: { name: '2.png' }, position: 1 }]],
-    ['positionに欠番がある', [{ file: { name: '1.png' }, position: 1 }, { file: { name: '3.png' }, position: 3 }]],
-    ['positionが1始まりでない', [{ file: { name: '2.png' }, position: 2 }, { file: { name: '3.png' }, position: 3 }]],
-  ])('%s場合は失敗レスポンスを返し後続へ委譲しない', async (_name, contents) => {
-    const { req, res, next } = await execute({ contents });
+    ['contextが未設定', {}],
+    ['contentIdsが未設定', { context: {} }],
+    ['contentIdsが配列以外', { context: { contentIds: 'c1' } }],
+    ['contentIdsが空配列', { context: { contentIds: [] } }],
+    ['contentIdsに空文字が含まれる', { context: { contentIds: ['c1', ''] } }],
+    ['contentIdsに重複がある', { context: { contentIds: ['c1', 'c1'] } }],
+  ])('%s場合は失敗レスポンスを返し後続へ委譲しない', async (_name, req) => {
+    const { res, next } = await execute({ req });
 
-    expect(contentStorage.save).not.toHaveBeenCalled();
-    expect(req.context.contentIds).toBeUndefined();
+    expect(contentUploadAdapter.execute).toHaveBeenCalledTimes(1);
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
   });
 
-  it('保存処理失敗時は失敗レスポンスを返し後続へ委譲しない', async () => {
-    contentStorage.save.mockRejectedValue(new Error('save failed'));
+  it('uploadAdapterがエラーを返した場合は失敗レスポンスを返し後続へ委譲しない', async () => {
+    contentUploadAdapter.execute.mockImplementationOnce((_req, _res, cb) => cb(new Error('upload failed')));
 
-    const { req, res, next } = await execute({
-      contents: [{ file: { name: '1.png' }, position: 1 }],
-    });
+    const { res, next } = await execute({});
 
-    expect(contentStorage.save).toHaveBeenCalledTimes(1);
-    expect(req.context.contentIds).toBeUndefined();
+    expect(contentUploadAdapter.execute).toHaveBeenCalledTimes(1);
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
-  });
-
-  it('req.contextが未初期化でもcontentIdsを設定できる', async () => {
-    const req = {
-      body: {
-        contents: [{ file: { name: '1.png' }, position: 1 }],
-      },
-    };
-
-    const { next } = await execute({ req });
-
-    expect(req.context.contentIds).toEqual(['c1']);
-    expect(next).toHaveBeenCalledTimes(1);
   });
 });

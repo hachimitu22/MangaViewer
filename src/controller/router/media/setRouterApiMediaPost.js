@@ -8,7 +8,7 @@ const {
 const setRouterApiMediaPost = ({
   router,
   authResolver,
-  saveResolver,
+  saveAdapter,
   mediaIdValueGenerator,
   mediaRepository,
   unitOfWork,
@@ -16,9 +16,7 @@ const setRouterApiMediaPost = ({
   const auth = new SessionAuthMiddleware(authResolver);
 
   const save = new ContentSaveMiddleware({
-    contentStorage: {
-      save: saveResolver.execute.bind(saveResolver),
-    },
+    contentUploadAdapter: saveAdapter,
   });
 
   const application = new RegisterMediaService({
