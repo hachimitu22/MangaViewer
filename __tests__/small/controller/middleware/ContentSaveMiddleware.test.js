@@ -35,7 +35,7 @@ describe('ContentSaveMiddleware', () => {
 
   beforeEach(() => {
     contentUploadAdapter = {
-      save: jest.fn((req, _res, cb) => cb()),
+      execute: jest.fn((_req, _res, cb) => cb()),
     };
 
     middleware = new ContentSaveMiddleware({ contentUploadAdapter });
@@ -44,8 +44,8 @@ describe('ContentSaveMiddleware', () => {
   it('uploadAdapter成功かつcontentIds正常時は後続へ委譲する', async () => {
     const { req, res, next } = await execute({});
 
-    expect(contentUploadAdapter.save).toHaveBeenCalledTimes(1);
-    expect(contentUploadAdapter.save).toHaveBeenCalledWith(req, res, expect.any(Function));
+    expect(contentUploadAdapter.execute).toHaveBeenCalledTimes(1);
+    expect(contentUploadAdapter.execute).toHaveBeenCalledWith(req, res, expect.any(Function));
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
   });
@@ -60,18 +60,18 @@ describe('ContentSaveMiddleware', () => {
   ])('%s場合は失敗レスポンスを返し後続へ委譲しない', async (_name, req) => {
     const { res, next } = await execute({ req });
 
-    expect(contentUploadAdapter.save).toHaveBeenCalledTimes(1);
+    expect(contentUploadAdapter.execute).toHaveBeenCalledTimes(1);
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
   });
 
   it('uploadAdapterがエラーを返した場合は失敗レスポンスを返し後続へ委譲しない', async () => {
-    contentUploadAdapter.save.mockImplementationOnce((_req, _res, cb) => cb(new Error('upload failed')));
+    contentUploadAdapter.execute.mockImplementationOnce((_req, _res, cb) => cb(new Error('upload failed')));
 
     const { res, next } = await execute({});
 
-    expect(contentUploadAdapter.save).toHaveBeenCalledTimes(1);
+    expect(contentUploadAdapter.execute).toHaveBeenCalledTimes(1);
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });

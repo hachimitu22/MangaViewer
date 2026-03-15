@@ -35,7 +35,7 @@
 1. `SessionAuthMiddleware`
    - `req.session.session_token` から `request.context.userId` を設定する。
 2. `ContentSaveMiddleware`
-   - `saveAdapter` にアップロード処理を委譲し、`request.context.contentIds` を検証する。
+   - `saveAdapter.execute(req, res, cb)` にアップロード処理を委譲し、`request.context.contentIds` を検証する。
 3. `MediaPostController`
    - `title` / `tags` / `contentIds` を使って `RegisterMediaService` を実行し、レスポンスを返す。
 

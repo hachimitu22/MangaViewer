@@ -1,5 +1,5 @@
 module.exports = class IContentUploadAdapter {
-  async save() {
+  execute() {
     throw new Error();
   }
 };

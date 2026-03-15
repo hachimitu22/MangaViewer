@@ -2,7 +2,7 @@ class ContentSaveMiddleware {
   #contentUploadAdapter;
 
   constructor({ contentUploadAdapter }) {
-    if (!contentUploadAdapter || typeof contentUploadAdapter.save !== 'function') {
+    if (!contentUploadAdapter || typeof contentUploadAdapter.execute !== 'function') {
       throw new Error();
     }
 
@@ -30,7 +30,7 @@ class ContentSaveMiddleware {
 
   async #executeUpload(req, res) {
     await new Promise((resolve, reject) => {
-      this.#contentUploadAdapter.save(req, res, error => {
+      this.#contentUploadAdapter.execute(req, res, error => {
         if (error) {
           reject(error);
           return;

@@ -8,7 +8,7 @@
 
 ## 入出力仕様
 ### 入力
-- `contentUploadAdapter.save(req, res, cb)` を実装した依存。
+- `contentUploadAdapter.execute(req, res, cb)` を実装した依存。
 - `req` / `res` は Express のオブジェクト。
 
 ### 出力（成功時）
@@ -29,7 +29,7 @@ participant ContentUploadAdapter as Adapter
 participant Router
 
 Client -> Middleware: POST /api/media
-Middleware -> Adapter: save(req, res, cb)
+Middleware -> Adapter: execute(req, res, cb)
 
 opt Adapterエラー
   Adapter --> Middleware: error
@@ -51,7 +51,7 @@ Middleware -> Router: next()
 
 ## エラーハンドリング
 - 以下の場合は `200` + `code: 1` を返す。
-  - `contentUploadAdapter.save` がエラーを返した場合。
+  - `contentUploadAdapter.execute` がエラーを返した場合。
   - `req.context.contentIds` が未設定 / 配列以外 / 空配列の場合。
   - `contentIds` 要素が空文字列を含む場合。
   - `contentIds` に重複がある場合。
