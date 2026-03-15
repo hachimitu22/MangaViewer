@@ -21,9 +21,9 @@
 - `authResolver`
   - セッショントークンから `userId` を解決するアダプタ。
   - `execute(token)` を持つ。
-- `saveResolver`
-  - `contents` を保存し、`contentIds` を返すアダプタ。
-  - `execute(contents)` を持つ。
+- `saveAdapter`
+  - multer 相当の `req, res, cb` 形式で保存処理を実行するアダプタ。
+  - `execute(req, res, cb)` を持つ。
 - `mediaIdValueGenerator`
   - メディアID生成。
   - `generate()` を持つ。
@@ -35,7 +35,7 @@
 1. `SessionAuthMiddleware`
    - `req.session.session_token` から `request.context.userId` を設定する。
 2. `ContentSaveMiddleware`
-   - `req.body.contents` を保存し、`request.context.contentIds` を設定する。
+   - `saveAdapter` にアップロード処理を委譲し、`request.context.contentIds` を検証する。
 3. `MediaPostController`
    - `title` / `tags` / `contentIds` を使って `RegisterMediaService` を実行し、レスポンスを返す。
 
