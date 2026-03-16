@@ -23,8 +23,8 @@ describe('ContentSaveMiddleware (middle)', () => {
             }
 
             const index = matched[1];
-            const positionRaw = req.body?.[`contents[${index}][position]`];
-            const urlRaw = req.body?.[`contents[${index}][url]`];
+            const positionRaw = req.body?.contents[index].position;
+            const urlRaw = req.body?.contents[index].url;
             const position = Number(positionRaw);
 
             if (!Number.isInteger(position) || position < 1) {
