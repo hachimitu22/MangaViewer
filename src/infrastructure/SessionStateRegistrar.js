@@ -21,7 +21,7 @@ class SessionStateRegistrar {
     this.#sessionTokenGenerator = sessionTokenGenerator;
   }
 
-  execute({
+  async execute({
     session,
     userId,
     ttlMs,
@@ -39,7 +39,7 @@ class SessionStateRegistrar {
       throw new Error('sessionToken must be a non-empty string');
     }
 
-    const sessionState = this.#sessionStateStore.save({
+    const sessionState = await this.#sessionStateStore.save({
       sessionToken,
       userId,
       ttlMs,
