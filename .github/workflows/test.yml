@@ -26,3 +26,6 @@ jobs:
 
       - name: Run small tests
         run: npm run test:small
+
+      - name: Run medium tests
+        run: npm run test:medium
