@@ -6,8 +6,8 @@ module.exports = {
       testEnvironment: 'node',
     },
     {
-      displayName: 'middle',
-      testMatch: ['<rootDir>/__tests__/middle/**/*.test.js'],
+      displayName: 'medium',
+      testMatch: ['<rootDir>/__tests__/medium/**/*.test.js'],
       testEnvironment: 'node',
     },
     {
