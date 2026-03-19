@@ -30,6 +30,10 @@ class SessionStateRegistrar {
       throw new Error('session must be an object');
     }
 
+    if (typeof session.regenerate !== 'function') {
+      throw new Error('session.regenerate must be a function');
+    }
+
     if (!this.#isNonEmptyString(userId)) {
       throw new Error('userId must be a non-empty string');
     }
@@ -38,6 +42,8 @@ class SessionStateRegistrar {
     if (!this.#isNonEmptyString(sessionToken)) {
       throw new Error('sessionToken must be a non-empty string');
     }
+
+    await this.#regenerateSession(session);
 
     const sessionState = await this.#sessionStateStore.save({
       sessionToken,
@@ -48,6 +54,19 @@ class SessionStateRegistrar {
     session.session_token = sessionToken;
 
     return sessionState;
+  }
+
+  #regenerateSession(session) {
+    return new Promise((resolve, reject) => {
+      session.regenerate((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve();
+      });
+    });
   }
 
   #isNonEmptyString(value) {
