@@ -108,6 +108,48 @@ describe('SessionStateRegistrar', () => {
     expect(session.session_token).toBe('token-async');
   });
 
+
+  test('express-session のように regenerate 後に req.session が差し替わる場合は新しい session に session_token を保存する', async () => {
+    const newSession = {};
+    let regenerateSession;
+    const session = {
+      req: {
+        session: null,
+      },
+      regenerate: jest.fn((callback) => {
+        regenerateSession = callback;
+      }),
+    };
+    const sessionStateStore = {
+      save: jest.fn().mockResolvedValue({
+        sessionToken: 'token-rotated',
+        userId: 'u1',
+        expiresAt: 1700000030000,
+      }),
+    };
+    const registrar = new SessionStateRegistrar({
+      sessionStateStore,
+      sessionTokenGenerator: jest.fn().mockReturnValue('token-rotated'),
+    });
+
+    const executePromise = registrar.execute({
+      session,
+      userId: 'u1',
+      ttlMs: 30000,
+    });
+
+    session.req.session = newSession;
+    regenerateSession();
+
+    await expect(executePromise).resolves.toEqual({
+      sessionToken: 'token-rotated',
+      userId: 'u1',
+      expiresAt: 1700000030000,
+    });
+    expect(newSession.session_token).toBe('token-rotated');
+    expect(session.session_token).toBeUndefined();
+  });
+
   test('セッション再生成が失敗した場合はストア保存と session_token 更新を行わない', async () => {
     const sessionStateStore = {
       save: jest.fn(),

@@ -43,7 +43,7 @@ class SessionStateRegistrar {
       throw new Error('sessionToken must be a non-empty string');
     }
 
-    await this.#regenerateSession(session);
+    const activeSession = await this.#regenerateSession(session);
 
     const sessionState = await this.#sessionStateStore.save({
       sessionToken,
@@ -51,7 +51,7 @@ class SessionStateRegistrar {
       ttlMs,
     });
 
-    session.session_token = sessionToken;
+    activeSession.session_token = sessionToken;
 
     return sessionState;
   }
@@ -64,9 +64,18 @@ class SessionStateRegistrar {
           return;
         }
 
-        resolve();
+        resolve(this.#resolveActiveSession(session));
       });
     });
+  }
+
+  #resolveActiveSession(session) {
+    const regeneratedSession = session.req?.session;
+    if (regeneratedSession && typeof regeneratedSession === 'object') {
+      return regeneratedSession;
+    }
+
+    return session;
   }
 
   #isNonEmptyString(value) {
