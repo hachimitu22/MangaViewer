@@ -5,6 +5,13 @@ on:
     paths:
       - '__tests__/**'
       - 'src/**'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '__tests__/**'
+      - 'src/**'
+
   workflow_dispatch:
 
 jobs:
