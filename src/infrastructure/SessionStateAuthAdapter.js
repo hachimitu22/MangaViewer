@@ -1,4 +1,4 @@
-class SessionStateAuthResolver {
+class SessionStateAuthAdapter {
   #sessionStateStore;
 
   constructor({
@@ -16,4 +16,4 @@ class SessionStateAuthResolver {
   }
 }
 
-module.exports = SessionStateAuthResolver;
+module.exports = SessionStateAuthAdapter;

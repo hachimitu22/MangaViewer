@@ -4,7 +4,7 @@ const multer = require('multer');
 const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
-const SessionStateAuthResolver = require('../../../../../src/infrastructure/SessionStateAuthResolver');
+const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
 const MediaId = require('../../../../../src/domain/media/mediaId');
@@ -102,7 +102,7 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     setRouterApiMediaPost({
       router,
-      authResolver: new SessionStateAuthResolver({
+      authResolver: new SessionStateAuthAdapter({
         sessionStateStore: new InMemorySessionStateStore([
           ['valid-token', 'user-001'],
         ]),

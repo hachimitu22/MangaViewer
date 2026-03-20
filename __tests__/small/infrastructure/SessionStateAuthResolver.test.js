@@ -1,11 +1,11 @@
-const SessionStateAuthResolver = require('../../../src/infrastructure/SessionStateAuthResolver');
+const SessionStateAuthAdapter = require('../../../src/infrastructure/SessionStateAuthAdapter');
 
-describe('SessionStateAuthResolver', () => {
+describe('SessionStateAuthAdapter', () => {
   test('execute は sessionToken に紐づく userId を返す', async () => {
     const sessionStateStore = {
       findUserIdBySessionToken: jest.fn().mockReturnValue('u1'),
     };
-    const resolver = new SessionStateAuthResolver({
+    const resolver = new SessionStateAuthAdapter({
       sessionStateStore,
     });
 
@@ -15,7 +15,7 @@ describe('SessionStateAuthResolver', () => {
 
   test('sessionStateStore が不正な場合は初期化時に例外となる', () => {
     expect(() => {
-      new SessionStateAuthResolver({
+      new SessionStateAuthAdapter({
         sessionStateStore: {},
       });
     }).toThrow('sessionStateStore.findUserIdBySessionToken');
