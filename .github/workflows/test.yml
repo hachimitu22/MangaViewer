@@ -2,7 +2,7 @@ name: Test
 
 on:
   push:
-    branches:
+    paths:
       - '__test__/**'
       - 'src/**'
   workflow_dispatch:
