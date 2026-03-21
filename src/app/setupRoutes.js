@@ -14,6 +14,10 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   dependencies.routeSetters.setRouterScreenLoginGet({
     router,
   });
+  dependencies.routeSetters.setRouterScreenSearchGet({
+    router,
+    authResolver: dependencies.authResolver,
+  });
 
   dependencies.routeSetters.setRouterApiMediaPost({
     router,
