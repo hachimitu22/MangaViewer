@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      .page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+      h1 { margin: 0 0 24px; font-size: 32px; }
+      .section { margin-top: 24px; }
+      .field-label, .section-title { display:block; font-weight:700; margin-bottom:8px; }
+      .text-input, .select-input {
+        width: 100%; border: 1px solid #cbd5e1; border-radius: 10px;
+        padding: 12px 14px; font-size: 16px; background: #fff;
+      }
+      .divider { border: 0; border-top: 1px solid #e5e7eb; margin: 16px 0 0; }
+      .tag-inputs { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+      .button {
+        border: 0; border-radius: 10px; padding: 12px 18px; font-size: 14px; font-weight: 700;
+        cursor: pointer; background: #2563eb; color: #fff;
+      }
+      .button.secondary { background: #e5e7eb; color: #111827; }
+      .button.danger { background: #dc2626; }
+      .tag-list { display: grid; gap: 12px; margin-top: 16px; }
+      .tag-item {
+        border: 1px solid #dbe3f0; border-radius: 12px; background: #f8fafc; padding: 16px;
+      }
+      .tag-item-header { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+      .tag-category { font-size: 12px; color: #475569; }
+      .tag-label { font-size: 16px; font-weight: 700; }
+      .actions { display:flex; justify-content:flex-end; margin-top:24px; }
+      .message { margin-top: 16px; font-size: 14px; }
+      .message.error { color: #b91c1c; }
+      @media (max-width: 640px) {
+        .tag-inputs { grid-template-columns: 1fr; }
+        .button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="card">
+        <h1><%= pageTitle %></h1>
+        <form id="search-form" action="/screen/summary" method="get">
+          <input type="hidden" id="summary-page" name="summaryPage" value="<%= summaryPage %>" />
+
+          <section>
+            <label class="field-label" for="title">タイトル部分一致</label>
+            <input id="title" name="title" class="text-input" type="text" />
+            <hr class="divider" />
+          </section>
+
+          <section class="section">
+            <span class="section-title">タグ</span>
+            <div id="tag-list" class="tag-list" aria-live="polite"></div>
+            <hr class="divider" />
+            <div class="tag-inputs">
+              <div>
+                <label class="field-label" for="category-input">カテゴリー</label>
+                <input id="category-input" class="text-input" list="category-options" autocomplete="off" />
+                <datalist id="category-options">
+                  <% categoryOptions.forEach((category) => { %>
+                    <option value="<%= category %>"></option>
+                  <% }) %>
+                </datalist>
+              </div>
+              <div>
+                <label class="field-label" for="tag-input">ラベル</label>
+                <input id="tag-input" class="text-input" list="tag-options" autocomplete="off" />
+                <datalist id="tag-options"></datalist>
+              </div>
+              <button id="add-tag-button" class="button secondary" type="button">タグ追加</button>
+            </div>
+            <div id="form-message" class="message" aria-live="polite"></div>
+            <hr class="divider" />
+          </section>
+
+          <section class="section">
+            <label class="field-label" for="sort">並び順</label>
+            <select id="sort" name="sort" class="select-input">
+              <% sortOptions.forEach((option) => { %>
+                <option value="<%= option.value %>"><%= option.label %></option>
+              <% }) %>
+            </select>
+            <hr class="divider" />
+          </section>
+
+          <div class="actions">
+            <button class="button" type="submit">検索実行</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const tagsByCategory = <%- JSON.stringify(tagsByCategory) %>;
+        const form = document.getElementById('search-form');
+        const summaryPageInput = document.getElementById('summary-page');
+        const titleInput = document.getElementById('title');
+        const sortInput = document.getElementById('sort');
+        const categoryInput = document.getElementById('category-input');
+        const tagInput = document.getElementById('tag-input');
+        const tagOptions = document.getElementById('tag-options');
+        const tagList = document.getElementById('tag-list');
+        const addTagButton = document.getElementById('add-tag-button');
+        const formMessage = document.getElementById('form-message');
+
+        const selectedTags = [];
+
+        const updateTagOptions = () => {
+          const category = categoryInput.value.trim();
+          const candidates = Array.isArray(tagsByCategory[category]) ? tagsByCategory[category] : [];
+          tagOptions.innerHTML = candidates
+            .map(label => `<option value="${label}"></option>`)
+            .join('');
+        };
+
+        const renderTags = () => {
+          tagList.innerHTML = '';
+          selectedTags.forEach((tag, index) => {
+            const item = document.createElement('div');
+            item.className = 'tag-item';
+            item.innerHTML = `
+              <div class="tag-item-header">
+                <div>
+                  <div class="tag-category">${tag.category}</div>
+                  <div class="tag-label">${tag.label}</div>
+                </div>
+                <button class="button danger" type="button" data-remove-tag="${index}">削除</button>
+              </div>
+            `;
+            tagList.appendChild(item);
+          });
+        };
+
+        categoryInput.addEventListener('change', updateTagOptions);
+        categoryInput.addEventListener('input', updateTagOptions);
+
+        addTagButton.addEventListener('click', () => {
+          const category = categoryInput.value.trim();
+          const label = tagInput.value.trim();
+          if (!category || !label) {
+            formMessage.className = 'message error';
+            formMessage.textContent = 'カテゴリーとラベルを入力してください。';
+            return;
+          }
+
+          selectedTags.push({ category, label });
+          categoryInput.value = '';
+          tagInput.value = '';
+          updateTagOptions();
+          renderTags();
+          formMessage.className = 'message';
+          formMessage.textContent = '';
+        });
+
+        tagList.addEventListener('click', event => {
+          const { removeTag } = event.target.dataset;
+          if (removeTag === undefined) {
+            return;
+          }
+          selectedTags.splice(Number(removeTag), 1);
+          renderTags();
+        });
+
+        form.addEventListener('submit', event => {
+          event.preventDefault();
+          const params = new URLSearchParams();
+          const title = titleInput.value.trim();
+          if (title.length > 0) {
+            params.set('title', title);
+          }
+          params.set('summaryPage', summaryPageInput.value);
+          params.set('sort', sortInput.value);
+          selectedTags.forEach(tag => {
+            params.append('tags', `${tag.category}:${tag.label}`);
+          });
+
+          window.location.assign(`${form.action}?${params.toString()}`);
+        });
+
+        updateTagOptions();
+        renderTags();
+      })();
+    </script>
+  </body>
+</html>
