@@ -1,22 +1,12 @@
 class SessionAuthMiddleware {
-  #resolveUserIdBySessionToken;
+  #authAdapter;
 
-  constructor(authResolverOrOptions = {}) {
-    const resolveUserIdBySessionToken = this.#resolve(authResolverOrOptions);
-    if (typeof resolveUserIdBySessionToken !== 'function') {
-      throw new Error('resolveUserIdBySessionToken must be a function');
+  constructor(authAdapter = {}) {
+    if (typeof authAdapter?.execute !== 'function') {
+      throw new Error('authAdapter.execute must be a function');
     }
 
-    this.#resolveUserIdBySessionToken = resolveUserIdBySessionToken;
-  }
-
-
-  #resolve(authResolverOrOptions) {
-    if (authResolverOrOptions && typeof authResolverOrOptions.execute === 'function') {
-      return authResolverOrOptions.execute.bind(authResolverOrOptions);
-    }
-
-    return authResolverOrOptions?.resolveUserIdBySessionToken;
+    this.#authAdapter = authAdapter;
   }
 
   async execute(req, res, next) {
@@ -26,7 +16,7 @@ class SessionAuthMiddleware {
         return this.#unauthorized(res);
       }
 
-      const userId = await this.#resolveUserIdBySessionToken(token);
+      const userId = await this.#authAdapter.execute(token);
       if (!this.#isNonEmptyString(userId)) {
         return this.#unauthorized(res);
       }

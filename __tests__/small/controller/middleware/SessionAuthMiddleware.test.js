@@ -1,7 +1,7 @@
 const SessionAuthMiddleware = require('../../../../src/controller/middleware/SessionAuthMiddleware');
 
 describe('SessionAuthMiddleware', () => {
-  let resolveUserIdBySessionToken;
+  let authAdapter;
   let middleware;
 
   const createRes = () => {
@@ -23,11 +23,11 @@ describe('SessionAuthMiddleware', () => {
   };
 
   beforeEach(() => {
-    resolveUserIdBySessionToken = jest.fn().mockResolvedValue('u1');
+    authAdapter = {
+      execute: jest.fn().mockResolvedValue('u1'),
+    };
 
-    middleware = new SessionAuthMiddleware({
-      resolveUserIdBySessionToken,
-    });
+    middleware = new SessionAuthMiddleware(authAdapter);
   });
 
   it('session_tokenが有効でuserIdを解決できる場合はnextへ委譲する', async () => {
@@ -36,7 +36,7 @@ describe('SessionAuthMiddleware', () => {
       context: {},
     });
 
-    expect(resolveUserIdBySessionToken).toHaveBeenCalledWith('token1234');
+    expect(authAdapter.execute).toHaveBeenCalledWith('token1234');
     expect(req.context.userId).toBe('u1');
     expect(next).toHaveBeenCalledTimes(1);
     expect(res.status).not.toHaveBeenCalled();
@@ -52,22 +52,6 @@ describe('SessionAuthMiddleware', () => {
     expect(next).toHaveBeenCalledTimes(1);
   });
 
-  it('authResolverを直接渡した場合でも認証に成功する', async () => {
-    const directResolver = {
-      execute: jest.fn().mockResolvedValue('u1'),
-    };
-    middleware = new SessionAuthMiddleware(directResolver);
-
-    const { req, next } = await execute({
-      session: { session_token: 'token1234' },
-      context: {},
-    });
-
-    expect(directResolver.execute).toHaveBeenCalledWith('token1234');
-    expect(req.context.userId).toBe('u1');
-    expect(next).toHaveBeenCalledTimes(1);
-  });
-
   it.each([
     ['req.sessionが未生成', undefined],
     ['session_tokenが未設定', {}],
@@ -79,7 +63,7 @@ describe('SessionAuthMiddleware', () => {
       context: { userId: 'existing' },
     });
 
-    expect(resolveUserIdBySessionToken).not.toHaveBeenCalled();
+    expect(authAdapter.execute).not.toHaveBeenCalled();
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ message: '認証に失敗しました' });
@@ -87,14 +71,14 @@ describe('SessionAuthMiddleware', () => {
   });
 
   it('session_tokenは有効でもuserIdを解決できない場合は401を返す', async () => {
-    resolveUserIdBySessionToken.mockResolvedValue('');
+    authAdapter.execute.mockResolvedValue('');
 
     const { req, res, next } = await execute({
       session: { session_token: 'token1234' },
       context: {},
     });
 
-    expect(resolveUserIdBySessionToken).toHaveBeenCalledWith('token1234');
+    expect(authAdapter.execute).toHaveBeenCalledWith('token1234');
     expect(req.context.userId).toBeUndefined();
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
@@ -102,7 +86,7 @@ describe('SessionAuthMiddleware', () => {
   });
 
   it('想定外例外時も401を返す', async () => {
-    resolveUserIdBySessionToken.mockRejectedValue(new Error('boom'));
+    authAdapter.execute.mockRejectedValue(new Error('boom'));
 
     const { res, next } = await execute({
       session: { session_token: 'raw-secret-token' },
@@ -112,5 +96,9 @@ describe('SessionAuthMiddleware', () => {
     expect(next).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({ message: '認証に失敗しました' });
+  });
+
+  it('authAdapterが不正な場合は初期化時に例外となる', () => {
+    expect(() => new SessionAuthMiddleware({})).toThrow('authAdapter.execute must be a function');
   });
 });
