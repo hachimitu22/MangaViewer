@@ -4,12 +4,14 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
+const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
+const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
   const directory = path.dirname(targetPath);
@@ -37,6 +39,14 @@ const createDependencies = (env = {}) => {
   });
   const sessionStateStore = new InMemorySessionStateStore();
 
+  if (hasDevelopmentSession(env)) {
+    sessionStateStore.save({
+      sessionToken: env.devSessionToken,
+      userId: env.devSessionUserId,
+      ttlMs: env.devSessionTtlMs,
+    });
+  }
+
   const dependencies = {
     sequelize,
     unitOfWork,
@@ -51,6 +61,7 @@ const createDependencies = (env = {}) => {
     mediaIdValueGenerator: new UUIDMediaIdValueGenerator(),
     routeSetters: {
       setRouterApiMediaPost,
+      setRouterScreenEntryGet,
     },
   };
 

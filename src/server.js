@@ -1,6 +1,12 @@
 const path = require('path');
 
 const createApp = require('./app');
+const { hasDevelopmentSession } = require('./app/developmentSession');
+
+const parseSessionPaths = value => (value || '')
+  .split(',')
+  .map(entry => entry.trim())
+  .filter(entry => entry.length > 0);
 
 const createEnv = source => ({
   port: Number.parseInt(source.PORT, 10) || 3000,
@@ -8,6 +14,10 @@ const createEnv = source => ({
     || path.join(process.cwd(), 'var', 'data', 'mangaviewer.sqlite'),
   contentRootDirectory: source.CONTENT_ROOT_DIRECTORY
     || path.join(process.cwd(), 'var', 'contents'),
+  devSessionToken: source.DEV_SESSION_TOKEN || '',
+  devSessionUserId: source.DEV_SESSION_USER_ID || '',
+  devSessionTtlMs: Number.parseInt(source.DEV_SESSION_TTL_MS, 10) || 0,
+  devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
 });
 
 const startServer = async () => {
@@ -24,6 +34,14 @@ const startServer = async () => {
 
   const server = app.listen(env.port, () => {
     console.log(`サーバーを起動しました: port=${env.port}`);
+
+    if (hasDevelopmentSession(env)) {
+      console.log([
+        '開発用固定セッションを有効化しました',
+        `userId=${env.devSessionUserId}`,
+        `paths=${env.devSessionPaths.join(',')}`,
+      ].join(': '));
+    }
   });
 
   server.on('error', error => {

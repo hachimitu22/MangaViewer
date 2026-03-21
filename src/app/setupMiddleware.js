@@ -1,6 +1,11 @@
+const path = require('path');
 const express = require('express');
 
-const setupMiddleware = (app, { env: _env, dependencies: _dependencies } = {}) => {
+const { shouldApplyDevelopmentSession } = require('./developmentSession');
+
+const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
+  app.set('views', path.join(__dirname, '..', 'views'));
+  app.set('view engine', 'ejs');
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
@@ -11,6 +16,8 @@ const setupMiddleware = (app, { env: _env, dependencies: _dependencies } = {}) =
     const sessionToken = req.header('x-session-token');
     if (typeof sessionToken === 'string' && sessionToken.length > 0) {
       req.session.session_token = sessionToken;
+    } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
+      req.session.session_token = env.devSessionToken;
     }
 
     next();
