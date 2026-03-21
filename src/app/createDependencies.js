@@ -11,6 +11,7 @@ const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaReposi
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
+const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
   const directory = path.dirname(targetPath);
@@ -37,6 +38,14 @@ const createDependencies = (env = {}) => {
     unitOfWorkContext: unitOfWork,
   });
   const sessionStateStore = new InMemorySessionStateStore();
+
+  if (hasDevelopmentSession(env)) {
+    sessionStateStore.save({
+      sessionToken: env.devSessionToken,
+      userId: env.devSessionUserId,
+      ttlMs: env.devSessionTtlMs,
+    });
+  }
 
   const dependencies = {
     sequelize,

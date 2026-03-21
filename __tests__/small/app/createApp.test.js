@@ -66,4 +66,36 @@ describe('createApp', () => {
       message: '認証に失敗しました',
     });
   });
+
+  test('固定セッション設定がある場合は /screen/entry と /api/media で認証を補完する', async () => {
+    app = createApp({
+      databaseStoragePath: databasePath,
+      contentRootDirectory,
+      devSessionToken: 'dev-token',
+      devSessionUserId: 'admin-dev',
+      devSessionTtlMs: 60_000,
+      devSessionPaths: ['/screen/entry', '/api/media'],
+    });
+
+    await app.locals.ready;
+
+    const screenResponse = await request(app).get('/screen/entry');
+    expect(screenResponse.status).toBe(200);
+    expect(screenResponse.type).toBe('text/html');
+    expect(screenResponse.text).toContain('<title>メディア登録</title>');
+
+    const mediaResponse = await request(app)
+      .post('/api/media')
+      .field('title', 'sample title')
+      .field('tags[0][category]', '作者')
+      .field('tags[0][label]', '山田')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', Buffer.from('a'), 'first.jpg');
+
+    expect(mediaResponse.status).toBe(200);
+    expect(mediaResponse.body).toEqual({
+      code: 0,
+      mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
+    });
+  });
 });
