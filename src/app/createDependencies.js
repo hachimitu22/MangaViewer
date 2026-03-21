@@ -6,6 +6,7 @@ const { Sequelize } = require('sequelize');
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const setRouterScreenErrorGet = require('../controller/router/screen/setRouterScreenErrorGet');
+const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
@@ -64,6 +65,7 @@ const createDependencies = (env = {}) => {
       setRouterApiMediaPost,
       setRouterScreenEntryGet,
       setRouterScreenErrorGet,
+      setRouterScreenLoginGet,
     },
   };
 

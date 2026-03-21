@@ -11,6 +11,9 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   dependencies.routeSetters.setRouterScreenErrorGet({
     router,
   });
+  dependencies.routeSetters.setRouterScreenLoginGet({
+    router,
+  });
 
   dependencies.routeSetters.setRouterApiMediaPost({
     router,

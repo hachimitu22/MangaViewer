@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+      }
+      .page {
+        width: min(100%, 440px);
+        padding: 24px 16px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #dbe3f0;
+        border-radius: 16px;
+        padding: 32px 24px;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 32px;
+      }
+      .description {
+        margin: 0 0 24px;
+        color: #475569;
+        font-size: 14px;
+      }
+      .field {
+        margin-top: 16px;
+      }
+      .field-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 700;
+      }
+      .text-input {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 16px;
+        background: #fff;
+      }
+      .button {
+        width: 100%;
+        margin-top: 24px;
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 18px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        background: #2563eb;
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="card">
+        <h1><%= pageTitle %></h1>
+        <p class="description">アカウント情報を入力してログインしてください。</p>
+        <form method="post" action="<%= formAction %>">
+          <div class="field">
+            <label class="field-label" for="username"><%= usernameLabel %></label>
+            <input id="username" name="username" class="text-input" type="text" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label class="field-label" for="password"><%= passwordLabel %></label>
+            <input id="password" name="password" class="text-input" type="password" autocomplete="current-password" required />
+          </div>
+          <button class="button" type="submit"><%= submitLabel %></button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
