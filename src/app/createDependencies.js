@@ -55,6 +55,10 @@ const createDependencies = (env = {}) => {
   };
 
   dependencies.ready = mediaRepository.sync();
+  dependencies.close = async () => {
+    await dependencies.ready;
+    await sequelize.close();
+  };
 
   return dependencies;
 };

@@ -15,29 +15,32 @@ const createTempPath = (prefix, leaf) => {
 };
 
 describe('createApp', () => {
+  let app;
   let databasePath;
   let contentRootDirectory;
-  let cleanupRoots;
+  let databaseRoot;
+  let contentRoot;
 
   beforeEach(() => {
-    cleanupRoots = [];
-
     const database = createTempPath('app-db-', 'data.sqlite');
     const contents = createTempPath('app-content-', 'contents');
 
-    cleanupRoots.push(database.root, contents.root);
+    databaseRoot = database.root;
+    contentRoot = contents.root;
     databasePath = database.target;
     contentRootDirectory = contents.target;
   });
 
-  afterEach(() => {
-    for (const root of cleanupRoots) {
-      fs.rmSync(root, { recursive: true, force: true });
-    }
+  afterEach(async () => {
+    if (app?.locals?.close) await app.locals.close();
+
+    fs.rmSync(databaseRoot, { recursive: true, force: true });
+    fs.rmSync(contentRoot, { recursive: true, force: true });
+    app = undefined;
   });
 
   test('構築した app は /api/media を提供し、未知のルートでは404を返す', async () => {
-    const app = createApp({
+    app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
     });
