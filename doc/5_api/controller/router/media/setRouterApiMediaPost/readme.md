@@ -22,7 +22,7 @@
   - セッショントークンから `userId` を解決するアダプタ。
   - `execute(token)` を持つ。
 - `saveAdapter`
-  - multer 相当の `req, res, cb` 形式で保存処理を実行するアダプタ。
+  - multer の `DiskStorage` を使って `req, res, cb` 形式で保存処理を実行するアダプタ。
   - `execute(req, res, cb)` を持つ。
 - `mediaIdValueGenerator`
   - メディアID生成。

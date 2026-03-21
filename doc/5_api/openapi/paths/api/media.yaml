@@ -25,16 +25,24 @@ post:
               items:
                 type: object
                 required:
-                  - file
                   - position
                 properties:
                   file:
                     description: ファイル
                     type: string
                     format: binary
+                  url:
+                    description: 既存コンテンツのcontentId。fileと排他で指定する
+                    type: string
+                    pattern: '^[0-9a-f]{32}$'
                   position:
                     description: コンテンツ位置
                     type: integer
+                oneOf:
+                  - required:
+                      - file
+                  - required:
+                      - url
             tags:
               description: タグ一覧
               type: array
@@ -64,7 +72,7 @@ post:
                   position: 1,
                 },
                 {
-                  file: example2.png,
+                  url: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,
                   position: 2,
                 },
               ]

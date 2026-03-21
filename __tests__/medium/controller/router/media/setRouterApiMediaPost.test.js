@@ -1,6 +1,8 @@
 const express = require('express');
 const request = require('supertest');
-const multer = require('multer');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
@@ -8,6 +10,7 @@ const SessionStateAuthAdapter = require('../../../../../src/infrastructure/Sessi
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
 const MediaId = require('../../../../../src/domain/media/mediaId');
+const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
 
 class InMemorySessionStateStore {
   constructor(entries = []) {
@@ -25,56 +28,14 @@ class FixedMediaIdValueGenerator {
   }
 }
 
-const createContentUploadAdapter = () => {
-  const upload = multer({ storage: multer.memoryStorage() }).any();
-
-  return {
-    execute: (req, res, cb) => {
-      upload(req, res, error => {
-        if (error) {
-          cb(error);
-          return;
-        }
-
-        const contents = (req.files ?? []).map(file => {
-          const matched = file.fieldname.match(/^contents\[(\d+)\]\[file\]$/);
-          if (!matched) {
-            return null;
-          }
-
-          const index = matched[1];
-          const position = Number(req.body?.contents?.[index]?.position);
-          const url = req.body?.contents?.[index]?.url;
-          if (!Number.isInteger(position) || position < 1) {
-            return null;
-          }
-          if (!(typeof url === 'string' && url.length > 0)) {
-            return null;
-          }
-
-          return {
-            position,
-            contentId: url,
-          };
-        }).filter(content => content !== null);
-
-        req.context = req.context ?? {};
-        req.context.contentIds = contents
-          .sort((a, b) => a.position - b.position)
-          .map(content => content.contentId);
-
-        cb();
-      });
-    },
-  };
-};
-
 describe('setRouterApiMediaPost (middle)', () => {
   let sequelize;
   let unitOfWork;
   let mediaRepository;
+  let rootDirectory;
 
   beforeEach(async () => {
+    rootDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'router-media-post-'));
     sequelize = new Sequelize('sqlite::memory:', { logging: false });
     unitOfWork = new SequelizeUnitOfWork({ sequelize });
     mediaRepository = new SequelizeMediaRepository({
@@ -85,6 +46,7 @@ describe('setRouterApiMediaPost (middle)', () => {
   });
 
   afterEach(async () => {
+    fs.rmSync(rootDirectory, { recursive: true, force: true });
     await sequelize.close();
   });
 
@@ -107,7 +69,7 @@ describe('setRouterApiMediaPost (middle)', () => {
           ['valid-token', 'user-001'],
         ]),
       }),
-      saveAdapter: createContentUploadAdapter(),
+      saveAdapter: new MulterDiskStorageContentUploadAdapter({ rootDirectory }),
       mediaIdValueGenerator: new FixedMediaIdValueGenerator(),
       mediaRepository,
       unitOfWork,
@@ -131,10 +93,8 @@ describe('setRouterApiMediaPost (middle)', () => {
       .field('tags[2][category]', '作者')
       .field('tags[2][label]', '佐藤')
       .field('contents[0][position]', '2')
-      .field('contents[0][url]', '/content/2')
-      .attach('contents[0][file]', Buffer.from('b'), 'second.jpg')
+      .field('contents[0][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
       .field('contents[1][position]', '1')
-      .field('contents[1][url]', '/content/1')
       .attach('contents[1][file]', Buffer.from('a'), 'first.jpg');
 
     expect(response.status).toBe(200);
@@ -150,8 +110,8 @@ describe('setRouterApiMediaPost (middle)', () => {
     expect(media).not.toBeNull();
     expect(media.getTitle().getTitle()).toBe('sample title');
     expect(media.getContents().map(content => content.getId())).toEqual([
-      '/content/1',
-      '/content/2',
+      expect.stringMatching(/^[0-9a-f]{32}$/),
+      'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
     ]);
     expect(media.getTags().map(tag => ({
       category: tag.getCategory().getValue(),
@@ -177,7 +137,6 @@ describe('setRouterApiMediaPost (middle)', () => {
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
       .field('contents[0][position]', '1')
-      .field('contents[0][url]', '/content/1')
       .attach('contents[0][file]', Buffer.from('a'), 'first.jpg');
 
     expect(response.status).toBe(401);
