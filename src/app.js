@@ -11,6 +11,7 @@ const createApp = (env = {}) => {
   app.locals.env = env;
   app.locals.dependencies = dependencies;
   app.locals.ready = dependencies.ready;
+  app.locals.close = dependencies.close;
 
   setupMiddleware(app, { env, dependencies });
   setupRoutes(app, { env, dependencies });
