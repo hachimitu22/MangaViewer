@@ -8,6 +8,10 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     authResolver: dependencies.authResolver,
   });
 
+  dependencies.routeSetters.setRouterScreenLoginGet({
+    router,
+  });
+
   dependencies.routeSetters.setRouterApiMediaPost({
     router,
     authResolver: dependencies.authResolver,

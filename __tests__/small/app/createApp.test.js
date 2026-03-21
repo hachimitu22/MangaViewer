@@ -67,7 +67,7 @@ describe('createApp', () => {
     });
   });
 
-  test('固定セッション設定がある場合は /screen/entry と /api/media で認証を補完する', async () => {
+  test('固定セッション設定がある場合は /screen/entry と /api/media で認証を補完し、/screen/login を表示できる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
@@ -83,6 +83,12 @@ describe('createApp', () => {
     expect(screenResponse.status).toBe(200);
     expect(screenResponse.type).toBe('text/html');
     expect(screenResponse.text).toContain('<title>メディア登録</title>');
+
+    const loginResponse = await request(app).get('/screen/login');
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.type).toBe('text/html');
+    expect(loginResponse.text).toContain('<title>ログイン</title>');
+    expect(loginResponse.text).toContain('action="/api/login"');
 
     const mediaResponse = await request(app)
       .post('/api/media')
