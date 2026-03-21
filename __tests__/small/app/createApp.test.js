@@ -39,13 +39,18 @@ describe('createApp', () => {
     app = undefined;
   });
 
-  test('構築した app は /api/media を提供し、未知のルートでは404を返す', async () => {
+  test('構築した app は /screen/error と /api/media を提供し、未知のルートでは404を返す', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
     });
 
     await app.locals.ready;
+
+    const errorScreenResponse = await request(app).get('/screen/error');
+    expect(errorScreenResponse.status).toBe(200);
+    expect(errorScreenResponse.type).toBe('text/html');
+    expect(errorScreenResponse.text).toContain('<title>エラーが発生しました</title>');
 
     const notFoundResponse = await request(app).get('/unknown');
     expect(notFoundResponse.status).toBe(404);
