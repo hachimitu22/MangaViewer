@@ -8,6 +8,9 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     authResolver: dependencies.authResolver,
   });
 
+  dependencies.routeSetters.setRouterScreenErrorGet({
+    router,
+  });
   dependencies.routeSetters.setRouterScreenLoginGet({
     router,
   });
