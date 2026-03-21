@@ -3,6 +3,11 @@ const express = require('express');
 const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   const router = express.Router();
 
+  dependencies.routeSetters.setRouterScreenEntryGet({
+    router,
+    authResolver: dependencies.authResolver,
+  });
+
   dependencies.routeSetters.setRouterApiMediaPost({
     router,
     authResolver: dependencies.authResolver,

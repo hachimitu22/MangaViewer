@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      .page {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 32px 16px 64px;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid #d1d5db;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+      h1 { margin: 0 0 24px; font-size: 32px; }
+      .section { margin-top: 24px; }
+      .field-label, .section-title { display:block; font-weight:700; margin-bottom:8px; }
+      .text-input, .select-input {
+        width: 100%; border: 1px solid #cbd5e1; border-radius: 10px;
+        padding: 12px 14px; font-size: 16px; background: #fff;
+      }
+      .divider { border: 0; border-top: 1px solid #e5e7eb; margin: 16px 0 0; }
+      .tag-inputs { display: grid; grid-template-columns: 1fr 1fr auto; gap: 12px; align-items: end; }
+      .button {
+        border: 0; border-radius: 10px; padding: 12px 18px; font-size: 14px; font-weight: 700;
+        cursor: pointer; background: #2563eb; color: #fff;
+      }
+      .button.secondary { background: #e5e7eb; color: #111827; }
+      .button.danger { background: #dc2626; }
+      .dropzone {
+        margin-top: 12px; border: 2px dashed #93c5fd; border-radius: 14px; padding: 24px; text-align: center;
+        background: #eff6ff; color: #1d4ed8;
+      }
+      .dropzone.dragover { background: #dbeafe; border-color: #2563eb; }
+      .tag-list, .media-list { display: grid; gap: 12px; margin-top: 16px; }
+      .tag-item, .media-item {
+        border: 1px solid #dbe3f0; border-radius: 12px; background: #f8fafc; padding: 16px;
+      }
+      .tag-item-header, .media-item-header { display:flex; justify-content:space-between; gap:12px; align-items:center; }
+      .tag-category { font-size: 12px; color: #475569; }
+      .tag-label { font-size: 16px; font-weight: 700; }
+      .media-item-body { display:grid; grid-template-columns: 88px 1fr; gap: 16px; align-items: center; margin-top: 12px; }
+      .thumb {
+        width: 88px; height: 88px; border-radius: 10px; object-fit: cover; background: #dbeafe;
+        display:flex; align-items:center; justify-content:center; color:#1d4ed8; font-size:12px;
+      }
+      .media-actions { display:flex; gap: 8px; flex-wrap: wrap; }
+      .register-row { display:flex; justify-content:flex-end; margin-top: 24px; }
+      .message { margin-top: 16px; font-size: 14px; }
+      .message.error { color: #b91c1c; }
+      .message.success { color: #047857; }
+      @media (max-width: 640px) {
+        .tag-inputs { grid-template-columns: 1fr; }
+        .media-item-body { grid-template-columns: 1fr; }
+        .media-actions { width: 100%; }
+        .button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="card">
+        <h1><%= pageTitle %></h1>
+        <form id="entry-form">
+          <section>
+            <label class="field-label" for="title">タイトル</label>
+            <input id="title" name="title" class="text-input" type="text" required />
+            <hr class="divider" />
+          </section>
+
+          <section class="section">
+            <span class="section-title">タグ</span>
+            <div id="tag-list" class="tag-list" aria-live="polite"></div>
+            <hr class="divider" />
+            <div class="tag-inputs">
+              <div>
+                <label class="field-label" for="category-input">カテゴリー</label>
+                <input id="category-input" class="text-input" list="category-options" autocomplete="off" />
+                <datalist id="category-options">
+                  <% categoryOptions.forEach((category) => { %>
+                    <option value="<%= category %>"></option>
+                  <% }) %>
+                </datalist>
+              </div>
+              <div>
+                <label class="field-label" for="tag-input">タグ</label>
+                <input id="tag-input" class="text-input" list="tag-options" autocomplete="off" />
+                <datalist id="tag-options"></datalist>
+              </div>
+              <button id="add-tag-button" class="button" type="button">タグ追加</button>
+            </div>
+            <hr class="divider" />
+          </section>
+
+          <section class="section">
+            <span class="section-title">メディアファイル</span>
+            <div id="dropzone" class="dropzone" tabindex="0">
+              クリックまたはドラッグ&ドロップで画像・動画を追加
+            </div>
+            <input id="file-input" type="file" accept="image/*,video/*" multiple hidden />
+            <div id="media-list" class="media-list" aria-live="polite"></div>
+            <hr class="divider" />
+          </section>
+
+          <div id="form-message" class="message" aria-live="polite"></div>
+          <div class="register-row">
+            <button class="button" type="submit">メディア登録</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const tagsByCategory = <%- JSON.stringify(tagsByCategory) %>;
+        const tagList = document.getElementById('tag-list');
+        const mediaList = document.getElementById('media-list');
+        const categoryInput = document.getElementById('category-input');
+        const tagInput = document.getElementById('tag-input');
+        const tagOptions = document.getElementById('tag-options');
+        const addTagButton = document.getElementById('add-tag-button');
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('file-input');
+        const form = document.getElementById('entry-form');
+        const formMessage = document.getElementById('form-message');
+
+        const selectedTags = [];
+        const mediaFiles = [];
+
+        const updateTagOptions = () => {
+          const category = categoryInput.value.trim();
+          const candidates = Array.isArray(tagsByCategory[category]) ? tagsByCategory[category] : [];
+          tagOptions.innerHTML = candidates
+            .map(label => `<option value="${label}"></option>`)
+            .join('');
+        };
+
+        const renderTags = () => {
+          tagList.innerHTML = '';
+          selectedTags.forEach((tag, index) => {
+            const item = document.createElement('div');
+            item.className = 'tag-item';
+            item.innerHTML = `
+              <div class="tag-item-header">
+                <div>
+                  <div class="tag-category">${tag.category}</div>
+                  <div class="tag-label">${tag.label}</div>
+                </div>
+                <button class="button danger" type="button" data-remove-tag="${index}">削除</button>
+              </div>
+            `;
+            tagList.appendChild(item);
+          });
+        };
+
+        const createThumbnail = file => {
+          if (file.type.startsWith('image/')) {
+            const url = URL.createObjectURL(file);
+            return `<img class="thumb" src="${url}" alt="${file.name}">`;
+          }
+          return '<div class="thumb">動画</div>';
+        };
+
+        const renderFiles = () => {
+          mediaList.innerHTML = '';
+          mediaFiles.forEach((entry, index) => {
+            const item = document.createElement('div');
+            item.className = 'media-item';
+            item.innerHTML = `
+              <div class="media-item-header">
+                <strong>ページ ${index + 1}</strong>
+                <div class="media-actions">
+                  ${index > 0 ? `<button class="button secondary" type="button" data-move-up="${index}">上へ</button>` : ''}
+                  ${index < mediaFiles.length - 1 ? `<button class="button secondary" type="button" data-move-down="${index}">下へ</button>` : ''}
+                  <button class="button danger" type="button" data-remove-file="${index}">削除</button>
+                </div>
+              </div>
+              <div class="media-item-body">
+                ${createThumbnail(entry.file)}
+                <div>${entry.file.name}</div>
+              </div>
+            `;
+            mediaList.appendChild(item);
+          });
+        };
+
+        const addFiles = files => {
+          Array.from(files)
+            .filter(file => file.type.startsWith('image/') || file.type.startsWith('video/'))
+            .forEach(file => mediaFiles.push({ file }));
+          renderFiles();
+        };
+
+        categoryInput.addEventListener('change', updateTagOptions);
+        categoryInput.addEventListener('input', updateTagOptions);
+
+        addTagButton.addEventListener('click', () => {
+          const category = categoryInput.value.trim();
+          const label = tagInput.value.trim();
+          if (!category || !label) {
+            formMessage.className = 'message error';
+            formMessage.textContent = 'カテゴリーとタグを入力してください。';
+            return;
+          }
+          selectedTags.push({ category, label });
+          categoryInput.value = '';
+          tagInput.value = '';
+          updateTagOptions();
+          renderTags();
+          formMessage.className = 'message';
+          formMessage.textContent = '';
+        });
+
+        tagList.addEventListener('click', event => {
+          const { removeTag } = event.target.dataset;
+          if (removeTag === undefined) {
+            return;
+          }
+          selectedTags.splice(Number(removeTag), 1);
+          renderTags();
+        });
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            fileInput.click();
+          }
+        });
+        fileInput.addEventListener('change', event => addFiles(event.target.files));
+
+        ['dragenter', 'dragover'].forEach(type => {
+          dropzone.addEventListener(type, event => {
+            event.preventDefault();
+            dropzone.classList.add('dragover');
+          });
+        });
+        ['dragleave', 'drop'].forEach(type => {
+          dropzone.addEventListener(type, event => {
+            event.preventDefault();
+            dropzone.classList.remove('dragover');
+          });
+        });
+        dropzone.addEventListener('drop', event => addFiles(event.dataTransfer.files));
+
+        mediaList.addEventListener('click', event => {
+          const { moveUp, moveDown, removeFile } = event.target.dataset;
+          if (moveUp !== undefined) {
+            const index = Number(moveUp);
+            [mediaFiles[index - 1], mediaFiles[index]] = [mediaFiles[index], mediaFiles[index - 1]];
+            renderFiles();
+            return;
+          }
+          if (moveDown !== undefined) {
+            const index = Number(moveDown);
+            [mediaFiles[index + 1], mediaFiles[index]] = [mediaFiles[index], mediaFiles[index + 1]];
+            renderFiles();
+            return;
+          }
+          if (removeFile !== undefined) {
+            mediaFiles.splice(Number(removeFile), 1);
+            renderFiles();
+          }
+        });
+
+        form.addEventListener('submit', async event => {
+          event.preventDefault();
+          formMessage.className = 'message';
+          formMessage.textContent = '';
+
+          if (mediaFiles.length === 0) {
+            formMessage.className = 'message error';
+            formMessage.textContent = 'メディアファイルを1件以上追加してください。';
+            return;
+          }
+
+          const payload = new FormData();
+          payload.append('title', document.getElementById('title').value.trim());
+          selectedTags.forEach((tag, index) => {
+            payload.append(`tags[${index}][category]`, tag.category);
+            payload.append(`tags[${index}][label]`, tag.label);
+          });
+          mediaFiles.forEach((entry, index) => {
+            payload.append(`contents[${index}][position]`, String(index + 1));
+            payload.append(`contents[${index}][file]`, entry.file, entry.file.name);
+          });
+
+          try {
+            const response = await fetch('/api/media', {
+              method: 'POST',
+              headers: {
+                'x-session-token': window.localStorage.getItem('session_token') || '',
+              },
+              body: payload,
+            });
+            const result = await response.json();
+            if (!response.ok) {
+              throw new Error(result.message || 'メディア登録に失敗しました。');
+            }
+            formMessage.className = 'message success';
+            formMessage.textContent = `メディアを登録しました (mediaId: ${result.mediaId})`;
+            form.reset();
+            selectedTags.splice(0, selectedTags.length);
+            mediaFiles.splice(0, mediaFiles.length);
+            renderTags();
+            renderFiles();
+          } catch (error) {
+            formMessage.className = 'message error';
+            formMessage.textContent = error.message;
+          }
+        });
+
+        updateTagOptions();
+        renderTags();
+        renderFiles();
+      })();
+    </script>
+  </body>
+</html>
