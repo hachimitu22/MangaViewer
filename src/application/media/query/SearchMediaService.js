@@ -30,6 +30,9 @@ class Input {
 }
 
 const isMediaOverviewLike = (obj) => {
+  if (typeof obj.mediaId !== 'string') {
+    return false;
+  }
   if (typeof obj.title !== 'string') {
     return false;
   }
@@ -54,6 +57,9 @@ const isMediaOverviewLike = (obj) => {
 class Output {
   constructor({ mediaOverviews, totalCount }) {
     if (!(mediaOverviews instanceof Array) || !mediaOverviews.every(isMediaOverviewLike)) {
+      throw new Error();
+    }
+    if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
       throw new Error();
     }
 

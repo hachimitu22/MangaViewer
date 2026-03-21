@@ -8,12 +8,15 @@ const setRouterScreenEntryGet = require('../controller/router/screen/setRouterSc
 const setRouterScreenErrorGet = require('../controller/router/screen/setRouterScreenErrorGet');
 const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
+const setRouterScreenSummaryGet = require('../controller/router/screen/setRouterScreenSummaryGet');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
+const SequelizeMediaQueryRepository = require('../infrastructure/SequelizeMediaQueryRepository');
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
+const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -41,6 +44,8 @@ const createDependencies = (env = {}) => {
     unitOfWorkContext: unitOfWork,
   });
   const sessionStateStore = new InMemorySessionStateStore();
+  const mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
+  const searchMediaService = new SearchMediaService({ mediaQueryRepository });
 
   if (hasDevelopmentSession(env)) {
     sessionStateStore.save({
@@ -54,6 +59,8 @@ const createDependencies = (env = {}) => {
     sequelize,
     unitOfWork,
     mediaRepository,
+    mediaQueryRepository,
+    searchMediaService,
     sessionStateStore,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
@@ -68,6 +75,7 @@ const createDependencies = (env = {}) => {
       setRouterScreenErrorGet,
       setRouterScreenLoginGet,
       setRouterScreenSearchGet,
+      setRouterScreenSummaryGet,
     },
   };
 

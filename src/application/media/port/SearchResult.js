@@ -13,7 +13,10 @@ class MediaOverviewTag {
 }
 
 class MediaOverview {
-  constructor({ title, thumbnail, tags, priorityCategories }) {
+  constructor({ mediaId, title, thumbnail, tags, priorityCategories }) {
+    if (typeof mediaId !== 'string') {
+      throw new Error();
+    }
     if (typeof title !== 'string') {
       throw new Error();
     }
@@ -27,6 +30,7 @@ class MediaOverview {
       throw new Error();
     }
 
+    this.mediaId = mediaId;
     this.title = title;
     this.thumbnail = thumbnail;
     this.tags = tags;

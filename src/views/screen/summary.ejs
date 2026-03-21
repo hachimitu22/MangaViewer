@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      a { color: #2563eb; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+      .stack { display: grid; gap: 24px; }
+      .card {
+        background: #fff; border: 1px solid #d1d5db; border-radius: 16px; padding: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+      h1 { margin: 0 0 12px; font-size: 32px; }
+      .condition-list, .tag-list { display: flex; gap: 8px; flex-wrap: wrap; }
+      .chip { background: #eff6ff; color: #1d4ed8; border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+      .summary-header { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+      .media-grid { display: grid; gap: 16px; }
+      .media-card { border: 1px solid #dbe3f0; border-radius: 16px; background: #f8fafc; padding: 16px; }
+      .media-body { display: grid; grid-template-columns: 160px 1fr; gap: 16px; }
+      .thumbnail {
+        width: 160px; height: 120px; border-radius: 12px; background: #dbeafe; overflow: hidden;
+        display:flex; align-items:center; justify-content:center; color:#1d4ed8; font-size:12px;
+      }
+      .thumbnail img { width:100%; height:100%; object-fit:cover; }
+      .meta { display:grid; gap: 12px; }
+      .actions { display:flex; gap:12px; flex-wrap:wrap; }
+      .priority { font-size: 14px; color: #475569; }
+      .pagination { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+      .page-link, .page-current, .ellipsis {
+        min-width: 40px; height: 40px; border-radius: 999px; display:inline-flex; align-items:center; justify-content:center;
+        border: 1px solid #cbd5e1; background: #fff; padding: 0 12px;
+      }
+      .page-current { background: #2563eb; color: #fff; border-color: #2563eb; }
+      .empty { color: #64748b; }
+      .sort-form { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+      .select-input { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; background:#fff; }
+      .button { border: 0; border-radius: 10px; padding: 10px 16px; background:#2563eb; color:#fff; cursor:pointer; }
+      @media (max-width: 720px) {
+        .media-body { grid-template-columns: 1fr; }
+        .thumbnail { width: 100%; height: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="stack">
+        <section class="card">
+          <h1><%= pageTitle %></h1>
+          <p>現在の検索条件</p>
+          <div class="condition-list">
+            <% if (currentConditions.title) { %>
+              <span class="chip">タイトル: <%= currentConditions.title %></span>
+            <% } %>
+            <% currentConditions.tags.forEach((tag) => { %>
+              <span class="chip"><%= tag.category %>:<%= tag.label %></span>
+            <% }) %>
+            <% if (!currentConditions.title && currentConditions.tags.length === 0) { %>
+              <span class="chip">条件なし</span>
+            <% } %>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="summary-header">
+            <p><strong><%= totalCount %></strong> 件</p>
+            <form class="sort-form" method="get" action="/screen/summary">
+              <input type="hidden" name="summaryPage" value="1" />
+              <% if (currentConditions.title) { %><input type="hidden" name="title" value="<%= currentConditions.title %>" /><% } %>
+              <% currentConditions.tags.forEach((tag) => { %>
+                <input type="hidden" name="tags" value="<%= `${tag.category}:${tag.label}` %>" />
+              <% }) %>
+              <label for="sort">並び順</label>
+              <select id="sort" name="sort" class="select-input" onchange="this.form.submit()">
+                <% sortOptions.forEach((option) => { %>
+                  <option value="<%= option.value %>" <%= currentConditions.sort === option.value ? 'selected' : '' %>><%= option.label %></option>
+                <% }) %>
+              </select>
+              <noscript><button class="button" type="submit">更新</button></noscript>
+            </form>
+          </div>
+
+          <% if (mediaOverviews.length === 0) { %>
+            <p class="empty">検索結果0件ラベル</p>
+          <% } else { %>
+            <div class="media-grid">
+              <% mediaOverviews.forEach((media) => { %>
+                <article class="media-card">
+                  <div class="media-body">
+                    <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
+                      <% if (media.thumbnail) { %>
+                        <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
+                      <% } else { %>
+                        <span>NO IMAGE</span>
+                      <% } %>
+                    </a>
+                    <div class="meta">
+                      <div>
+                        <h2><a href="/screen/detail/<%= media.mediaId %>"><%= media.title %></a></h2>
+                        <% if (media.priorityCategories.length > 0) { %>
+                          <p class="priority">優先カテゴリ: <%= media.priorityCategories.join(' / ') %></p>
+                        <% } %>
+                      </div>
+                      <div class="tag-list">
+                        <% media.tags.forEach((tag) => { %>
+                          <a class="chip" href="/screen/summary?summaryPage=1&sort=<%= currentConditions.sort %>&tags=<%= encodeURIComponent(`${tag.category}:${tag.label}`) %>"><%= tag.category %>:<%= tag.label %></a>
+                        <% }) %>
+                      </div>
+                      <div class="actions">
+                        <a href="/screen/detail/<%= media.mediaId %>">詳細画面へ</a>
+                        <a href="/screen/viewer/<%= media.mediaId %>/1">ビューアー先頭ページへ</a>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <nav class="card">
+          <div class="pagination">
+            <% pagination.items.forEach((item) => { %>
+              <% if (item === 'ellipsis') { %>
+                <span class="ellipsis">...</span>
+              <% } else if (item === pagination.currentPage) { %>
+                <span class="page-current"><%= item %></span>
+              <% } else { %>
+                <% const params = new URLSearchParams(); %>
+                <% params.set('summaryPage', String(item)); %>
+                <% params.set('sort', currentConditions.sort); %>
+                <% if (currentConditions.title) { params.set('title', currentConditions.title); } %>
+                <% currentConditions.tags.forEach((tag) => params.append('tags', `${tag.category}:${tag.label}`)); %>
+                <a class="page-link" href="/screen/summary?<%= params.toString() %>"><%= item %></a>
+              <% } %>
+            <% }) %>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </body>
+</html>
