@@ -9,7 +9,7 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
     async (req, res, next) => {
       try {
         const result = await getMediaDetailService.execute(new Input({
-          id: req.params.mediaId,
+          mediaId: req.params.mediaId,
         }));
 
         res.status(200).render('screen/edit', {

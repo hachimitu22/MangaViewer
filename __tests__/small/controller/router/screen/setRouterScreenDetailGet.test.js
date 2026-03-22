@@ -1,17 +1,18 @@
-const setRouterScreenEditGet = require('../../../../../src/controller/router/screen/setRouterScreenEditGet');
+const setRouterScreenDetailGet = require('../../../../../src/controller/router/screen/setRouterScreenDetailGet');
 
-describe('setRouterScreenEditGet', () => {
+describe('setRouterScreenDetailGet', () => {
   const createRes = () => {
     const res = {
       status: jest.fn(),
       render: jest.fn(),
+      redirect: jest.fn(),
       json: jest.fn(),
     };
     res.status.mockReturnValue(res);
     return res;
   };
 
-  it('GET /screen/edit/:mediaId に認証・描画ハンドラーを登録できる', async () => {
+  it('GET /screen/detail/:mediaId に認証・描画ハンドラーを登録できる', async () => {
     const router = {
       get: jest.fn(),
     };
@@ -30,11 +31,11 @@ describe('setRouterScreenEditGet', () => {
       }),
     };
 
-    setRouterScreenEditGet({ router, authResolver, getMediaDetailService });
+    setRouterScreenDetailGet({ router, authResolver, getMediaDetailService });
 
     expect(router.get).toHaveBeenCalledTimes(1);
     const [path, ...handlers] = router.get.mock.calls[0];
-    expect(path).toBe('/screen/edit/:mediaId');
+    expect(path).toBe('/screen/detail/:mediaId');
     expect(handlers).toHaveLength(2);
 
     const req = {
@@ -51,8 +52,8 @@ describe('setRouterScreenEditGet', () => {
     expect(authResolver.execute).toHaveBeenCalledWith('token-1');
     expect(getMediaDetailService.execute).toHaveBeenCalledWith(expect.objectContaining({ mediaId: 'media-1' }));
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.render).toHaveBeenCalledWith('screen/edit', expect.objectContaining({
-      pageTitle: '作品タイトル の編集',
+    expect(res.render).toHaveBeenCalledWith('screen/detail', expect.objectContaining({
+      pageTitle: '作品タイトル の詳細',
       mediaDetail: expect.objectContaining({ id: 'media-1' }),
     }));
   });
