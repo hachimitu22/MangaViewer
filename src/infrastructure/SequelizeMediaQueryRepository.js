@@ -9,6 +9,23 @@ const {
 } = require('../application/media/port/SearchResult');
 const { defineModels } = require('./SequelizeMediaRepository');
 
+
+const extractMediaIdValue = mediaId => {
+  if (typeof mediaId === 'string') {
+    return mediaId;
+  }
+  if (mediaId && typeof mediaId.get === 'function') {
+    const value = mediaId.get('media_id');
+    if (typeof value === 'string') {
+      return value;
+    }
+  }
+  if (typeof mediaId?.media_id === 'string') {
+    return mediaId.media_id;
+  }
+  return null;
+};
+
 const buildSortOrder = (sortType) => {
   switch (sortType) {
     case SortType.DATE_ASC:
@@ -75,21 +92,29 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
   }
 
   async findOverviewsByMediaIds(mediaIds) {
-    if (!(mediaIds instanceof Array) || !mediaIds.every(mediaId => typeof mediaId === 'string')) {
+    if (!(mediaIds instanceof Array)) {
       throw new Error();
     }
-    if (mediaIds.length === 0) {
+
+    const normalizedMediaIds = mediaIds
+      .map(extractMediaIdValue)
+      .filter(mediaId => typeof mediaId === 'string');
+
+    if (normalizedMediaIds.length !== mediaIds.length) {
+      throw new Error();
+    }
+    if (normalizedMediaIds.length === 0) {
       return [];
     }
 
     const { MediaModel, ContentModel, TagModel, CategoryModel, MediaTagModel, MediaCategoryModel } = this.#models;
     const [contentRows, tagRows, categoryRows, mediaRows] = await Promise.all([
       ContentModel.findAll({
-        where: { media_id: mediaIds },
+        where: { media_id: normalizedMediaIds },
         order: [['media_id', 'ASC'], ['position', 'ASC']],
       }),
       MediaTagModel.findAll({
-        where: { media_id: mediaIds },
+        where: { media_id: normalizedMediaIds },
         include: [{
           model: TagModel,
           as: 'tag',
@@ -97,11 +122,11 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
         }],
       }),
       MediaCategoryModel.findAll({
-        where: { media_id: mediaIds },
+        where: { media_id: normalizedMediaIds },
         include: [{ model: CategoryModel, as: 'category' }],
         order: [['media_id', 'ASC'], ['priority', 'ASC']],
       }),
-      MediaModel.findAll({ where: { media_id: mediaIds } }),
+      MediaModel.findAll({ where: { media_id: normalizedMediaIds } }),
     ]);
 
     const mediaRowMap = new Map(mediaRows.map(row => [row.media_id, row]));
@@ -129,7 +154,7 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
       priorityCategoriesMap.set(row.media_id, items);
     });
 
-    return mediaIds
+    return normalizedMediaIds
       .map(mediaId => mediaRowMap.get(mediaId))
       .filter(Boolean)
       .map(row => new MediaOverview({
@@ -225,6 +250,6 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
     }
 
     const rows = await MediaModel.findAll(query);
-    return rows.map(row => row.media_id);
+    return rows.map(row => extractMediaIdValue(row));
   }
 };

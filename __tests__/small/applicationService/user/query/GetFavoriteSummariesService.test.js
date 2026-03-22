@@ -12,7 +12,7 @@ describe('GetFavoriteSummariesService', () => {
   test('user の favorite を media overview 一覧へ変換して返す', async () => {
     const userRepository = new MockUserRepository();
     const mediaQueryRepository = new MockMediaQueryRepository();
-    const user = new User(new UserId('user-001'));
+    const user = new User(new UserId('user001'));
     user.addFavorite(new MediaId('media-001'));
     user.addFavorite(new MediaId('media-002'));
 
@@ -23,7 +23,7 @@ describe('GetFavoriteSummariesService', () => {
     ]);
 
     const service = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
-    const result = await service.execute(new Input({ userId: 'user-001' }));
+    const result = await service.execute(new Input({ userId: 'user001' }));
 
     expect(userRepository.findByUserId).toHaveBeenCalledWith(expect.objectContaining({}));
     expect(mediaQueryRepository.findOverviewsByMediaIds).toHaveBeenCalledWith(['media-001', 'media-002']);

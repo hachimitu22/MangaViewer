@@ -23,14 +23,14 @@ describe('SequelizeUserRepository', () => {
   });
 
   test('save / findByUserId で favorite と queue を永続化できる', async () => {
-    const user = new User(new UserId('user-001'));
+    const user = new User(new UserId('user001'));
     user.addFavorite(new MediaId('media-001'));
     user.addFavorite(new MediaId('media-002'));
     user.addQueue(new MediaId('media-003'));
 
     await userRepository.save(user);
 
-    const found = await userRepository.findByUserId(new UserId('user-001'));
+    const found = await userRepository.findByUserId(new UserId('user001'));
     expect(found.getFavorites().map(mediaId => mediaId.getId())).toEqual(['media-001', 'media-002']);
     expect(found.getQueue().map(mediaId => mediaId.getId())).toEqual(['media-003']);
   });
