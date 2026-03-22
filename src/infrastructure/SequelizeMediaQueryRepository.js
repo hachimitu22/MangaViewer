@@ -92,7 +92,7 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
   }
 
   async findOverviewsByMediaIds(mediaIds) {
-    if (!(mediaIds instanceof Array)) {
+    if (!Array.isArray(mediaIds)) {
       throw new Error();
     }
 
