@@ -42,7 +42,7 @@
           <% } else { %>
             <div class="media-grid">
               <% mediaOverviews.forEach((media) => { %>
-                <article class="media-card" data-media-id="<%= media.mediaId %>">
+                <article class="media-card" data-media-id="<%= media.mediaId %>" data-favorite-delete-path="/api/favorite/<%= media.mediaId %>" data-queue-put-path="/api/queue/<%= media.mediaId %>">
                   <div class="media-body">
                     <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
                       <% if (media.thumbnail) { %>
@@ -95,17 +95,18 @@
         };
 
         document.querySelectorAll('[data-media-id]').forEach(card => {
-          const mediaId = card.dataset.mediaId;
+          const favoriteDeletePath = card.dataset.favoriteDeletePath;
+          const queuePutPath = card.dataset.queuePutPath;
           const statusElement = card.querySelector('.status');
           card.querySelector('.js-favorite-remove').addEventListener('click', () => request({
-            path: `/api/favorite/${mediaId}`,
+            path: favoriteDeletePath,
             method: 'DELETE',
             successMessage: 'お気に入りから削除しました',
             statusElement,
             onSuccess: () => card.remove(),
           }));
           card.querySelector('.js-queue-add').addEventListener('click', () => request({
-            path: `/api/queue/${mediaId}`,
+            path: queuePutPath,
             method: 'PUT',
             successMessage: 'あとで見るに追加しました',
             statusElement,
