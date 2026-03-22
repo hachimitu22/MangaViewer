@@ -5,6 +5,7 @@ const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
+const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
 const setRouterScreenErrorGet = require('../controller/router/screen/setRouterScreenErrorGet');
 const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
@@ -17,6 +18,7 @@ const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
+const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -46,6 +48,7 @@ const createDependencies = (env = {}) => {
   const sessionStateStore = new InMemorySessionStateStore();
   const mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
   const searchMediaService = new SearchMediaService({ mediaQueryRepository });
+  const getMediaDetailService = new GetMediaDetailService({ mediaRepository });
 
   if (hasDevelopmentSession(env)) {
     sessionStateStore.save({
@@ -61,6 +64,7 @@ const createDependencies = (env = {}) => {
     mediaRepository,
     mediaQueryRepository,
     searchMediaService,
+    getMediaDetailService,
     sessionStateStore,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
@@ -72,6 +76,7 @@ const createDependencies = (env = {}) => {
     routeSetters: {
       setRouterApiMediaPost,
       setRouterScreenEntryGet,
+      setRouterScreenDetailGet,
       setRouterScreenErrorGet,
       setRouterScreenLoginGet,
       setRouterScreenSearchGet,

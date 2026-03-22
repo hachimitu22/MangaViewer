@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      a { color: #2563eb; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+      .stack { display: grid; gap: 24px; }
+      .card {
+        background: #fff; border: 1px solid #d1d5db; border-radius: 16px; padding: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+      h1 { margin: 0; font-size: 32px; }
+      h2 { margin: 0 0 16px; font-size: 20px; }
+      .list { margin: 0; padding-left: 20px; display: grid; gap: 8px; }
+      .chip-list, .action-list { display: flex; gap: 12px; flex-wrap: wrap; }
+      .chip { background: #eff6ff; color: #1d4ed8; border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+      .link-button, .api-button {
+        border: 0; border-radius: 10px; padding: 12px 18px; font-size: 14px; font-weight: 700;
+        cursor: pointer; background: #2563eb; color: #fff; display: inline-flex; align-items: center;
+      }
+      .api-button.secondary { background: #475569; }
+      .status { min-height: 24px; color: #475569; font-size: 14px; }
+      .empty { color: #64748b; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="stack">
+        <section class="card">
+          <h1><%= mediaDetail.title %></h1>
+        </section>
+
+        <section class="card">
+          <h2>contents の一覧</h2>
+          <% if (mediaDetail.contents.length === 0) { %>
+            <p class="empty">コンテンツはありません。</p>
+          <% } else { %>
+            <ol class="list">
+              <% mediaDetail.contents.forEach((contentId) => { %>
+                <li><%= contentId %></li>
+              <% }) %>
+            </ol>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>タグ一覧</h2>
+          <% if (mediaDetail.tags.length === 0) { %>
+            <p class="empty">タグはありません。</p>
+          <% } else { %>
+            <div class="chip-list">
+              <% mediaDetail.tags.forEach((tag) => { %>
+                <span class="chip"><%= tag.category %>:<%= tag.label %></span>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>優先カテゴリ</h2>
+          <% if (mediaDetail.priorityCategories.length === 0) { %>
+            <p class="empty">優先カテゴリはありません。</p>
+          <% } else { %>
+            <div class="chip-list">
+              <% mediaDetail.priorityCategories.forEach((category) => { %>
+                <span class="chip"><%= category %></span>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>導線</h2>
+          <div class="action-list">
+            <a class="link-button" href="/screen/viewer/<%= mediaDetail.id %>/1">ビューアーへ</a>
+            <a class="link-button" href="/screen/edit/<%= mediaDetail.id %>">編集画面へ</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>ユーザー操作</h2>
+          <div class="action-list">
+            <button id="favorite-add" class="api-button" type="button">お気に入り追加</button>
+            <button id="favorite-remove" class="api-button secondary" type="button">お気に入り削除</button>
+            <button id="queue-add" class="api-button" type="button">あとで見る追加</button>
+            <button id="queue-remove" class="api-button secondary" type="button">あとで見る削除</button>
+          </div>
+          <p id="request-status" class="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const mediaId = <%- JSON.stringify(mediaDetail.id) %>;
+        const status = document.getElementById('request-status');
+
+        const request = async (path, method, successMessage) => {
+          status.textContent = '通信中です...';
+          try {
+            const response = await fetch(path, {
+              method,
+              headers: {
+                Accept: 'application/json',
+              },
+            });
+
+            if (!response.ok) {
+              status.textContent = `${successMessage}に失敗しました (${response.status})`;
+              return;
+            }
+
+            status.textContent = successMessage;
+          } catch (_error) {
+            status.textContent = `${successMessage}に失敗しました`;
+          }
+        };
+
+        document.getElementById('favorite-add').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'POST', 'お気に入りに追加しました'));
+        document.getElementById('favorite-remove').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'DELETE', 'お気に入りから削除しました'));
+        document.getElementById('queue-add').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'POST', 'あとで見るに追加しました'));
+        document.getElementById('queue-remove').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'DELETE', 'あとで見るから削除しました'));
+      })();
+    </script>
+  </body>
+</html>
