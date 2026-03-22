@@ -6,6 +6,7 @@ module.exports = class MockMediaQueryRepository extends IMediaQueryRepository {
 
     [
       'search',
+      'findOverviewsByMediaIds',
     ].forEach(propertyName => {
       if (!(propertyName in this)) {
         throw new Error();

@@ -130,7 +130,7 @@
 
         document.getElementById('favorite-add').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'POST', 'お気に入りに追加しました'));
         document.getElementById('favorite-remove').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'DELETE', 'お気に入りから削除しました'));
-        document.getElementById('queue-add').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'POST', 'あとで見るに追加しました'));
+        document.getElementById('queue-add').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'PUT', 'あとで見るに追加しました'));
         document.getElementById('queue-remove').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'DELETE', 'あとで見るから削除しました'));
       })();
     </script>

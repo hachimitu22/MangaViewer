@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root { color-scheme: light; font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif; background: #f5f6f8; color: #1f2937; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      a { color: #2563eb; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+      .stack { display: grid; gap: 24px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06); }
+      .media-grid { display: grid; gap: 16px; }
+      .media-card { border: 1px solid #dbe3f0; border-radius: 16px; background: #f8fafc; padding: 16px; }
+      .media-body { display: grid; grid-template-columns: 160px 1fr; gap: 16px; }
+      .thumbnail { width: 160px; height: 120px; border-radius: 12px; background: #dbeafe; overflow: hidden; display:flex; align-items:center; justify-content:center; color:#1d4ed8; font-size:12px; }
+      .thumbnail img { width:100%; height:100%; object-fit:cover; }
+      .meta { display:grid; gap: 12px; }
+      .tag-list, .actions { display:flex; gap:12px; flex-wrap:wrap; }
+      .chip { background: #eff6ff; color: #1d4ed8; border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+      .button { border: 0; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer; background:#2563eb; color:#fff; }
+      .button.secondary { background:#475569; }
+      .status { min-height: 20px; font-size: 13px; color: #475569; }
+      .empty { color: #64748b; }
+      @media (max-width: 720px) { .media-body { grid-template-columns: 1fr; } .thumbnail { width: 100%; height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="stack">
+        <section class="card">
+          <h1><%= pageTitle %></h1>
+          <p>お気に入りに登録したメディアを一覧表示します。</p>
+        </section>
+
+        <section class="card">
+          <% if (mediaOverviews.length === 0) { %>
+            <p class="empty">お気に入りはまだありません。</p>
+          <% } else { %>
+            <div class="media-grid">
+              <% mediaOverviews.forEach((media) => { %>
+                <article class="media-card" data-media-id="<%= media.mediaId %>" data-favorite-delete-path="/api/favorite/<%= media.mediaId %>" data-queue-put-path="/api/queue/<%= media.mediaId %>">
+                  <div class="media-body">
+                    <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
+                      <% if (media.thumbnail) { %>
+                        <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
+                      <% } else { %>
+                        <span>NO IMAGE</span>
+                      <% } %>
+                    </a>
+                    <div class="meta">
+                      <div>
+                        <h2><%= media.title %></h2>
+                      </div>
+                      <div class="tag-list">
+                        <% media.tags.forEach((tag) => { %>
+                          <span class="chip"><%= tag.category %>:<%= tag.label %></span>
+                        <% }) %>
+                      </div>
+                      <div class="actions">
+                        <a href="/screen/detail/<%= media.mediaId %>">詳細画面へ</a>
+                        <a href="/screen/viewer/<%= media.mediaId %>/1">ビューアーへ</a>
+                        <button class="button secondary js-favorite-remove" type="button">お気に入り解除</button>
+                        <button class="button js-queue-add" type="button">あとで見る追加</button>
+                      </div>
+                      <p class="status" aria-live="polite"></p>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const request = async ({ path, method, successMessage, statusElement, onSuccess }) => {
+          statusElement.textContent = '通信中です...';
+          try {
+            const response = await fetch(path, { method, headers: { Accept: 'application/json' } });
+            if (!response.ok) {
+              statusElement.textContent = `${successMessage}に失敗しました (${response.status})`;
+              return;
+            }
+            statusElement.textContent = successMessage;
+            if (typeof onSuccess === 'function') onSuccess();
+          } catch (_error) {
+            statusElement.textContent = `${successMessage}に失敗しました`;
+          }
+        };
+
+        document.querySelectorAll('[data-media-id]').forEach(card => {
+          const favoriteDeletePath = card.dataset.favoriteDeletePath;
+          const queuePutPath = card.dataset.queuePutPath;
+          const statusElement = card.querySelector('.status');
+          card.querySelector('.js-favorite-remove').addEventListener('click', () => request({
+            path: favoriteDeletePath,
+            method: 'DELETE',
+            successMessage: 'お気に入りから削除しました',
+            statusElement,
+            onSuccess: () => card.remove(),
+          }));
+          card.querySelector('.js-queue-add').addEventListener('click', () => request({
+            path: queuePutPath,
+            method: 'PUT',
+            successMessage: 'あとで見るに追加しました',
+            statusElement,
+          }));
+        });
+      })();
+    </script>
+  </body>
+</html>
