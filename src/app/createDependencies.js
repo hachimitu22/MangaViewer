@@ -6,6 +6,7 @@ const { Sequelize } = require('sequelize');
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
+const setRouterScreenEditGet = require('../controller/router/screen/setRouterScreenEditGet');
 const setRouterScreenErrorGet = require('../controller/router/screen/setRouterScreenErrorGet');
 const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
@@ -77,6 +78,7 @@ const createDependencies = (env = {}) => {
       setRouterApiMediaPost,
       setRouterScreenEntryGet,
       setRouterScreenDetailGet,
+      setRouterScreenEditGet,
       setRouterScreenErrorGet,
       setRouterScreenLoginGet,
       setRouterScreenSearchGet,
