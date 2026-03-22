@@ -50,7 +50,7 @@ class MediaOverview {
 
 class SearchResult {
   constructor({ mediaOverviews, totalCount }) {
-    if (!(mediaOverviews instanceof Array) || !mediaOverviews.every(isMediaOverviewLike)) {
+    if (!Array.isArray(mediaOverviews) || !mediaOverviews.every(isMediaOverviewLike)) {
       throw new Error();
     }
     if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
