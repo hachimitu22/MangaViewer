@@ -72,14 +72,14 @@ describe('createApp', () => {
     });
   });
 
-  test('固定セッション設定がある場合は /screen/entry と /screen/search と /api/media で認証を補完し、/screen/login を表示できる', async () => {
+  test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary と /api/media で認証を補完し、/screen/login を表示できる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
-      devSessionPaths: ['/screen/entry', '/screen/search', '/api/media'],
+      devSessionPaths: ['/screen/entry', '/screen/search', '/screen/summary', '/api/media'],
     });
 
     await app.locals.ready;
@@ -93,6 +93,12 @@ describe('createApp', () => {
     expect(searchResponse.status).toBe(200);
     expect(searchResponse.type).toBe('text/html');
     expect(searchResponse.text).toContain('<title>メディア検索</title>');
+
+
+    const summaryResponse = await request(app).get('/screen/summary');
+    expect(summaryResponse.status).toBe(200);
+    expect(summaryResponse.type).toBe('text/html');
+    expect(summaryResponse.text).toContain('<title>メディア一覧</title>');
 
     const loginResponse = await request(app).get('/screen/login');
     expect(loginResponse.status).toBe(200);

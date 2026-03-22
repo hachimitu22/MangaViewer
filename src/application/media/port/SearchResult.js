@@ -1,3 +1,5 @@
+const isMediaOverviewTagLike = tag => typeof tag?.category === 'string' && typeof tag?.label === 'string';
+
 class MediaOverviewTag {
   constructor({ category, label }) {
     if (typeof category !== 'string') {
@@ -12,21 +14,33 @@ class MediaOverviewTag {
   }
 }
 
+const isMediaOverviewLike = mediaOverview => typeof mediaOverview?.mediaId === 'string'
+  && typeof mediaOverview?.title === 'string'
+  && typeof mediaOverview?.thumbnail === 'string'
+  && Array.isArray(mediaOverview?.tags)
+  && mediaOverview.tags.every(isMediaOverviewTagLike)
+  && Array.isArray(mediaOverview?.priorityCategories)
+  && mediaOverview.priorityCategories.every(priorityCategory => typeof priorityCategory === 'string');
+
 class MediaOverview {
-  constructor({ title, thumbnail, tags, priorityCategories }) {
+  constructor({ mediaId, title, thumbnail, tags, priorityCategories }) {
+    if (typeof mediaId !== 'string') {
+      throw new Error();
+    }
     if (typeof title !== 'string') {
       throw new Error();
     }
     if (typeof thumbnail !== 'string') {
       throw new Error();
     }
-    if (!(tags instanceof Array) || !tags.every(tag => tag instanceof MediaOverviewTag)) {
+    if (!(tags instanceof Array) || !tags.every(isMediaOverviewTagLike)) {
       throw new Error();
     }
     if (!(priorityCategories instanceof Array) || !priorityCategories.every(pc => typeof pc === 'string')) {
       throw new Error();
     }
 
+    this.mediaId = mediaId;
     this.title = title;
     this.thumbnail = thumbnail;
     this.tags = tags;
@@ -36,14 +50,17 @@ class MediaOverview {
 
 class SearchResult {
   constructor({ mediaOverviews, totalCount }) {
-    if (!(mediaOverviews instanceof Array) || !mediaOverviews.every(mov => mov instanceof MediaOverview)) {
+    if (!Array.isArray(mediaOverviews) || !mediaOverviews.every(isMediaOverviewLike)) {
       throw new Error();
     }
     if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
       throw new Error();
     }
 
-    this.mediaOverviews = mediaOverviews;
+    this.mediaOverviews = mediaOverviews.map(mediaOverview => new MediaOverview({
+      ...mediaOverview,
+      tags: mediaOverview.tags.map(tag => new MediaOverviewTag(tag)),
+    }));
     this.totalCount = totalCount;
   }
 }

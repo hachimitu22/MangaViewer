@@ -47,6 +47,7 @@ describe("SearchMediaService", () => {
     mockRepo.search.mockResolvedValue(new SearchResult({
       mediaOverviews: [
         new MediaOverview({
+          mediaId: 'media-001',
           title: 'Title',
           thumbnail: 'ID',
           tags: [new MediaOverviewTag({ category: 'C', label: 'L' })],
@@ -62,6 +63,7 @@ describe("SearchMediaService", () => {
     // assert
     expect(result).toEqual(new Output({
       mediaOverviews: [{
+        mediaId: 'media-001',
         title: 'Title',
         thumbnail: 'ID',
         tags: [{ category: 'C', label: 'L' }],
