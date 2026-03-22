@@ -7,6 +7,7 @@ module.exports = class MockUserRepository extends IUserRepository {
     [
       'save',
       'findByUserId',
+      'sync',
     ].forEach(propertyName => {
       if (!(propertyName in this)) {
         throw new Error();

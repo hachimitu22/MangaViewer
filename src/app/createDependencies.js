@@ -8,18 +8,26 @@ const setRouterScreenEntryGet = require('../controller/router/screen/setRouterSc
 const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
 const setRouterScreenEditGet = require('../controller/router/screen/setRouterScreenEditGet');
 const setRouterScreenErrorGet = require('../controller/router/screen/setRouterScreenErrorGet');
+const setRouterScreenFavoriteGet = require('../controller/router/screen/setRouterScreenFavoriteGet');
 const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
 const setRouterScreenSummaryGet = require('../controller/router/screen/setRouterScreenSummaryGet');
+const setRouterApiFavoriteAndQueue = require('../controller/router/user/setRouterApiFavoriteAndQueue');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
 const SequelizeMediaQueryRepository = require('../infrastructure/SequelizeMediaQueryRepository');
+const SequelizeUserRepository = require('../infrastructure/SequelizeUserRepository');
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
+const { GetFavoriteSummariesService } = require('../application/user/query/GetFavoriteSummariesService');
+const { AddFavoriteService } = require('../application/user/command/AddFavoriteService');
+const { RemoveFavoriteService } = require('../application/user/command/RemoveFavoriteService');
+const { AddQueueService } = require('../application/user/command/AddQueueService');
+const { RemoveQueueService } = require('../application/user/command/RemoveQueueService');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -48,8 +56,17 @@ const createDependencies = (env = {}) => {
   });
   const sessionStateStore = new InMemorySessionStateStore();
   const mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
+  const userRepository = new SequelizeUserRepository({
+    sequelize,
+    unitOfWorkContext: unitOfWork,
+  });
   const searchMediaService = new SearchMediaService({ mediaQueryRepository });
   const getMediaDetailService = new GetMediaDetailService({ mediaRepository });
+  const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+  const addFavoriteService = new AddFavoriteService({ mediaRepository, userRepository, unitOfWork });
+  const removeFavoriteService = new RemoveFavoriteService({ userRepository, unitOfWork });
+  const addQueueService = new AddQueueService({ mediaRepository, userRepository, unitOfWork });
+  const removeQueueService = new RemoveQueueService({ userRepository, unitOfWork });
 
   if (hasDevelopmentSession(env)) {
     sessionStateStore.save({
@@ -64,8 +81,14 @@ const createDependencies = (env = {}) => {
     unitOfWork,
     mediaRepository,
     mediaQueryRepository,
+    userRepository,
     searchMediaService,
     getMediaDetailService,
+    getFavoriteSummariesService,
+    addFavoriteService,
+    removeFavoriteService,
+    addQueueService,
+    removeQueueService,
     sessionStateStore,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
@@ -80,9 +103,11 @@ const createDependencies = (env = {}) => {
       setRouterScreenDetailGet,
       setRouterScreenEditGet,
       setRouterScreenErrorGet,
+      setRouterScreenFavoriteGet,
       setRouterScreenLoginGet,
       setRouterScreenSearchGet,
       setRouterScreenSummaryGet,
+      setRouterApiFavoriteAndQueue,
     },
   };
 

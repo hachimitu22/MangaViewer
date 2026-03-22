@@ -45,7 +45,7 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
       throw new Error();
     }
 
-    const { MediaModel, ContentModel, TagModel, CategoryModel, MediaTagModel, MediaCategoryModel } = this.#models;
+    const { MediaModel, CategoryModel, TagModel, MediaTagModel } = this.#models;
 
     const mediaIds = await this.#findMatchedMediaIds({
       condition,
@@ -70,13 +70,26 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
       return new SearchResult({ mediaOverviews: [], totalCount });
     }
 
+    const mediaOverviews = await this.findOverviewsByMediaIds(pagedIds);
+    return new SearchResult({ mediaOverviews, totalCount });
+  }
+
+  async findOverviewsByMediaIds(mediaIds) {
+    if (!(mediaIds instanceof Array) || !mediaIds.every(mediaId => typeof mediaId === 'string')) {
+      throw new Error();
+    }
+    if (mediaIds.length === 0) {
+      return [];
+    }
+
+    const { MediaModel, ContentModel, TagModel, CategoryModel, MediaTagModel, MediaCategoryModel } = this.#models;
     const [contentRows, tagRows, categoryRows, mediaRows] = await Promise.all([
       ContentModel.findAll({
-        where: { media_id: pagedIds },
+        where: { media_id: mediaIds },
         order: [['media_id', 'ASC'], ['position', 'ASC']],
       }),
       MediaTagModel.findAll({
-        where: { media_id: pagedIds },
+        where: { media_id: mediaIds },
         include: [{
           model: TagModel,
           as: 'tag',
@@ -84,11 +97,11 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
         }],
       }),
       MediaCategoryModel.findAll({
-        where: { media_id: pagedIds },
+        where: { media_id: mediaIds },
         include: [{ model: CategoryModel, as: 'category' }],
         order: [['media_id', 'ASC'], ['priority', 'ASC']],
       }),
-      MediaModel.findAll({ where: { media_id: pagedIds } }),
+      MediaModel.findAll({ where: { media_id: mediaIds } }),
     ]);
 
     const mediaRowMap = new Map(mediaRows.map(row => [row.media_id, row]));
@@ -116,7 +129,7 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
       priorityCategoriesMap.set(row.media_id, items);
     });
 
-    const mediaOverviews = pagedIds
+    return mediaIds
       .map(mediaId => mediaRowMap.get(mediaId))
       .filter(Boolean)
       .map(row => new MediaOverview({
@@ -129,8 +142,6 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
         }),
         priorityCategories: priorityCategoriesMap.get(row.media_id) ?? [],
       }));
-
-    return new SearchResult({ mediaOverviews, totalCount });
   }
 
   #sortTags({ tags, priorityCategories }) {

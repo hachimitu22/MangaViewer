@@ -21,6 +21,11 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   dependencies.routeSetters.setRouterScreenErrorGet({
     router,
   });
+  dependencies.routeSetters.setRouterScreenFavoriteGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getFavoriteSummariesService: dependencies.getFavoriteSummariesService,
+  });
   dependencies.routeSetters.setRouterScreenLoginGet({
     router,
   });
@@ -41,6 +46,14 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     mediaIdValueGenerator: dependencies.mediaIdValueGenerator,
     mediaRepository: dependencies.mediaRepository,
     unitOfWork: dependencies.unitOfWork,
+  });
+  dependencies.routeSetters.setRouterApiFavoriteAndQueue({
+    router,
+    authResolver: dependencies.authResolver,
+    addFavoriteService: dependencies.addFavoriteService,
+    removeFavoriteService: dependencies.removeFavoriteService,
+    addQueueService: dependencies.addQueueService,
+    removeQueueService: dependencies.removeQueueService,
   });
 
   app.use(router);
