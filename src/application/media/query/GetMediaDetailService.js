@@ -49,7 +49,7 @@ class GetMediaDetailService {
       throw new Error();
     }
 
-    const mediaId = new MediaId(input.id);
+    const mediaId = new MediaId(input.mediaId);
     const media = await this.#mediaRepository.findByMediaId(mediaId);
 
     if (!media) {
