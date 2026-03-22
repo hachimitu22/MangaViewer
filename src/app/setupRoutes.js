@@ -12,6 +12,11 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     authResolver: dependencies.authResolver,
     getMediaDetailService: dependencies.getMediaDetailService,
   });
+  dependencies.routeSetters.setRouterScreenEditGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getMediaDetailService: dependencies.getMediaDetailService,
+  });
 
   dependencies.routeSetters.setRouterScreenErrorGet({
     router,

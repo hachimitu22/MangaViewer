@@ -9,7 +9,7 @@ const setRouterScreenDetailGet = ({ router, authResolver, getMediaDetailService 
     async (req, res, next) => {
       try {
         const result = await getMediaDetailService.execute(new Input({
-          mediaId: req.params.mediaId,
+          id: req.params.mediaId,
         }));
 
         res.status(200).render('screen/detail', {
