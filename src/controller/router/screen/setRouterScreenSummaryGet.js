@@ -3,6 +3,7 @@ const {
   Input,
   InputSortType,
 } = require('../../../application/media/query/SearchMediaService');
+const { createContentPublicPath } = require('../../../presentation/content/contentAssetPaths');
 
 const SORT_TYPES_BY_QUERY = Object.freeze({
   date_asc: InputSortType.DATE_ASC,
@@ -92,7 +93,10 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
             tags,
             sort,
           },
-          mediaOverviews: result.mediaOverviews,
+          mediaOverviews: result.mediaOverviews.map(media => ({
+            ...media,
+            thumbnail: media.thumbnail ? createContentPublicPath(media.thumbnail) : '',
+          })),
           totalCount: result.totalCount,
           pagination,
           sortOptions: [

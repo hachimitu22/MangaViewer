@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #020617; }
+      a { color: #93c5fd; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 1200px; margin: 0 auto; padding: 24px 16px 48px; }
+      .stack { display: grid; gap: 20px; }
+      .card {
+        background: #0f172a;
+        border: 1px solid #1e293b;
+        border-radius: 16px;
+        padding: 20px;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .nav-list { display: flex; gap: 12px; flex-wrap: wrap; }
+      .nav-link, .nav-disabled {
+        min-width: 120px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #334155;
+        background: #1e293b;
+      }
+      .nav-disabled { color: #64748b; }
+      .page-label { font-size: 18px; font-weight: 700; }
+      .viewer-stage {
+        min-height: 70vh;
+        display: grid;
+        place-items: center;
+        background: #020617;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .viewer-media {
+        display: block;
+        max-width: 100%;
+        max-height: 70vh;
+        width: auto;
+        height: auto;
+        background: #000;
+      }
+      .guide { color: #94a3b8; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="stack">
+        <section class="card toolbar">
+          <div class="nav-list">
+            <% if (viewer.previousPageUrl) { %>
+              <a class="nav-link" href="<%= viewer.previousPageUrl %>">前へ</a>
+            <% } else { %>
+              <span class="nav-disabled">前へ</span>
+            <% } %>
+            <% if (viewer.nextPageUrl) { %>
+              <a class="nav-link" href="<%= viewer.nextPageUrl %>">次へ</a>
+            <% } else { %>
+              <span class="nav-disabled">次へ</span>
+            <% } %>
+          </div>
+          <div class="page-label">現在ページ: <%= viewer.mediaPage %></div>
+          <a class="nav-link" href="<%= viewer.detailUrl %>">詳細画面へ戻る</a>
+        </section>
+
+        <section class="card">
+          <div class="viewer-stage">
+            <picture>
+              <img class="viewer-media" src="<%= viewer.contentUrl %>" alt="<%= viewer.mediaPage %>ページ目のコンテンツ" />
+            </picture>
+            <video class="viewer-media" controls preload="metadata" src="<%= viewer.contentUrl %>">
+              お使いのブラウザは動画再生に対応していません。
+            </video>
+          </div>
+          <p class="guide">画像はそのまま表示され、動画コンテンツではブラウザが再生可能な場合に動画プレイヤーを利用できます。</p>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const image = document.querySelector('img.viewer-media');
+        const video = document.querySelector('video.viewer-media');
+
+        const showImage = () => {
+          image.hidden = false;
+          video.hidden = true;
+        };
+
+        const showVideo = () => {
+          image.hidden = true;
+          video.hidden = false;
+        };
+
+        image.addEventListener('load', showImage, { once: true });
+        image.addEventListener('error', () => {
+          showVideo();
+          video.load();
+        }, { once: true });
+
+        video.addEventListener('loadeddata', showVideo, { once: true });
+        video.addEventListener('error', showImage, { once: true });
+
+        showImage();
+      })();
+    </script>
+  </body>
+</html>

@@ -72,14 +72,14 @@ describe('createApp', () => {
     });
   });
 
-  test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary と /api/media で認証を補完し、/screen/login を表示できる', async () => {
+  test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary と /screen/viewer と /api/media で認証を補完し、/screen/login を表示できる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
-      devSessionPaths: ['/screen/entry', '/screen/search', '/screen/summary', '/api/media'],
+      devSessionPaths: ['/screen/entry', '/screen/search', '/screen/summary', '/screen/viewer', '/api/media'],
     });
 
     await app.locals.ready;
@@ -100,24 +100,31 @@ describe('createApp', () => {
     expect(summaryResponse.type).toBe('text/html');
     expect(summaryResponse.text).toContain('<title>メディア一覧</title>');
 
-    const loginResponse = await request(app).get('/screen/login');
-    expect(loginResponse.status).toBe(200);
-    expect(loginResponse.type).toBe('text/html');
-    expect(loginResponse.text).toContain('<title>ログイン</title>');
-    expect(loginResponse.text).toContain('action="/api/login"');
-
     const mediaResponse = await request(app)
       .post('/api/media')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from('a'), 'first.jpg');
+      .attach('contents[0][file]', Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), 'first.png');
 
     expect(mediaResponse.status).toBe(200);
     expect(mediaResponse.body).toEqual({
       code: 0,
       mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
     });
+
+    const viewerResponse = await request(app).get(`/screen/viewer/${mediaResponse.body.mediaId}/1`);
+    expect(viewerResponse.status).toBe(200);
+    expect(viewerResponse.type).toBe('text/html');
+    expect(viewerResponse.text).toContain(`/screen/detail/${mediaResponse.body.mediaId}`);
+    expect(viewerResponse.text).toContain('/content/');
+
+    const loginResponse = await request(app).get('/screen/login');
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.type).toBe('text/html');
+    expect(loginResponse.text).toContain('<title>ログイン</title>');
+    expect(loginResponse.text).toContain('action="/api/login"');
+
   });
 });

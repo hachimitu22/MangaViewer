@@ -3,6 +3,7 @@ const path = require('path');
 
 const { Sequelize } = require('sequelize');
 
+const setRouterContentGet = require('../controller/router/content/setRouterContentGet');
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
@@ -10,6 +11,7 @@ const setRouterScreenErrorGet = require('../controller/router/screen/setRouterSc
 const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
 const setRouterScreenSummaryGet = require('../controller/router/screen/setRouterScreenSummaryGet');
+const setRouterScreenViewerGet = require('../controller/router/screen/setRouterScreenViewerGet');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
@@ -19,6 +21,7 @@ const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapt
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
+const { GetMediaContentWithNavigationService } = require('../application/media/query/GetMediaContentWithNavigationService');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -49,6 +52,7 @@ const createDependencies = (env = {}) => {
   const mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
   const searchMediaService = new SearchMediaService({ mediaQueryRepository });
   const getMediaDetailService = new GetMediaDetailService({ mediaRepository });
+  const getMediaContentWithNavigationService = new GetMediaContentWithNavigationService({ mediaRepository });
 
   if (hasDevelopmentSession(env)) {
     sessionStateStore.save({
@@ -65,6 +69,7 @@ const createDependencies = (env = {}) => {
     mediaQueryRepository,
     searchMediaService,
     getMediaDetailService,
+    getMediaContentWithNavigationService,
     sessionStateStore,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
@@ -74,6 +79,7 @@ const createDependencies = (env = {}) => {
     }),
     mediaIdValueGenerator: new UUIDMediaIdValueGenerator(),
     routeSetters: {
+      setRouterContentGet,
       setRouterApiMediaPost,
       setRouterScreenEntryGet,
       setRouterScreenDetailGet,
@@ -81,6 +87,7 @@ const createDependencies = (env = {}) => {
       setRouterScreenLoginGet,
       setRouterScreenSearchGet,
       setRouterScreenSummaryGet,
+      setRouterScreenViewerGet,
     },
   };
 

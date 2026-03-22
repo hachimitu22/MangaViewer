@@ -3,6 +3,10 @@ const express = require('express');
 const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   const router = express.Router();
 
+  dependencies.routeSetters.setRouterContentGet({
+    router,
+    contentRootDirectory: app.locals.env.contentRootDirectory,
+  });
   dependencies.routeSetters.setRouterScreenEntryGet({
     router,
     authResolver: dependencies.authResolver,
@@ -11,6 +15,11 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     router,
     authResolver: dependencies.authResolver,
     getMediaDetailService: dependencies.getMediaDetailService,
+  });
+  dependencies.routeSetters.setRouterScreenViewerGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getMediaContentWithNavigationService: dependencies.getMediaContentWithNavigationService,
   });
 
   dependencies.routeSetters.setRouterScreenErrorGet({
