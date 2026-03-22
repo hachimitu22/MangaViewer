@@ -15,7 +15,7 @@ const setRouterApiFavoriteAndQueue = ({
   const auth = new SessionAuthMiddleware(authResolver);
   const getUserId = req => req.context.userId;
 
-  router.post('/api/favorite/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
+  router.put('/api/favorite/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
     try {
       await addFavoriteService.execute(new AddFavoriteQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));
       res.status(200).json({ code: 0 });

@@ -40,7 +40,7 @@ describe("GetMediaDetailService", () => {
 
   test("メディアIDをリポジトリに渡して取得できる", async () => {
     // arrange
-    const input = new Input({ id: 'ID' });
+    const input = new Input({ mediaId: 'ID' });
     mockRepo.findByMediaId.mockResolvedValue(createMedia());
 
     // action
@@ -65,7 +65,7 @@ describe("GetMediaDetailService", () => {
   // =========================
   test("メディアID以外が指定された場合は取得に失敗する", async () => {
     // arrange
-    const input = { ...(new Input({ id: 'ID' })) };
+    const input = { ...(new Input({ mediaId: 'ID' })) };
 
     // action
     // assert
@@ -75,7 +75,7 @@ describe("GetMediaDetailService", () => {
 
   test("リポジトリの取得結果が空だと取得に失敗する", async () => {
     // arrange
-    const input = new Input({ id: 'ID' });
+    const input = new Input({ mediaId: 'ID' });
     mockRepo.findByMediaId.mockResolvedValue(undefined);
 
     // action
@@ -87,7 +87,7 @@ describe("GetMediaDetailService", () => {
 
   test("リポジトリの検索処理が失敗した場合は検索に失敗する", async () => {
     // arrange
-    const input = new Input({ id: 'ID' });
+    const input = new Input({ mediaId: 'ID' });
     mockRepo.findByMediaId.mockRejectedValue(new Error("mockRepo error"));
 
     // action

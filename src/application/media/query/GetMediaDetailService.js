@@ -2,12 +2,12 @@ const MediaId = require('../../../domain/media/mediaId');
 
 // SearchCondition と同じなので継承だけで済ます
 class Input {
-  constructor({ id }) {
-    if (typeof id !== 'string') {
+  constructor({ mediaId }) {
+    if (typeof mediaId !== 'string') {
       throw new Error();
     }
 
-    this.id = id;
+    this.mediaId = mediaId;
   }
 }
 
@@ -49,7 +49,7 @@ class GetMediaDetailService {
       throw new Error();
     }
 
-    const mediaId = new MediaId(input.id);
+    const mediaId = new MediaId(input.mediaId);
     const media = await this.#mediaRepository.findByMediaId(mediaId);
 
     if (!media) {
