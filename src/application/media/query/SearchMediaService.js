@@ -70,15 +70,13 @@ const normalizeMediaOverview = mediaOverview => ({
 });
 
 class Output {
-  constructor({ mediaOverviews, totalCount }) {
-    if (!(mediaOverviews instanceof Array)) {
-      throw new Error();
-    }
+  constructor({ mediaOverviews = [], totalCount } = {}) {
+    const normalizedMediaOverviews = Array.isArray(mediaOverviews)
+      ? mediaOverviews.map(normalizeMediaOverview)
+      : [];
     if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
       throw new Error();
     }
-
-    const normalizedMediaOverviews = mediaOverviews.map(normalizeMediaOverview);
     if (!normalizedMediaOverviews.every(isMediaOverviewLike)) {
       throw new Error();
     }
@@ -115,10 +113,8 @@ class SearchMediaService {
     const searchResult = await this.#mediaQueryRepository.search(condition);
 
     const output = new Output({
-      mediaOverviews: Array.isArray(searchResult.mediaOverviews)
-        ? searchResult.mediaOverviews.map(normalizeMediaOverview)
-        : [],
-      totalCount: searchResult.totalCount,
+      mediaOverviews: searchResult?.mediaOverviews,
+      totalCount: searchResult?.totalCount,
     });
 
     return output;
