@@ -5,6 +5,7 @@ const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
 const setRouterApiLogin = require('../controller/router/user/setRouterApiLogin');
+const setRouterApiLogout = require('../controller/router/user/setRouterApiLogout');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
 const setRouterScreenEditGet = require('../controller/router/screen/setRouterScreenEditGet');
@@ -22,6 +23,7 @@ const SequelizeUserRepository = require('../infrastructure/SequelizeUserReposito
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const SessionStateRegistrar = require('../infrastructure/SessionStateRegistrar');
+const SessionTerminator = require('../infrastructure/SessionTerminator');
 const StaticLoginAuthenticator = require('../infrastructure/StaticLoginAuthenticator');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
@@ -32,6 +34,7 @@ const { RemoveFavoriteService } = require('../application/user/command/RemoveFav
 const { AddQueueService } = require('../application/user/command/AddQueueService');
 const { RemoveQueueService } = require('../application/user/command/RemoveQueueService');
 const { LoginService } = require('../application/user/command/LoginService');
+const { LogoutService } = require('../application/user/command/LogoutService');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -72,6 +75,7 @@ const createDependencies = (env = {}) => {
   const addQueueService = new AddQueueService({ mediaRepository, userRepository, unitOfWork });
   const removeQueueService = new RemoveQueueService({ userRepository, unitOfWork });
   const sessionStateRegistrar = new SessionStateRegistrar({ sessionStateStore });
+  const sessionTerminator = new SessionTerminator({ sessionStateStore });
   const loginAuthenticator = new StaticLoginAuthenticator({
     username: env.loginUsername || 'admin',
     password: env.loginPassword || 'admin',
@@ -81,6 +85,9 @@ const createDependencies = (env = {}) => {
     loginAuthenticator,
     sessionStateRegistrar,
     sessionTtlMs: env.loginSessionTtlMs || 86_400_000,
+  });
+  const logoutService = new LogoutService({
+    sessionTerminator,
   });
 
   if (hasDevelopmentSession(env)) {
@@ -106,8 +113,10 @@ const createDependencies = (env = {}) => {
     removeQueueService,
     sessionStateStore,
     sessionStateRegistrar,
+    sessionTerminator,
     loginAuthenticator,
     loginService,
+    logoutService,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
     }),
@@ -118,6 +127,7 @@ const createDependencies = (env = {}) => {
     routeSetters: {
       setRouterApiMediaPost,
       setRouterApiLogin,
+      setRouterApiLogout,
       setRouterScreenEntryGet,
       setRouterScreenDetailGet,
       setRouterScreenEditGet,
