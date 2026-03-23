@@ -22,7 +22,7 @@
   - [AddQueue](./user/command/AddQueue/readme.md)
   - [RemoveQueue](./user/command/RemoveQueue/readme.md)
 - query
-  - [GetFavorites](./user/query/GetFavorites/readme.md)
+  - [GetFavoriteSummariesService](./user/query/GetFavoriteSummariesService/readme.md)
   - [GetQueue](./user/query/GetQueue/readme.md)
 
 ## 実行コンテキスト設計方針
