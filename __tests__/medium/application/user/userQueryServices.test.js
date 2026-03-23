@@ -39,7 +39,7 @@ describe('user query services (middle)', () => {
     userRepository = new SequelizeUserRepository({ sequelize, unitOfWorkContext: unitOfWork });
     await mediaRepository.sync();
 
-    const user = new User(new UserId('user-001'));
+    const user = new User(new UserId('user001'));
     user.addFavorite(new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
     user.addQueue(new MediaId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'));
 
@@ -58,8 +58,8 @@ describe('user query services (middle)', () => {
     const getQueueService = new GetQueueService({ userRepository, mediaQueryRepository });
     const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
 
-    const queueResult = await getQueueService.execute(new QueueInput({ userId: 'user-001' }));
-    const favoriteResult = await getFavoriteSummariesService.execute(new FavoriteInput({ userId: 'user-001' }));
+    const queueResult = await getQueueService.execute(new QueueInput({ userId: 'user001' }));
+    const favoriteResult = await getFavoriteSummariesService.execute(new FavoriteInput({ userId: 'user001' }));
 
     expect(queueResult.mediaOverviews).toEqual([
       expect.objectContaining({ mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', title: 'あとで見る作品' }),

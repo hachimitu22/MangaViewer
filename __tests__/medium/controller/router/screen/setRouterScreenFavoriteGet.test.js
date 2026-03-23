@@ -66,7 +66,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
     await mediaRepository.sync();
 
-    const user = new User(new UserId('user-001'));
+    const user = new User(new UserId('user001'));
     user.addFavorite(new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
 
     await unitOfWork.run(async () => {
@@ -104,7 +104,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     setRouterScreenFavoriteGet({
       router,
       authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user-001']]),
+        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user001']]),
       }),
       getFavoriteSummariesService: new GetFavoriteSummariesService({ userRepository, mediaQueryRepository }),
     });

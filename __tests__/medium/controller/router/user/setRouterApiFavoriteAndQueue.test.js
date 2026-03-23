@@ -58,7 +58,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
     await unitOfWork.run(async () => {
       await mediaRepository.save(createMedia({ mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', title: '作品A' }));
       await mediaRepository.save(createMedia({ mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', title: '作品B' }));
-      await userRepository.save(new User(new UserId('user-001')));
+      await userRepository.save(new User(new UserId('user001')));
     });
   });
 
@@ -79,7 +79,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
     setRouterApiFavoriteAndQueue({
       router,
       authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user-001']]),
+        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user001']]),
       }),
       addFavoriteService: new AddFavoriteService({ mediaRepository, userRepository, unitOfWork }),
       removeFavoriteService: new RemoveFavoriteService({ userRepository, unitOfWork }),
@@ -106,7 +106,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     let favoriteResult = await mediaQueryRepository.findOverviewsByMediaIds(['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']);
     let queueResult = await mediaQueryRepository.findOverviewsByMediaIds(['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']);
-    const userAfterAdd = await userRepository.findByUserId(new UserId('user-001'));
+    const userAfterAdd = await userRepository.findByUserId(new UserId('user001'));
 
     expect(userAfterAdd.getFavorites().map(mediaId => mediaId.getId())).toEqual(['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']);
     expect(userAfterAdd.getQueue().map(mediaId => mediaId.getId())).toEqual(['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb']);
@@ -123,7 +123,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
       .set('x-session-token', 'valid-token')
       .expect(200, { code: 0 });
 
-    const userAfterDelete = await userRepository.findByUserId(new UserId('user-001'));
+    const userAfterDelete = await userRepository.findByUserId(new UserId('user001'));
     expect(userAfterDelete.getFavorites()).toEqual([]);
     expect(userAfterDelete.getQueue()).toEqual([]);
   });
@@ -136,7 +136,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
       .set('x-session-token', 'invalid-token')
       .expect(401, { message: '認証に失敗しました' });
 
-    const user = await userRepository.findByUserId(new UserId('user-001'));
+    const user = await userRepository.findByUserId(new UserId('user001'));
     expect(user.getFavorites()).toEqual([]);
     expect(user.getQueue()).toEqual([]);
   });

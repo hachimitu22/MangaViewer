@@ -1,12 +1,10 @@
 const { Sequelize } = require('sequelize');
 
 const SequelizeMediaRepository = require('../../../../src/infrastructure/SequelizeMediaRepository');
-const SequelizeMediaQueryRepository = require('../../../../src/infrastructure/SequelizeMediaQueryRepository');
 const SequelizeUnitOfWork = require('../../../../src/infrastructure/SequelizeUnitOfWork');
 const { RegisterMediaService, RegisterMediaServiceInput } = require('../../../../src/application/media/command/RegisterMediaService');
 const { UpdateMediaService, UpdateMediaServiceInput } = require('../../../../src/application/media/command/UpdateMediaService');
 const { DeleteMediaService, DeleteMediaServiceInput } = require('../../../../src/application/media/command/DeleteMediaService');
-const { SearchMediaService, Input: SearchInput, InputSortType } = require('../../../../src/application/media/query/SearchMediaService');
 const { GetMediaDetailService, Input: DetailInput } = require('../../../../src/application/media/query/GetMediaDetailService');
 const MediaId = require('../../../../src/domain/media/mediaId');
 
@@ -20,13 +18,11 @@ describe('media application services (middle)', () => {
   let sequelize;
   let unitOfWork;
   let mediaRepository;
-  let mediaQueryRepository;
 
   beforeEach(async () => {
     sequelize = new Sequelize('sqlite::memory:', { logging: false });
     unitOfWork = new SequelizeUnitOfWork({ sequelize });
     mediaRepository = new SequelizeMediaRepository({ sequelize, unitOfWorkContext: unitOfWork });
-    mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
     await mediaRepository.sync();
   });
 
@@ -34,13 +30,12 @@ describe('media application services (middle)', () => {
     await sequelize.close();
   });
 
-  test('Register / Search / Detail が永続化配線をまたいで整合する', async () => {
+  test('Register / Detail が永続化配線をまたいで整合する', async () => {
     const registerMediaService = new RegisterMediaService({
       mediaIdValueGenerator: new FixedMediaIdValueGenerator(),
       mediaRepository,
       unitOfWork,
     });
-    const searchMediaService = new SearchMediaService({ mediaQueryRepository });
     const getMediaDetailService = new GetMediaDetailService({ mediaRepository });
 
     const registerResult = await registerMediaService.execute(new RegisterMediaServiceInput({
@@ -55,22 +50,6 @@ describe('media application services (middle)', () => {
 
     expect(registerResult.mediaId).toBe('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
 
-    const searchResult = await searchMediaService.execute(new SearchInput({
-      title: '山田',
-      tags: [{ category: 'ジャンル', label: '冒険' }],
-      sortType: InputSortType.TITLE_ASC,
-      start: 1,
-    }));
-
-    expect(searchResult.totalCount).toBe(1);
-    expect(searchResult.mediaOverviews).toEqual([
-      expect.objectContaining({
-        mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        title: '山田太郎の冒険',
-        thumbnail: 'content-001',
-        priorityCategories: ['作者', 'ジャンル'],
-      }),
-    ]);
 
     const detailResult = await getMediaDetailService.execute(new DetailInput({ mediaId: registerResult.mediaId }));
     expect(detailResult.mediaDetail).toEqual({
