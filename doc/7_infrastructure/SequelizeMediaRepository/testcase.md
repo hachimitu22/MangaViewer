@@ -2,7 +2,7 @@
 
 ## テストケース一覧
 - [sync で未指定 models のテーブルを初期化できる](#sync-で未指定-models-のテーブルを初期化できる)
-- [空の content / tag / priorityCategories を持つ Media も保存して復元できる](#空の-content--tag--prioritycategories-を持つ-media-も保存して復元できる)
+- [最小1件の content と空の tag / priorityCategories を持つ Media も保存して復元できる](#最小1件の-content-と空の-tag--prioritycategories-を持つ-media-も保存して復元できる)
 - [存在しない media_id の findByMediaId は null、delete は例外なく完了する](#存在しない-media_id-の-findbymediaid-は-nulldelete-は例外なく完了する)
 - [save は既存メディア更新時に古い関連を置き換える](#save-は既存メディア更新時に古い関連を置き換える)
 - [save / findByMediaId / delete は不正引数で例外を送出する](#save--findbymediaid--delete-は不正引数で例外を送出する)
@@ -18,14 +18,15 @@
 - 期待結果
   - `media` / `content` / `category` / `tag` / `media_tag` / `media_category` テーブルが作成される
 
-### 空の content / tag / priorityCategories を持つ Media も保存して復元できる
+### 最小1件の content と空の tag / priorityCategories を持つ Media も保存して復元できる
 - 前提
-  - `contents` / `tags` / `priorityCategories` が空配列の `Media` 集約が存在する
+  - `contents` は1件以上、`tags` / `priorityCategories` は空配列の `Media` 集約が存在する
 - 操作
   - `save(media)` 実行後に `findByMediaId(mediaId)` を呼ぶ
 - 期待結果
   - `Media` が復元される
-  - `contents` / `tags` / `priorityCategories` は空配列のまま保持される
+  - `contents` は保存した順序で復元される
+  - `tags` / `priorityCategories` は空配列のまま保持される
 
 ### 存在しない media_id の findByMediaId は null、delete は例外なく完了する
 - 前提

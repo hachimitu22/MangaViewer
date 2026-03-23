@@ -12,7 +12,7 @@ const Category = require('../../../src/domain/media/category');
 const Label = require('../../../src/domain/media/label');
 const { SearchCondition, SearchConditionTag, SortType } = require('../../../src/application/media/port/SearchCondition');
 
-const createMedia = ({ mediaId, title, contents = [], tags = [], priorityCategories = [] }) => new Media(
+const createMedia = ({ mediaId, title, contents = ['/contents/default.jpg'], tags = [], priorityCategories = [] }) => new Media(
   new MediaId(mediaId),
   new MediaTitle(title),
   contents.map(content => new ContentId(content)),
@@ -77,7 +77,7 @@ describe('SequelizeMediaQueryRepository', () => {
     }
   });
 
-  test('findOverviewsByMediaIds は存在しない ID を無視し空文字サムネイルと優先順タグ整列を返す', async () => {
+  test('findOverviewsByMediaIds は存在しない ID を無視し先頭コンテンツと優先順タグ整列を返す', async () => {
     const sequelize = new Sequelize('sqlite::memory:', { logging: false });
     const unitOfWork = new SequelizeUnitOfWork({ sequelize });
     const mediaRepository = new SequelizeMediaRepository({ sequelize, unitOfWorkContext: unitOfWork });
@@ -101,7 +101,7 @@ describe('SequelizeMediaQueryRepository', () => {
       expect(result[0]).toEqual(expect.objectContaining({
         mediaId: 'media-001',
         title: '作品A',
-        thumbnail: '',
+        thumbnail: '/contents/default.jpg',
         priorityCategories: ['作者', 'ジャンル'],
       }));
       expect(result[0].tags.map(tag => `${tag.category}:${tag.label}`)).toEqual([

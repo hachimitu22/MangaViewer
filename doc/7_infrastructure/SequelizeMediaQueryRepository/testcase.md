@@ -31,12 +31,12 @@
 ### findOverviewsByMediaIds は存在しない ID を無視しサムネイルとタグ順を整える
 - 前提
   - タグと優先カテゴリーを持つメディアが保存済みである
-  - 対象メディアはコンテンツ未登録でもよい
+  - 対象メディアは少なくとも1件のコンテンツを持つ
 - 操作
   - 存在する ID と存在しない ID を混ぜて `findOverviewsByMediaIds` を実行する
 - 期待結果
   - 存在しない ID は結果から除外される
-  - コンテンツ未登録時の `thumbnail` は空文字になる
+  - `thumbnail` には先頭コンテンツIDが設定される
   - タグは優先カテゴリー順に整列される
 
 ### search / findOverviewsByMediaIds は不正入力で例外を送出する

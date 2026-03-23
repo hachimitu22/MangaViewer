@@ -55,11 +55,11 @@ describe('SequelizeMediaRepository', () => {
     await repository.sync();
 
     try {
-      const media = createMedia({ contents: [], tags: [], priorityCategories: [] });
+      const media = createMedia({ contents: ['/a/1.jpg'], tags: [], priorityCategories: [] });
       await repository.save(media);
 
       const actual = await repository.findByMediaId(new MediaId('media-001'));
-      expect(actual.getContents()).toEqual([]);
+      expect(actual.getContents().map(content => content.getId())).toEqual(['/a/1.jpg']);
       expect(actual.getTags()).toEqual([]);
       expect(actual.getPriorityCategories()).toEqual([]);
     } finally {

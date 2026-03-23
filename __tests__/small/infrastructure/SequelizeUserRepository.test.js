@@ -6,7 +6,7 @@ const User = require('../../../src/domain/user/user');
 const UserId = require('../../../src/domain/user/userId');
 const MediaId = require('../../../src/domain/media/mediaId');
 
-const createUser = ({ userId = 'user-001', favorites = [], queue = [] } = {}) => {
+const createUser = ({ userId = 'user001', favorites = [], queue = [] } = {}) => {
   const user = new User(new UserId(userId));
   favorites.forEach(mediaId => user.addFavorite(new MediaId(mediaId)));
   queue.forEach(mediaId => user.addQueue(new MediaId(mediaId)));
@@ -37,8 +37,8 @@ describe('SequelizeUserRepository', () => {
     await repository.sync();
 
     try {
-      const actual = await repository.findByUserId(new UserId('missing-user'));
-      expect(actual.getUserId().getId()).toBe('missing-user');
+      const actual = await repository.findByUserId(new UserId('missinguser'));
+      expect(actual.getUserId().getId()).toBe('missinguser');
       expect(actual.getFavorites()).toEqual([]);
       expect(actual.getQueue()).toEqual([]);
     } finally {
@@ -59,7 +59,7 @@ describe('SequelizeUserRepository', () => {
       }));
       await repository.save(createUser());
 
-      const actual = await repository.findByUserId(new UserId('user-001'));
+      const actual = await repository.findByUserId(new UserId('user001'));
       expect(actual.getFavorites()).toEqual([]);
       expect(actual.getQueue()).toEqual([]);
     } finally {
@@ -69,7 +69,7 @@ describe('SequelizeUserRepository', () => {
 
   test.each([
     ['save', repository => repository.save({})],
-    ['findByUserId', repository => repository.findByUserId('user-001')],
+    ['findByUserId', repository => repository.findByUserId('user001')],
   ])('%s は不正引数で例外を送出する', async (_name, run) => {
     const sequelize = new Sequelize('sqlite::memory:', { logging: false });
     const repository = new SequelizeUserRepository({
