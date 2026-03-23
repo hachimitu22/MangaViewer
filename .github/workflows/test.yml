@@ -8,12 +8,14 @@ on:
     paths:
       - '__tests__/**'
       - 'src/**'
+      - '.github/workflows/test.yml'
 
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
       - '__tests__/**'
       - 'src/**'
+      - '.github/workflows/test.yml'
 
   workflow_dispatch:
 
