@@ -53,8 +53,6 @@ describe('createDependencies login wiring', () => {
     expect(result.sessionToken).toEqual(expect.stringMatching(/^[0-9a-f]{32}$/));
     expect(session.session_token).toBe(result.sessionToken);
 
-    await expect(dependencies.authResolver.execute({ sessionToken: result.sessionToken })).resolves.toEqual({
-      userId: 'user-001',
-    });
+    await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('user-001');
   });
 });
