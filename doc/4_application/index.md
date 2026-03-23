@@ -24,7 +24,7 @@
   - [LoginService](./user/command/LoginService/readme.md)
   - [LogoutService](./user/command/LogoutService/readme.md)
 - query
-  - [GetFavorites](./user/query/GetFavorites/readme.md)
+  - [GetFavoriteSummariesService](./user/query/GetFavoriteSummariesService/readme.md)
   - [GetQueue](./user/query/GetQueue/readme.md)
 
 ## 実行コンテキスト設計方針
