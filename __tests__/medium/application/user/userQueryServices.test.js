@@ -66,18 +66,21 @@ describe('user query services (middle)', () => {
       const service = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
       const result = await service.execute(new FavoriteInput({ userId: 'user001' }));
 
-      expect(result.mediaOverviews).toEqual([
-        {
-          mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-          title: 'お気に入り作品',
-          thumbnail: 'favorite-thumb',
-          tags: [
-            { category: 'シリーズ', label: '注目作' },
-            { category: '作者', label: '山田' },
-          ],
-          priorityCategories: ['シリーズ', '作者'],
-        },
-      ]);
+      expect(result).toEqual({
+        mediaOverviews: [
+          {
+            mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+            title: 'お気に入り作品',
+            thumbnail: 'favorite-thumb',
+            tags: [
+              { category: 'シリーズ', label: '注目作' },
+              { category: '作者', label: '山田' },
+            ],
+            priorityCategories: ['シリーズ', '作者'],
+          },
+        ],
+        totalCount: 1,
+      });
     });
 
     test('business: user が存在しない場合は空配列を返す', async () => {
@@ -85,6 +88,7 @@ describe('user query services (middle)', () => {
 
       await expect(service.execute(new FavoriteInput({ userId: 'missinguser' }))).resolves.toEqual({
         mediaOverviews: [],
+        totalCount: 0,
       });
     });
   });
