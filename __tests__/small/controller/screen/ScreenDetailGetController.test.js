@@ -18,6 +18,7 @@ describe('ScreenDetailGetController', () => {
       registeredAt: '2026-03-20 12:34 UTC',
       contents: [{ id: 'content-1', thumbnail: 'content-1', position: 1 }],
       tags: [{ category: '作者', label: '山田' }],
+      categories: ['作者'],
       priorityCategories: ['作者'],
     };
     const getMediaDetailService = {

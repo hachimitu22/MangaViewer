@@ -91,6 +91,19 @@
         </section>
 
         <section class="card">
+          <h2>カテゴリー一覧</h2>
+          <% if (mediaDetail.categories.length === 0) { %>
+            <p class="empty">カテゴリーはありません。</p>
+          <% } else { %>
+            <div class="chip-list">
+              <% mediaDetail.categories.forEach((category) => { %>
+                <span class="chip"><%= category %></span>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
           <h2>タグ一覧</h2>
           <% if (mediaDetail.tags.length === 0) { %>
             <p class="empty">タグはありません。</p>

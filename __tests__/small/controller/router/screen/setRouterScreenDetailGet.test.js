@@ -29,6 +29,7 @@ describe('setRouterScreenDetailGet', () => {
           registeredAt: '2026-03-20 12:34 UTC',
           contents: [{ id: 'content-1', thumbnail: 'content-1', position: 1 }],
           tags: [{ category: '作者', label: '山田' }],
+          categories: ['作者'],
           priorityCategories: ['作者'],
         },
       }),
@@ -64,7 +65,7 @@ describe('setRouterScreenDetailGet', () => {
     }));
   });
 
-  it('詳細テンプレートにタグリンク・登録日・サムネイル導線を渡せる', async () => {
+  it('詳細テンプレートにカテゴリー・タグリンク・登録日・サムネイル導線を渡せる', async () => {
     const templatePath = path.join(process.cwd(), 'src', 'views', 'screen', 'detail.ejs');
     const html = await ejs.renderFile(templatePath, {
       pageTitle: '作品タイトル の詳細',
@@ -76,13 +77,17 @@ describe('setRouterScreenDetailGet', () => {
           { id: 'content-1', thumbnail: 'content-1', position: 1 },
           { id: '', thumbnail: '', position: 2 },
         ],
-        tags: [{ category: '作者', label: '山田 太郎' }],
+        tags: [{ category: '作者', label: '山田 太郎' }, { category: '作者', label: '別名' }, { category: 'シリーズ', label: '作品群' }],
+        categories: ['作者', 'シリーズ'],
         priorityCategories: ['作者'],
       },
     });
 
     expect(html).toContain('登録日:');
     expect(html).toContain('2026-03-20 12:34 UTC');
+    expect(html).toContain('カテゴリー一覧');
+    expect(html).toContain('<span class="chip">作者</span>');
+    expect(html).toContain('<span class="chip">シリーズ</span>');
     expect(html).toContain('/screen/summary?summaryPage=1&sort=date_asc&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0%20%E5%A4%AA%E9%83%8E');
     expect(html).toContain('/screen/viewer/media-1/1');
     expect(html).toContain('alt="作品タイトル 1 枚目のサムネイル"');
