@@ -110,7 +110,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
   test('GET /screen/summary で検索条件を正規化して一覧を描画する', async () => {
     const response = await requestApp({
       app: createApp(),
-      targetPath: '/screen/summary?summaryPage=2&title=%E5%A4%AA%E9%83%8E&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&tags=%E4%B8%8D%E6%AD%A3&sort=title_desc',
+      targetPath: '/screen/summary?summaryPage=1&title=%E5%A4%AA%E9%83%8E&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&tags=%E4%B8%8D%E6%AD%A3&sort=title_desc',
       headers: { 'x-session-token': 'valid-token' },
     });
 
