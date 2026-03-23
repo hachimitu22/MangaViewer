@@ -62,6 +62,7 @@ describe('SequelizeMediaRepository', () => {
       expect(actual.getContents().map(content => content.getId())).toEqual(['/a/1.jpg']);
       expect(actual.getTags()).toEqual([]);
       expect(actual.getPriorityCategories()).toEqual([]);
+      expect(actual.getRegisteredAt()).toBeInstanceOf(Date);
     } finally {
       await sequelize.close();
     }

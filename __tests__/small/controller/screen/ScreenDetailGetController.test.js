@@ -12,16 +12,16 @@ describe('ScreenDetailGetController', () => {
   };
 
   test('mediaId を service に渡して詳細画面を描画する', async () => {
+    const mediaDetail = {
+      id: 'media-1',
+      title: '作品タイトル',
+      registeredAt: '2026-03-20 12:34 UTC',
+      contents: [{ id: 'content-1', thumbnail: 'content-1', position: 1 }],
+      tags: [{ category: '作者', label: '山田' }],
+      priorityCategories: ['作者'],
+    };
     const getMediaDetailService = {
-      execute: jest.fn().mockResolvedValue({
-        mediaDetail: {
-          id: 'media-1',
-          title: '作品タイトル',
-          contents: ['content-1'],
-          tags: [{ category: '作者', label: '山田' }],
-          priorityCategories: ['作者'],
-        },
-      }),
+      execute: jest.fn().mockResolvedValue({ mediaDetail }),
     };
     const controller = new ScreenDetailGetController({ getMediaDetailService });
     const req = { params: { mediaId: 'media-1' } };
@@ -31,10 +31,10 @@ describe('ScreenDetailGetController', () => {
 
     expect(getMediaDetailService.execute).toHaveBeenCalledWith(expect.objectContaining({ mediaId: 'media-1' }));
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.render).toHaveBeenCalledWith('screen/detail', expect.objectContaining({
+    expect(res.render).toHaveBeenCalledWith('screen/detail', {
       pageTitle: '作品タイトル の詳細',
-      mediaDetail: expect.objectContaining({ id: 'media-1' }),
-    }));
+      mediaDetail,
+    });
   });
 
   test('service 取得に失敗した場合はエラー画面へ 301 リダイレクトする', async () => {

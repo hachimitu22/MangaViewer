@@ -62,8 +62,8 @@ describe('setRouterScreenDetailGet (middle)', () => {
       await mediaRepository.save(new Media(
         new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
         new MediaTitle('作品A'),
-        [new ContentId('content-001'), new ContentId('content-002')],
-        [new Tag(new Category('作者'), new Label('山田'))],
+        [new ContentId('content-001'), new ContentId('')],
+        [new Tag(new Category('作者'), new Label('山田 太郎'))],
         [new Category('作者')],
       ));
     });
@@ -79,9 +79,6 @@ describe('setRouterScreenDetailGet (middle)', () => {
 
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
-    app.engine('ejs', (filePath, options, callback) => {
-      callback(null, `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.mediaDetail.id}:${options.mediaDetail.contents.length}</body></html>`);
-    });
 
     app.use((req, _res, next) => {
       req.session = { session_token: req.header('x-session-token') };
@@ -101,7 +98,7 @@ describe('setRouterScreenDetailGet (middle)', () => {
     return app;
   };
 
-  test('GET /screen/detail/:mediaId で詳細画面を描画する', async () => {
+  test('GET /screen/detail/:mediaId で主要表示を描画する', async () => {
     const response = await requestApp({
       app: createApp(),
       targetPath: '/screen/detail/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
@@ -111,7 +108,10 @@ describe('setRouterScreenDetailGet (middle)', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/html');
     expect(response.bodyText).toContain('<title>作品A の詳細</title>');
-    expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'detail.ejs'));
-    expect(response.bodyText).toContain('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:2');
+    expect(response.bodyText).toContain('登録日:');
+    expect(response.bodyText).toContain('/screen/summary?summaryPage=1&sort=date_asc&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0%20%E5%A4%AA%E9%83%8E');
+    expect(response.bodyText).toContain('/screen/viewer/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/1');
+    expect(response.bodyText).toContain('src="content-001"');
+    expect(response.bodyText).toContain('サムネイル未設定');
   });
 });

@@ -11,6 +11,11 @@ class Input {
   }
 }
 
+const isContentLike = content => ['id', 'thumbnail', 'position'].every(prop => prop in content)
+  && typeof content.id === 'string'
+  && typeof content.thumbnail === 'string'
+  && typeof content.position === 'number';
+
 class Output {
   constructor({ mediaDetail }) {
     if (typeof mediaDetail.id !== 'string') {
@@ -19,7 +24,10 @@ class Output {
     if (typeof mediaDetail.title !== 'string') {
       throw new Error();
     }
-    if (!(mediaDetail.contents instanceof Array) || !mediaDetail.contents.every(content => typeof content === 'string')) {
+    if (typeof mediaDetail.registeredAt !== 'string') {
+      throw new Error();
+    }
+    if (!(mediaDetail.contents instanceof Array) || !mediaDetail.contents.every(isContentLike)) {
       throw new Error();
     }
     if (!(mediaDetail.tags instanceof Array) || !mediaDetail.tags.every(tag => ['category', 'label'].every(prop => prop in tag))) {
@@ -32,6 +40,19 @@ class Output {
     this.mediaDetail = mediaDetail;
   }
 }
+
+const formatRegisteredAt = registeredAt => {
+  if (!(registeredAt instanceof Date) || Number.isNaN(registeredAt.getTime())) {
+    return '';
+  }
+
+  const year = registeredAt.getUTCFullYear();
+  const month = String(registeredAt.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(registeredAt.getUTCDate()).padStart(2, '0');
+  const hours = String(registeredAt.getUTCHours()).padStart(2, '0');
+  const minutes = String(registeredAt.getUTCMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes} UTC`;
+};
 
 class GetMediaDetailService {
   #mediaRepository;
@@ -60,7 +81,12 @@ class GetMediaDetailService {
       mediaDetail: {
         id: media.getId().getId(),
         title: media.getTitle().getTitle(),
-        contents: media.getContents().map(content => content.getId()),
+        registeredAt: formatRegisteredAt(media.getRegisteredAt?.() ?? null),
+        contents: media.getContents().map((content, index) => ({
+          id: content.getId(),
+          thumbnail: content.getId(),
+          position: index + 1,
+        })),
         tags: media.getTags().map(tag => ({
           category: tag.getCategory().getValue(),
           label: tag.getLabel().getLabel(),

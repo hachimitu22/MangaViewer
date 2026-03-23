@@ -13,6 +13,8 @@ function defineModels(sequelize) {
   const MediaModel = sequelize.define('media', {
     media_id: { type: DataTypes.STRING, primaryKey: true },
     title: { type: DataTypes.TEXT, allowNull: false },
+    created_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    updated_at: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
   }, { tableName: 'media', timestamps: false });
 
   const ContentModel = sequelize.define('content', {
@@ -105,10 +107,17 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
     const { MediaModel, ContentModel, CategoryModel, TagModel, MediaTagModel, MediaCategoryModel } = this.#models;
     const mediaId = media.getId().getId();
 
-    await MediaModel.upsert({
+    const existingMedia = await MediaModel.findByPk(mediaId, { transaction: executionScope });
+    const mediaRecord = {
       media_id: mediaId,
       title: media.getTitle().getTitle(),
-    }, { transaction: executionScope });
+      updated_at: new Date(),
+    };
+    if (!existingMedia) {
+      await MediaModel.create(mediaRecord, { transaction: executionScope });
+    } else {
+      await MediaModel.update(mediaRecord, { where: { media_id: mediaId }, transaction: executionScope });
+    }
 
     await ContentModel.destroy({ where: { media_id: mediaId }, transaction: executionScope });
     const contentRecords = media.getContents().map((content, index) => ({
@@ -227,12 +236,17 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
     const priorityCategories = mediaCategories
       .map(mediaCategory => new Category(mediaCategory.category.name));
 
+    const registeredAt = mediaRow.created_at instanceof Date
+      ? mediaRow.created_at
+      : (mediaRow.created_at ? new Date(mediaRow.created_at) : null);
+
     return new Media(
       new MediaId(mediaRow.media_id),
       new MediaTitle(mediaRow.title),
       contents,
       tags,
       priorityCategories,
+      registeredAt,
     );
   }
 

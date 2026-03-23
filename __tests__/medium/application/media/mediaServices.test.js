@@ -79,7 +79,11 @@ describe('media application services (middle)', () => {
       expect(detailResult.mediaDetail).toEqual({
         id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         title: '山田太郎の冒険',
-        contents: ['content-001', 'content-002'],
+        registeredAt: expect.any(String),
+        contents: [
+          { id: 'content-001', thumbnail: 'content-001', position: 1 },
+          { id: 'content-002', thumbnail: 'content-002', position: 2 },
+        ],
         tags: [
           { category: '作者', label: '山田太郎' },
           { category: 'ジャンル', label: '冒険' },
@@ -330,7 +334,12 @@ describe('media application services (middle)', () => {
       expect(detailResult.mediaDetail).toEqual({
         id: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         title: '詳細確認タイトル',
-        contents: ['content-a', 'content-b', 'content-c'],
+        registeredAt: expect.any(String),
+        contents: [
+          { id: 'content-a', thumbnail: 'content-a', position: 1 },
+          { id: 'content-b', thumbnail: 'content-b', position: 2 },
+          { id: 'content-c', thumbnail: 'content-c', position: 3 },
+        ],
         tags: [
           { category: '作者', label: '詳細作者' },
           { category: 'ジャンル', label: '詳細ジャンル' },
