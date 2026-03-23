@@ -17,6 +17,7 @@ const setRouterScreenLoginGet = require('../controller/router/screen/setRouterSc
 const setRouterScreenQueueGet = require('../controller/router/screen/setRouterScreenQueueGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
 const setRouterScreenSummaryGet = require('../controller/router/screen/setRouterScreenSummaryGet');
+const setRouterScreenViewerGet = require('../controller/router/screen/setRouterScreenViewerGet');
 const setRouterApiFavoriteAndQueue = require('../controller/router/user/setRouterApiFavoriteAndQueue');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
@@ -31,6 +32,7 @@ const StaticLoginAuthenticator = require('../infrastructure/StaticLoginAuthentic
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
+const { GetMediaContentWithNavigationService } = require('../application/media/query/GetMediaContentWithNavigationService');
 const { GetFavoriteSummariesService } = require('../application/user/query/GetFavoriteSummariesService');
 const { GetQueueService } = require('../application/user/query/GetQueueService');
 const { AddFavoriteService } = require('../application/user/command/AddFavoriteService');
@@ -75,6 +77,7 @@ const createDependencies = (env = {}) => {
   });
   const searchMediaService = new SearchMediaService({ mediaQueryRepository });
   const getMediaDetailService = new GetMediaDetailService({ mediaRepository });
+  const getMediaContentWithNavigationService = new GetMediaContentWithNavigationService({ mediaRepository });
   const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
   const getQueueService = new GetQueueService({ userRepository, mediaQueryRepository });
   const addFavoriteService = new AddFavoriteService({ mediaRepository, userRepository, unitOfWork });
@@ -115,6 +118,7 @@ const createDependencies = (env = {}) => {
     userRepository,
     searchMediaService,
     getMediaDetailService,
+    getMediaContentWithNavigationService,
     getFavoriteSummariesService,
     getQueueService,
     addFavoriteService,
@@ -151,6 +155,7 @@ const createDependencies = (env = {}) => {
       setRouterScreenQueueGet,
       setRouterScreenSearchGet,
       setRouterScreenSummaryGet,
+      setRouterScreenViewerGet,
       setRouterApiFavoriteAndQueue,
     },
   };
