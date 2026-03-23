@@ -72,6 +72,39 @@ describe('createApp', () => {
     });
   });
 
+
+  test('固定セッション設定が無効な場合は対象パスでも自動補完されず認証エラーになる', async () => {
+    app = createApp({
+      databaseStoragePath: databasePath,
+      contentRootDirectory,
+      devSessionToken: '',
+      devSessionUserId: 'admin-dev',
+      devSessionTtlMs: 60_000,
+      devSessionPaths: ['/screen/entry', '/api/media'],
+    });
+
+    await app.locals.ready;
+
+    const screenResponse = await request(app).get('/screen/entry');
+    expect(screenResponse.status).toBe(401);
+    expect(screenResponse.body).toEqual({
+      message: '認証に失敗しました',
+    });
+
+    const mediaResponse = await request(app)
+      .post('/api/media')
+      .field('title', 'sample title')
+      .field('tags[0][category]', '作者')
+      .field('tags[0][label]', '山田')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', Buffer.from('a'), 'first.jpg');
+
+    expect(mediaResponse.status).toBe(401);
+    expect(mediaResponse.body).toEqual({
+      message: '認証に失敗しました',
+    });
+  });
+
   test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary と /api/media で認証を補完し、/screen/login を表示できる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
