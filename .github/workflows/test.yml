@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  small-test:
+  ci-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,9 +31,19 @@ jobs:
           node-version: 20
           cache: npm
           cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
+      - uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      - name: Clean install if cache miss
+        shell: bash
+        run: |
+          if [ "${{ steps.npm-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "skip npm ci"
+          else
+            npm ci
+          fi
 
       - name: Run small tests
         run: npm run test:small
