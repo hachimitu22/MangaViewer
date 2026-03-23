@@ -93,7 +93,19 @@ class SearchMediaService {
     });
     const searchResult = await this.#mediaQueryRepository.search(condition);
 
-    const output = new Output({ ...searchResult });
+    const output = new Output({
+      mediaOverviews: searchResult.mediaOverviews.map(mediaOverview => ({
+        mediaId: mediaOverview.mediaId,
+        title: mediaOverview.title,
+        thumbnail: mediaOverview.thumbnail,
+        tags: mediaOverview.tags.map(tag => ({
+          category: tag.category,
+          label: tag.label,
+        })),
+        priorityCategories: [...mediaOverview.priorityCategories],
+      })),
+      totalCount: searchResult.totalCount,
+    });
 
     return output;
   }
