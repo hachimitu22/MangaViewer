@@ -37,3 +37,6 @@
   - `Output.mediaOverviews` として空配列が返る
   - `mediaQueryRepository.findOverviewsByMediaIds` は呼ばれない
   - エラーは発生しない
+
+## medium テスト方針
+- medium では favorite 永続化結果をもとに `mediaOverviews` が返ることを確認し、単純値オブジェクトは上位層経由で間接保証する。

@@ -39,3 +39,6 @@
   - 描画ハンドラーを実行する。
 - **結果**
   - `next(error)` が呼ばれる。
+
+## medium テストで担保する観点
+- `SearchMediaService` と `SequelizeMediaQueryRepository` を接続し、検索条件正規化・検索・ページネーション用描画データ生成を medium で確認する。
