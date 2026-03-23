@@ -39,7 +39,7 @@ describe('createApp', () => {
     app = undefined;
   });
 
-  test('構築した app は /screen/error と /api/media を提供し、未知のルートでは404を返す', async () => {
+  test('構築した app は /screen/error と /api/media を提供する', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
@@ -51,12 +51,6 @@ describe('createApp', () => {
     expect(errorScreenResponse.status).toBe(200);
     expect(errorScreenResponse.type).toBe('text/html');
     expect(errorScreenResponse.text).toContain('<title>エラーが発生しました</title>');
-
-    const notFoundResponse = await request(app).get('/unknown');
-    expect(notFoundResponse.status).toBe(404);
-    expect(notFoundResponse.body).toEqual({
-      message: 'Not Found',
-    });
 
     const unauthorizedResponse = await request(app)
       .post('/api/media')
@@ -72,6 +66,28 @@ describe('createApp', () => {
     });
   });
 
+  test('既存 screen / api ルートに一致しない場合は共通の404 JSONを返す', async () => {
+    app = createApp({
+      databaseStoragePath: databasePath,
+      contentRootDirectory,
+    });
+
+    await app.locals.ready;
+
+    const unknownScreenResponse = await request(app).get('/screen/unknown');
+    expect(unknownScreenResponse.status).toBe(404);
+    expect(unknownScreenResponse.type).toMatch(/json/);
+    expect(unknownScreenResponse.body).toEqual({
+      message: 'Not Found',
+    });
+
+    const unknownApiResponse = await request(app).get('/api/unknown');
+    expect(unknownApiResponse.status).toBe(404);
+    expect(unknownApiResponse.type).toMatch(/json/);
+    expect(unknownApiResponse.body).toEqual({
+      message: 'Not Found',
+    });
+  });
 
   test('固定セッション設定が無効な場合は対象パスでも自動補完されず認証エラーになる', async () => {
     app = createApp({
