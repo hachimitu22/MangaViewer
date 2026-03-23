@@ -9,7 +9,7 @@
 - query
   - [SearchMediaService](./media/query/SearchMediaService/readme.md)
   - [GetMediaDetailService](./media/query/GetMediaDetailService/readme.md)
-  - [GetMediaContentWithNavigationService](./media/query/GetMediaContentWithNavigationService/rename.md)
+  - [GetMediaContentWithNavigationService](./media/query/GetMediaContentWithNavigationService/readme.md)
 - port
   - [IMediaIdValueGenerator](./media/port/IMediaIdValueGenerator/readme.md)
   - [IMediaRepository](./media/port/IMediaRepository/readme.md)
