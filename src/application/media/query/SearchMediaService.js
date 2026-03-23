@@ -68,6 +68,22 @@ class Output {
   }
 }
 
+
+const normalizeTag = tag => ({
+  category: typeof tag?.category === 'string' ? tag.category : '',
+  label: typeof tag?.label === 'string' ? tag.label : '',
+});
+
+const normalizeMediaOverview = mediaOverview => ({
+  mediaId: typeof mediaOverview?.mediaId === 'string' ? mediaOverview.mediaId : '',
+  title: typeof mediaOverview?.title === 'string' ? mediaOverview.title : '',
+  thumbnail: typeof mediaOverview?.thumbnail === 'string' ? mediaOverview.thumbnail : '',
+  tags: Array.isArray(mediaOverview?.tags) ? mediaOverview.tags.map(normalizeTag) : [],
+  priorityCategories: Array.isArray(mediaOverview?.priorityCategories)
+    ? mediaOverview.priorityCategories.filter(category => typeof category === 'string')
+    : [],
+});
+
 class SearchMediaService {
   #mediaQueryRepository;
 
@@ -94,16 +110,9 @@ class SearchMediaService {
     const searchResult = await this.#mediaQueryRepository.search(condition);
 
     const output = new Output({
-      mediaOverviews: searchResult.mediaOverviews.map(mediaOverview => ({
-        mediaId: mediaOverview.mediaId,
-        title: mediaOverview.title,
-        thumbnail: mediaOverview.thumbnail,
-        tags: mediaOverview.tags.map(tag => ({
-          category: tag.category,
-          label: tag.label,
-        })),
-        priorityCategories: [...mediaOverview.priorityCategories],
-      })),
+      mediaOverviews: Array.isArray(searchResult.mediaOverviews)
+        ? searchResult.mediaOverviews.map(normalizeMediaOverview)
+        : [],
       totalCount: searchResult.totalCount,
     });
 
