@@ -83,7 +83,7 @@ describe('user query services (middle)', () => {
     test('business: user が存在しない場合は空配列を返す', async () => {
       const service = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
 
-      await expect(service.execute(new FavoriteInput({ userId: 'missing-user' }))).resolves.toEqual({
+      await expect(service.execute(new FavoriteInput({ userId: 'missinguser' }))).resolves.toEqual({
         mediaOverviews: [],
       });
     });

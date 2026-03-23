@@ -5,7 +5,7 @@ const SessionAuthMiddleware = require('../../../../src/controller/middleware/Ses
 
 const createApp = ({ authAdapter, withSession = true, presetContext } = {}) => {
   const app = express();
-  const middleware = new SessionAuthMiddleware({ authAdapter });
+  const middleware = new SessionAuthMiddleware(authAdapter);
 
   app.use((req, _res, next) => {
     if (withSession) {
@@ -31,7 +31,7 @@ describe('SessionAuthMiddleware (middle)', () => {
   test('normal: request.context が未作成でも初期化して userId を設定し next へ委譲する', async () => {
     const app = createApp({
       authAdapter: {
-        execute: jest.fn(async token => (token === 'valid-token' ? 'user-001' : null)),
+        execute: jest.fn(async token => (token === 'valid-token' ? 'user001' : null)),
       },
     });
 
@@ -41,7 +41,7 @@ describe('SessionAuthMiddleware (middle)', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
-      userId: 'user-001',
+      userId: 'user001',
       contextKeys: ['userId'],
     });
   });
