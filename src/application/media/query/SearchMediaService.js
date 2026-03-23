@@ -54,19 +54,38 @@ const isMediaOverviewLike = (obj) => {
   return true;
 };
 
+const normalizeTag = tag => ({
+  category: typeof tag?.category === 'string' ? tag.category : '',
+  label: typeof tag?.label === 'string' ? tag.label : '',
+});
+
+const normalizeMediaOverview = mediaOverview => ({
+  mediaId: typeof mediaOverview?.mediaId === 'string' ? mediaOverview.mediaId : '',
+  title: typeof mediaOverview?.title === 'string' ? mediaOverview.title : '',
+  thumbnail: typeof mediaOverview?.thumbnail === 'string' ? mediaOverview.thumbnail : '',
+  tags: Array.isArray(mediaOverview?.tags) ? mediaOverview.tags.map(normalizeTag) : [],
+  priorityCategories: Array.isArray(mediaOverview?.priorityCategories)
+    ? mediaOverview.priorityCategories.filter(category => typeof category === 'string')
+    : [],
+});
+
 class Output {
-  constructor({ mediaOverviews, totalCount }) {
-    if (!(mediaOverviews instanceof Array) || !mediaOverviews.every(isMediaOverviewLike)) {
-      throw new Error();
-    }
+  constructor({ mediaOverviews = [], totalCount } = {}) {
+    const normalizedMediaOverviews = Array.isArray(mediaOverviews)
+      ? mediaOverviews.map(normalizeMediaOverview)
+      : [];
     if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
       throw new Error();
     }
+    if (!normalizedMediaOverviews.every(isMediaOverviewLike)) {
+      throw new Error();
+    }
 
-    this.mediaOverviews = mediaOverviews;
+    this.mediaOverviews = normalizedMediaOverviews;
     this.totalCount = totalCount;
   }
 }
+
 
 class SearchMediaService {
   #mediaQueryRepository;
@@ -93,7 +112,10 @@ class SearchMediaService {
     });
     const searchResult = await this.#mediaQueryRepository.search(condition);
 
-    const output = new Output({ ...searchResult });
+    const output = new Output({
+      mediaOverviews: searchResult?.mediaOverviews,
+      totalCount: searchResult?.totalCount,
+    });
 
     return output;
   }

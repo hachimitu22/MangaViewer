@@ -16,12 +16,12 @@ const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
 
-const createMedia = ({ mediaId, title }) => new Media(
+const createMedia = ({ mediaId, title, thumbnail, tags, priorityCategories }) => new Media(
   new MediaId(mediaId),
   new MediaTitle(title),
-  [new ContentId(`${mediaId}-content-001`)],
-  [new Tag(new Category('作者'), new Label('山田'))],
-  [new Category('作者')],
+  [new ContentId(thumbnail), new ContentId(`${thumbnail}-detail`)],
+  tags.map(tag => new Tag(new Category(tag.category), new Label(tag.label))),
+  priorityCategories.map(category => new Category(category)),
 );
 
 describe('user query services (middle)', () => {
@@ -38,34 +38,83 @@ describe('user query services (middle)', () => {
     mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
     userRepository = new SequelizeUserRepository({ sequelize, unitOfWorkContext: unitOfWork });
     await mediaRepository.sync();
-
-    const user = new User(new UserId('user001'));
-    user.addFavorite(new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
-    user.addQueue(new MediaId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'));
-
-    await unitOfWork.run(async () => {
-      await mediaRepository.save(createMedia({ mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', title: 'お気に入り作品' }));
-      await mediaRepository.save(createMedia({ mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', title: 'あとで見る作品' }));
-      await userRepository.save(user);
-    });
   });
 
   afterEach(async () => {
     await sequelize.close();
   });
 
-  test('GetQueueService / GetFavoriteSummariesService が実リポジトリから概要一覧を返す', async () => {
-    const getQueueService = new GetQueueService({ userRepository, mediaQueryRepository });
-    const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+  describe('GetFavoriteSummariesService', () => {
+    test('medium テスト方針チェックリスト: favorite 永続化結果をもとに mediaOverviews が返ることを確認し、単純値オブジェクトは上位層経由で間接保証する', async () => {
+      const user = new User(new UserId('user001'));
+      user.addFavorite(new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
 
-    const queueResult = await getQueueService.execute(new QueueInput({ userId: 'user001' }));
-    const favoriteResult = await getFavoriteSummariesService.execute(new FavoriteInput({ userId: 'user001' }));
+      await unitOfWork.run(async () => {
+        await mediaRepository.save(createMedia({
+          mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          title: 'お気に入り作品',
+          thumbnail: 'favorite-thumb',
+          tags: [
+            { category: 'シリーズ', label: '注目作' },
+            { category: '作者', label: '山田' },
+          ],
+          priorityCategories: ['シリーズ', '作者'],
+        }));
+        await userRepository.save(user);
+      });
 
-    expect(queueResult.mediaOverviews).toEqual([
-      expect.objectContaining({ mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', title: 'あとで見る作品' }),
-    ]);
-    expect(favoriteResult.mediaOverviews).toEqual([
-      expect.objectContaining({ mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', title: 'お気に入り作品' }),
-    ]);
+      const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+      const favoriteResult = await getFavoriteSummariesService.execute(new FavoriteInput({ userId: 'user001' }));
+
+      expect(favoriteResult.mediaOverviews).toEqual([
+        {
+          mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          title: 'お気に入り作品',
+          thumbnail: 'favorite-thumb',
+          tags: [
+            { category: 'シリーズ', label: '注目作' },
+            { category: '作者', label: '山田' },
+          ],
+          priorityCategories: ['シリーズ', '作者'],
+        },
+      ]);
+    });
+  });
+
+  describe('GetQueueService', () => {
+    test('medium テスト方針チェックリスト: SequelizeUserRepository と SequelizeMediaQueryRepository を接続し、queue から画面表示用 mediaOverviews への変換を確認する', async () => {
+      const user = new User(new UserId('user001'));
+      user.addQueue(new MediaId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'));
+
+      await unitOfWork.run(async () => {
+        await mediaRepository.save(createMedia({
+          mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          title: 'あとで見る作品',
+          thumbnail: 'queue-thumb',
+          tags: [
+            { category: '雑誌', label: '月刊テスト' },
+            { category: '作者', label: '佐藤' },
+          ],
+          priorityCategories: ['雑誌', '作者'],
+        }));
+        await userRepository.save(user);
+      });
+
+      const getQueueService = new GetQueueService({ userRepository, mediaQueryRepository });
+      const queueResult = await getQueueService.execute(new QueueInput({ userId: 'user001' }));
+
+      expect(queueResult.mediaOverviews).toEqual([
+        {
+          mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+          title: 'あとで見る作品',
+          thumbnail: 'queue-thumb',
+          tags: [
+            { category: '雑誌', label: '月刊テスト' },
+            { category: '作者', label: '佐藤' },
+          ],
+          priorityCategories: ['雑誌', '作者'],
+        },
+      ]);
+    });
   });
 });
