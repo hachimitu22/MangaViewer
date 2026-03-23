@@ -70,8 +70,11 @@
 
 - 選択肢:
   - "登録が新しい順"(初期値)
-  - "登録が古い順
-  - "ランダム
+  - "登録が古い順"
+  - "タイトル名の昇順"
+  - "タイトル名の降順"
+  - "ランダム"
+- 備考: 選択肢は API の sort パラメーター `date_asc` / `date_desc` / `title_asc` / `title_desc` / `random` に対応する。
 
 </details>
 
@@ -79,8 +82,6 @@
 <summary>No.12 並び順区切り線</summary>
 
 </details>
-
-<details open>
 
 <details open>
 <summary>No.13 検索ボタン</summary>
