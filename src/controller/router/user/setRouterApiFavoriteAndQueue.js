@@ -42,15 +42,6 @@ const setRouterApiFavoriteAndQueue = ({
     }
   });
 
-  router.post('/api/queue/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
-    try {
-      await addQueueService.execute(new AddQueueQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));
-      res.status(200).json({ code: 0 });
-    } catch (error) {
-      next(error);
-    }
-  });
-
   router.delete('/api/queue/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
     try {
       await removeQueueService.execute(new RemoveQueueQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));

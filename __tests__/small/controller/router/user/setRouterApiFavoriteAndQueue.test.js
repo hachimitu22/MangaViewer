@@ -24,7 +24,7 @@ describe('setRouterApiFavoriteAndQueue', () => {
   };
 
   it('favorite / queue の各ルートに認証付きハンドラーを登録できる', () => {
-    const router = { put: jest.fn(), post: jest.fn(), delete: jest.fn() };
+    const router = { put: jest.fn(), delete: jest.fn() };
 
     setRouterApiFavoriteAndQueue({
       router,
@@ -36,23 +36,21 @@ describe('setRouterApiFavoriteAndQueue', () => {
     });
 
     expect(router.put).toHaveBeenCalledTimes(2);
-    expect(router.post).toHaveBeenCalledTimes(1);
     expect(router.delete).toHaveBeenCalledTimes(2);
 
     expect(router.put.mock.calls[0][0]).toBe('/api/favorite/:mediaId');
     expect(router.delete.mock.calls[0][0]).toBe('/api/favorite/:mediaId');
     expect(router.put.mock.calls[1][0]).toBe('/api/queue/:mediaId');
-    expect(router.post.mock.calls[0][0]).toBe('/api/queue/:mediaId');
     expect(router.delete.mock.calls[1][0]).toBe('/api/queue/:mediaId');
 
-    [...router.put.mock.calls, ...router.post.mock.calls, ...router.delete.mock.calls].forEach(([, middleware, handler]) => {
+    [...router.put.mock.calls, ...router.delete.mock.calls].forEach(([, middleware, handler]) => {
       expect(typeof middleware).toBe('function');
       expect(typeof handler).toBe('function');
     });
   });
 
   it('favorite の PUT / DELETE で対応サービスを呼び出せる', async () => {
-    const router = { put: jest.fn(), post: jest.fn(), delete: jest.fn() };
+    const router = { put: jest.fn(), delete: jest.fn() };
     const authResolver = { execute: jest.fn().mockResolvedValue('user-1') };
     const addFavoriteService = { execute: jest.fn().mockResolvedValue(undefined) };
     const removeFavoriteService = { execute: jest.fn().mockResolvedValue(undefined) };
@@ -92,8 +90,8 @@ describe('setRouterApiFavoriteAndQueue', () => {
     expect(deleteRes.json).toHaveBeenCalledWith({ code: 0 });
   });
 
-  it('queue の PUT / POST / DELETE で対応サービスを呼び出せる', async () => {
-    const router = { put: jest.fn(), post: jest.fn(), delete: jest.fn() };
+  it('queue の PUT / DELETE で対応サービスを呼び出せる', async () => {
+    const router = { put: jest.fn(), delete: jest.fn() };
     const authResolver = { execute: jest.fn().mockResolvedValue('user-1') };
     const addQueueService = { execute: jest.fn().mockResolvedValue(undefined) };
     const removeQueueService = { execute: jest.fn().mockResolvedValue(undefined) };
@@ -112,24 +110,18 @@ describe('setRouterApiFavoriteAndQueue', () => {
     const putRes = createRes();
     await executeRegisteredRoute({ middleware: queuePutMiddleware, handler: queuePutHandler, req: putReq, res: putRes });
 
-    const [, queuePostMiddleware, queuePostHandler] = router.post.mock.calls[0];
-    const postReq = createRequest('queue-post');
-    const postRes = createRes();
-    await executeRegisteredRoute({ middleware: queuePostMiddleware, handler: queuePostHandler, req: postReq, res: postRes });
-
     const [, queueDeleteMiddleware, queueDeleteHandler] = router.delete.mock.calls[1];
     const deleteReq = createRequest('queue-delete');
     const deleteRes = createRes();
     await executeRegisteredRoute({ middleware: queueDeleteMiddleware, handler: queueDeleteHandler, req: deleteReq, res: deleteRes });
 
-    expect(addQueueService.execute).toHaveBeenNthCalledWith(1, expect.objectContaining({ mediaId: 'queue-put', userId: 'user-1' }));
-    expect(addQueueService.execute).toHaveBeenNthCalledWith(2, expect.objectContaining({ mediaId: 'queue-post', userId: 'user-1' }));
+    expect(addQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({ mediaId: 'queue-put', userId: 'user-1' }));
     expect(removeQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({ mediaId: 'queue-delete', userId: 'user-1' }));
     expect(deleteRes.json).toHaveBeenCalledWith({ code: 0 });
   });
 
   it('サービス呼び出し時の例外を next に委譲する', async () => {
-    const router = { put: jest.fn(), post: jest.fn(), delete: jest.fn() };
+    const router = { put: jest.fn(), delete: jest.fn() };
     const expectedError = new Error('failed');
 
     setRouterApiFavoriteAndQueue({
