@@ -3,6 +3,11 @@ const {
   Input,
   InputSortType,
 } = require('../../../application/media/query/SearchMediaService');
+const {
+  DEFAULT_SUMMARY_PAGE,
+  DEFAULT_START,
+  DEFAULT_SIZE,
+} = require('./setRouterScreenSearchGet');
 
 const SORT_TYPES_BY_QUERY = Object.freeze({
   date_asc: InputSortType.DATE_ASC,
@@ -31,6 +36,35 @@ const normalizeTags = (rawTags) => {
       };
     })
     .filter(tag => tag && tag.category.length > 0 && tag.label.length > 0);
+};
+
+const normalizePositiveInteger = (value, fallback) => {
+  const normalized = Number.parseInt(value ?? '', 10);
+  if (!Number.isInteger(normalized) || normalized <= 0) {
+    return fallback;
+  }
+
+  return normalized;
+};
+
+const normalizeSearchRange = ({ summaryPage, start, size }) => {
+  const normalizedSize = normalizePositiveInteger(size, DEFAULT_SIZE);
+  const normalizedStart = normalizePositiveInteger(start, null);
+
+  if (normalizedStart !== null) {
+    return {
+      summaryPage: Math.floor((normalizedStart - 1) / normalizedSize) + 1,
+      start: normalizedStart,
+      size: normalizedSize,
+    };
+  }
+
+  const normalizedSummaryPage = normalizePositiveInteger(summaryPage, DEFAULT_SUMMARY_PAGE);
+  return {
+    summaryPage: normalizedSummaryPage,
+    start: ((normalizedSummaryPage - 1) * normalizedSize) + 1,
+    size: normalizedSize,
+  };
 };
 
 const createPagination = ({ totalCount, summaryPage, pageSize }) => {
@@ -64,7 +98,11 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
     auth.execute.bind(auth),
     async (req, res, next) => {
       try {
-        const summaryPage = Math.max(Number.parseInt(req.query.summaryPage ?? '1', 10) || 1, 1);
+        const range = normalizeSearchRange({
+          summaryPage: req.query.summaryPage,
+          start: req.query.start,
+          size: req.query.size,
+        });
         const title = typeof req.query.title === 'string' ? req.query.title : '';
         const tags = normalizeTags(req.query.tags);
         const sort = typeof req.query.sort === 'string' && SORT_TYPES_BY_QUERY[req.query.sort]
@@ -75,13 +113,14 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
           title,
           tags,
           sortType: SORT_TYPES_BY_QUERY[sort],
-          start: ((summaryPage - 1) * 20) + 1,
+          start: range.start,
+          size: range.size,
         }));
 
         const pagination = createPagination({
           totalCount: result.totalCount,
-          summaryPage,
-          pageSize: 20,
+          summaryPage: range.summaryPage,
+          pageSize: range.size,
         });
 
         res.status(200).render('screen/summary', {
@@ -91,6 +130,8 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
             title,
             tags,
             sort,
+            start: range.start,
+            size: range.size,
           },
           mediaOverviews: result.mediaOverviews,
           totalCount: result.totalCount,
@@ -113,4 +154,5 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
 module.exports = setRouterScreenSummaryGet;
 module.exports.SORT_TYPES_BY_QUERY = SORT_TYPES_BY_QUERY;
 module.exports.normalizeTags = normalizeTags;
+module.exports.normalizeSearchRange = normalizeSearchRange;
 module.exports.createPagination = createPagination;

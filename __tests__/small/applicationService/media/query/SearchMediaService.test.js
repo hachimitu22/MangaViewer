@@ -34,6 +34,7 @@ describe("SearchMediaService", () => {
       tags: [{ category: 'C', label: 'L' }],
       sortType: InputSortType.DATE_ASC,
       start: 1,
+      size: 20,
     });
   };
 

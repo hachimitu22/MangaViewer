@@ -65,6 +65,8 @@
             <% currentConditions.tags.forEach((tag) => { %>
               <span class="chip"><%= tag.category %>:<%= tag.label %></span>
             <% }) %>
+            <span class="chip">取得開始位置: <%= currentConditions.start %></span>
+            <span class="chip">取得数: <%= currentConditions.size %></span>
             <% if (!currentConditions.title && currentConditions.tags.length === 0) { %>
               <span class="chip">条件なし</span>
             <% } %>
@@ -76,6 +78,8 @@
             <p><strong><%= totalCount %></strong> 件</p>
             <form class="sort-form" method="get" action="/screen/summary">
               <input type="hidden" name="summaryPage" value="1" />
+              <input type="hidden" name="start" value="<%= currentConditions.start %>" />
+              <input type="hidden" name="size" value="<%= currentConditions.size %>" />
               <% if (currentConditions.title) { %><input type="hidden" name="title" value="<%= currentConditions.title %>" /><% } %>
               <% currentConditions.tags.forEach((tag) => { %>
                 <input type="hidden" name="tags" value="<%= `${tag.category}:${tag.label}` %>" />
@@ -113,7 +117,7 @@
                       </div>
                       <div class="tag-list">
                         <% media.tags.forEach((tag) => { %>
-                          <a class="chip" href="/screen/summary?summaryPage=1&sort=<%= currentConditions.sort %>&tags=<%= encodeURIComponent(`${tag.category}:${tag.label}`) %>"><%= tag.category %>:<%= tag.label %></a>
+                          <a class="chip" href="/screen/summary?summaryPage=1&start=1&size=<%= currentConditions.size %>&sort=<%= currentConditions.sort %>&tags=<%= encodeURIComponent(`${tag.category}:${tag.label}`) %>"><%= tag.category %>:<%= tag.label %></a>
                         <% }) %>
                       </div>
                       <div class="actions">
@@ -138,6 +142,8 @@
               <% } else { %>
                 <% const params = new URLSearchParams(); %>
                 <% params.set('summaryPage', String(item)); %>
+                <% params.set('start', String(((item - 1) * currentConditions.size) + 1)); %>
+                <% params.set('size', String(currentConditions.size)); %>
                 <% params.set('sort', currentConditions.sort); %>
                 <% if (currentConditions.title) { params.set('title', currentConditions.title); } %>
                 <% currentConditions.tags.forEach((tag) => params.append('tags', `${tag.category}:${tag.label}`)); %>

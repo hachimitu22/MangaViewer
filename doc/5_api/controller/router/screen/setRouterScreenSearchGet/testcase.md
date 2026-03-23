@@ -38,4 +38,4 @@
   - `setRouterScreenSearchGet` 実行後、登録された第2ハンドラーを実行する。
 - **結果**
   - `res.status(200).render('screen/search', viewModel)` が呼ばれる。
-  - `viewModel` に `pageTitle`、`summaryPage`、カテゴリー候補、タグ候補、ソート候補が含まれる。
+  - `viewModel` に `pageTitle`、`summaryPage`、`start`、`size`、カテゴリー候補、タグ候補、ソート候補が含まれる。

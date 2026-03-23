@@ -60,7 +60,7 @@ describe('setRouterScreenSummaryGet', () => {
     const server = app.listen(0);
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
-    const response = await fetch(`http://127.0.0.1:${port}/screen/summary?summaryPage=2&title=太郎&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&sort=title_desc`, {
+    const response = await fetch(`http://127.0.0.1:${port}/screen/summary?summaryPage=2&start=41&size=5&title=太郎&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&sort=title_desc`, {
       headers: { 'x-session-token': 'valid-token' },
     });
     const bodyText = await response.text();
@@ -74,7 +74,27 @@ describe('setRouterScreenSummaryGet', () => {
     expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       title: '太郎',
       tags: [{ category: '作者', label: '山田' }],
+      start: 41,
+      size: 5,
+    }));
+  });
+
+  test('summaryPage のみ指定時は size を使って開始位置を補完する', async () => {
+    const { app, searchMediaService } = createApp();
+
+    const server = app.listen(0);
+    await new Promise(resolve => server.once('listening', resolve));
+    const { port } = server.address();
+    const response = await fetch(`http://127.0.0.1:${port}/screen/summary?summaryPage=3&size=10`, {
+      headers: { 'x-session-token': 'valid-token' },
+    });
+    await response.text();
+    await new Promise(resolve => server.close(resolve));
+
+    expect(response.status).toBe(200);
+    expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       start: 21,
+      size: 10,
     }));
   });
 });

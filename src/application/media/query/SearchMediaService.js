@@ -8,7 +8,7 @@ const InputSortType = SortType;
 
 // SearchCondition と同じなので継承だけで済ます
 class Input {
-  constructor({ title, tags, sortType, start }) {
+  constructor({ title, tags, sortType, start, size }) {
     if (typeof title !== 'string') {
       throw new Error();
     }
@@ -21,11 +21,15 @@ class Input {
     if (typeof start !== 'number' || start <= 0 || !Number.isInteger(start)) {
       throw new Error();
     }
+    if (typeof size !== 'number' || size <= 0 || !Number.isInteger(size)) {
+      throw new Error();
+    }
 
     this.title = title;
     this.tags = tags;
     this.sortType = sortType;
     this.start = start;
+    this.size = size;
   }
 }
 
@@ -108,7 +112,7 @@ class SearchMediaService {
       tags: input.tags.map(tag => new SearchConditionTag({ ...tag })),
       sortType: input.sortType,
       start: input.start,
-      size: 20,
+      size: input.size,
     });
     const searchResult = await this.#mediaQueryRepository.search(condition);
 
