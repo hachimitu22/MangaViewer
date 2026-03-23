@@ -27,6 +27,7 @@ describe('setRouterScreenFavoriteGet', () => {
           tags: [{ category: '作者', label: '山田' }],
           priorityCategories: ['作者'],
         }],
+        totalCount: 1,
       })),
     };
 
@@ -50,7 +51,7 @@ describe('setRouterScreenFavoriteGet', () => {
     const server = app.listen(0);
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
-    const response = await fetch(`http://127.0.0.1:${port}/screen/favorite`, {
+    const response = await fetch(`http://127.0.0.1:${port}/screen/favorite?sort=title_desc&page=2`, {
       headers: { 'x-session-token': 'valid-token' },
     });
     const bodyText = await response.text();
@@ -61,6 +62,49 @@ describe('setRouterScreenFavoriteGet', () => {
     expect(bodyText).toContain('タイトル1');
     expect(bodyText).toContain('/api/favorite/media-001');
     expect(bodyText).toContain('/api/queue/media-001');
-    expect(getFavoriteSummariesService.execute).toHaveBeenCalledWith(expect.objectContaining({ userId: 'user-001' }));
+    expect(bodyText).toContain('value="title_desc" selected');
+    expect(getFavoriteSummariesService.execute).toHaveBeenCalledWith(expect.objectContaining({
+      userId: 'user-001',
+      sort: 'title_desc',
+      page: 2,
+    }));
+  });
+
+  test('sort/page の不正値はデフォルトへ丸める', async () => {
+    const app = express();
+    const router = express.Router();
+    const getFavoriteSummariesService = {
+      execute: jest.fn().mockResolvedValue(new Output({ mediaOverviews: [], totalCount: 0 })),
+    };
+
+    app.set('views', path.join(process.cwd(), 'src', 'views'));
+    app.set('view engine', 'ejs');
+    app.use((req, _res, next) => {
+      req.session = { session_token: req.header('x-session-token') };
+      req.context = {};
+      next();
+    });
+
+    setRouterScreenFavoriteGet({
+      router,
+      authResolver: new SessionStateAuthAdapter({
+        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user-001']]),
+      }),
+      getFavoriteSummariesService,
+    });
+    app.use(router);
+
+    const server = app.listen(0);
+    await new Promise(resolve => server.once('listening', resolve));
+    const { port } = server.address();
+    await fetch(`http://127.0.0.1:${port}/screen/favorite?sort=invalid&page=0`, {
+      headers: { 'x-session-token': 'valid-token' },
+    });
+    await new Promise(resolve => server.close(resolve));
+
+    expect(getFavoriteSummariesService.execute).toHaveBeenCalledWith(expect.objectContaining({
+      sort: 'date_asc',
+      page: 1,
+    }));
   });
 });

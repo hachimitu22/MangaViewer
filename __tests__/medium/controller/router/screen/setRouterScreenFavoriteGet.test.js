@@ -67,15 +67,33 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     await mediaRepository.sync();
 
     const user = new User(new UserId('user001'));
-    user.addFavorite(new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
+    [
+      'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      'cccccccccccccccccccccccccccccccc',
+    ].forEach(mediaId => user.addFavorite(new MediaId(mediaId)));
 
     await unitOfWork.run(async () => {
       await mediaRepository.save(new Media(
         new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
-        new MediaTitle('お気に入り作品'),
+        new MediaTitle('あいうえお'),
         [new ContentId('content-001')],
         [new Tag(new Category('作者'), new Label('山田'))],
         [new Category('作者')],
+      ));
+      await mediaRepository.save(new Media(
+        new MediaId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'),
+        new MediaTitle('かきくけこ'),
+        [new ContentId('content-002')],
+        [new Tag(new Category('作者'), new Label('佐藤'))],
+        [new Category('作者')],
+      ));
+      await mediaRepository.save(new Media(
+        new MediaId('cccccccccccccccccccccccccccccccc'),
+        new MediaTitle('さしすせそ'),
+        [new ContentId('content-003')],
+        [new Tag(new Category('ジャンル'), new Label('冒険'))],
+        [new Category('ジャンル')],
       ));
       await userRepository.save(user);
     });
@@ -92,7 +110,10 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.engine('ejs', (filePath, options, callback) => {
-      callback(null, `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.mediaOverviews[0]?.title ?? ''}</body></html>`);
+      callback(
+        null,
+        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:sort=${options.currentConditions.sort}:page=${options.pagination.currentPage}:titles=${options.mediaOverviews.map(media => media.title).join(',')}:pages=${options.pagination.items.join(',')}:tags=${options.mediaOverviews.flatMap(media => media.tags.map(tag => `/screen/summary?summaryPage=1&sort=${options.currentConditions.sort}&tags=${encodeURIComponent(`${tag.category}:${tag.label}`)}`)).join('|')}</body></html>`,
+      );
     });
 
     app.use((req, _res, next) => {
@@ -124,6 +145,57 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     expect(response.headers.get('content-type')).toContain('text/html');
     expect(response.bodyText).toContain('<title>お気に入り一覧</title>');
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'favorite.ejs'));
-    expect(response.bodyText).toContain('お気に入り作品');
+    expect(response.bodyText).toContain('sort=date_asc');
+    expect(response.bodyText).toContain('page=1');
+  });
+
+  test('sort を変更すると指定順で描画される', async () => {
+    const response = await requestApp({
+      app: createApp(),
+      targetPath: '/screen/favorite?sort=title_asc&page=1',
+      headers: { 'x-session-token': 'valid-token' },
+    });
+
+    expect(response.bodyText).toContain('titles=あいうえお,かきくけこ,さしすせそ');
+  });
+
+  test('page を移動すると該当ページと導線情報を保持する', async () => {
+    await unitOfWork.run(async () => {
+      const user = await userRepository.findByUserId(new UserId('user001'));
+      for (let index = 4; index <= 21; index += 1) {
+        const suffix = String(index).padStart(3, '0');
+        const mediaId = `ddddddddddddddddddddddddddddd${suffix}`.slice(0, 32);
+        if (!user.getFavorites().some(item => item.getId() === mediaId)) {
+          user.addFavorite(new MediaId(mediaId));
+          await mediaRepository.save(new Media(
+            new MediaId(mediaId),
+            new MediaTitle(`追加作品${suffix}`),
+            [new ContentId(`content-${suffix}`)],
+            [new Tag(new Category('作者'), new Label(`作家${suffix}`))],
+            [new Category('作者')],
+          ));
+        }
+      }
+      await userRepository.save(user);
+    });
+
+    const response = await requestApp({
+      app: createApp(),
+      targetPath: '/screen/favorite?sort=date_desc&page=2',
+      headers: { 'x-session-token': 'valid-token' },
+    });
+
+    expect(response.bodyText).toContain('page=2');
+    expect(response.bodyText).toContain('pages=1,2');
+  });
+
+  test('タグ導線が /screen/summary を向き並び順を保持する', async () => {
+    const response = await requestApp({
+      app: createApp(),
+      targetPath: '/screen/favorite?sort=title_desc&page=1',
+      headers: { 'x-session-token': 'valid-token' },
+    });
+
+    expect(response.bodyText).toContain('/screen/summary?summaryPage=1&sort=title_desc&tags=');
   });
 });
