@@ -39,6 +39,11 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     searchMediaService: dependencies.searchMediaService,
   });
 
+  dependencies.routeSetters.setRouterApiLogin({
+    router,
+    loginService: dependencies.loginService,
+  });
+
   dependencies.routeSetters.setRouterApiMediaPost({
     router,
     authResolver: dependencies.authResolver,
