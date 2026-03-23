@@ -53,6 +53,7 @@ Result <|- LoginFailedResult
   - `execute({ username, password })`
   - 認証成功時はユーザーID文字列を返却する
   - 認証失敗時は `null` などの空値を返却する
+  - 実装例: [StaticLoginAuthenticator](/doc/7_infrastructure/StaticLoginAuthenticator/readme.md)
 - `sessionStateRegistrar`
   - `execute({ session, userId, ttlMs })`
   - セッション再生成とセッション状態保存を行い、`sessionToken` を含むセッション状態を返却する
