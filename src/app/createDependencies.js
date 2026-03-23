@@ -14,6 +14,7 @@ const setRouterScreenEditGet = require('../controller/router/screen/setRouterScr
 const setRouterScreenErrorGet = require('../controller/router/screen/setRouterScreenErrorGet');
 const setRouterScreenFavoriteGet = require('../controller/router/screen/setRouterScreenFavoriteGet');
 const setRouterScreenLoginGet = require('../controller/router/screen/setRouterScreenLoginGet');
+const setRouterScreenQueueGet = require('../controller/router/screen/setRouterScreenQueueGet');
 const setRouterScreenSearchGet = require('../controller/router/screen/setRouterScreenSearchGet');
 const setRouterScreenSummaryGet = require('../controller/router/screen/setRouterScreenSummaryGet');
 const setRouterApiFavoriteAndQueue = require('../controller/router/user/setRouterApiFavoriteAndQueue');
@@ -31,6 +32,7 @@ const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGen
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
 const { GetFavoriteSummariesService } = require('../application/user/query/GetFavoriteSummariesService');
+const { GetQueueService } = require('../application/user/query/GetQueueService');
 const { AddFavoriteService } = require('../application/user/command/AddFavoriteService');
 const { RemoveFavoriteService } = require('../application/user/command/RemoveFavoriteService');
 const { AddQueueService } = require('../application/user/command/AddQueueService');
@@ -74,6 +76,7 @@ const createDependencies = (env = {}) => {
   const searchMediaService = new SearchMediaService({ mediaQueryRepository });
   const getMediaDetailService = new GetMediaDetailService({ mediaRepository });
   const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+  const getQueueService = new GetQueueService({ userRepository, mediaQueryRepository });
   const addFavoriteService = new AddFavoriteService({ mediaRepository, userRepository, unitOfWork });
   const removeFavoriteService = new RemoveFavoriteService({ userRepository, unitOfWork });
   const addQueueService = new AddQueueService({ mediaRepository, userRepository, unitOfWork });
@@ -113,6 +116,7 @@ const createDependencies = (env = {}) => {
     searchMediaService,
     getMediaDetailService,
     getFavoriteSummariesService,
+    getQueueService,
     addFavoriteService,
     removeFavoriteService,
     addQueueService,
@@ -144,6 +148,7 @@ const createDependencies = (env = {}) => {
       setRouterScreenErrorGet,
       setRouterScreenFavoriteGet,
       setRouterScreenLoginGet,
+      setRouterScreenQueueGet,
       setRouterScreenSearchGet,
       setRouterScreenSummaryGet,
       setRouterApiFavoriteAndQueue,

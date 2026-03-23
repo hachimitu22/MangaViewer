@@ -29,6 +29,11 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   dependencies.routeSetters.setRouterScreenLoginGet({
     router,
   });
+  dependencies.routeSetters.setRouterScreenQueueGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getQueueService: dependencies.getQueueService,
+  });
   dependencies.routeSetters.setRouterScreenSearchGet({
     router,
     authResolver: dependencies.authResolver,
