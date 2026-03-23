@@ -45,7 +45,7 @@ describe('user query services (middle)', () => {
   });
 
   describe('GetFavoriteSummariesService', () => {
-    test('medium テスト方針チェックリスト: favorite 永続化結果をもとに mediaOverviews が返ることを確認し、単純値オブジェクトは上位層経由で間接保証する', async () => {
+    test('normal: favorite 永続化結果をもとに mediaOverviews が返る', async () => {
       const user = new User(new UserId('user001'));
       user.addFavorite(new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'));
 
@@ -63,10 +63,10 @@ describe('user query services (middle)', () => {
         await userRepository.save(user);
       });
 
-      const getFavoriteSummariesService = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
-      const favoriteResult = await getFavoriteSummariesService.execute(new FavoriteInput({ userId: 'user001' }));
+      const service = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+      const result = await service.execute(new FavoriteInput({ userId: 'user001' }));
 
-      expect(favoriteResult.mediaOverviews).toEqual([
+      expect(result.mediaOverviews).toEqual([
         {
           mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           title: 'お気に入り作品',
@@ -79,10 +79,18 @@ describe('user query services (middle)', () => {
         },
       ]);
     });
+
+    test('business: user が存在しない場合は空配列を返す', async () => {
+      const service = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+
+      await expect(service.execute(new FavoriteInput({ userId: 'missinguser' }))).resolves.toEqual({
+        mediaOverviews: [],
+      });
+    });
   });
 
   describe('GetQueueService', () => {
-    test('medium テスト方針チェックリスト: SequelizeUserRepository と SequelizeMediaQueryRepository を接続し、queue から画面表示用 mediaOverviews への変換を確認する', async () => {
+    test('normal: SequelizeUserRepository と SequelizeMediaQueryRepository を接続し queue を画面表示用 mediaOverviews へ変換する', async () => {
       const user = new User(new UserId('user001'));
       user.addQueue(new MediaId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'));
 
@@ -100,10 +108,10 @@ describe('user query services (middle)', () => {
         await userRepository.save(user);
       });
 
-      const getQueueService = new GetQueueService({ userRepository, mediaQueryRepository });
-      const queueResult = await getQueueService.execute(new QueueInput({ userId: 'user001' }));
+      const service = new GetQueueService({ userRepository, mediaQueryRepository });
+      const result = await service.execute(new QueueInput({ userId: 'user001' }));
 
-      expect(queueResult.mediaOverviews).toEqual([
+      expect(result.mediaOverviews).toEqual([
         {
           mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
           title: 'あとで見る作品',
@@ -115,6 +123,32 @@ describe('user query services (middle)', () => {
           priorityCategories: ['雑誌', '作者'],
         },
       ]);
+    });
+
+    test('business: queue が 0 件の場合は空配列を返す', async () => {
+      await unitOfWork.run(async () => {
+        await userRepository.save(new User(new UserId('user001')));
+      });
+
+      const service = new GetQueueService({ userRepository, mediaQueryRepository });
+
+      await expect(service.execute(new QueueInput({ userId: 'user001' }))).resolves.toEqual({
+        mediaOverviews: [],
+      });
+    });
+
+    test('technical: 永続化層の例外をそのまま上位へ送出する', async () => {
+      const failingUserRepository = {
+        findByUserId: jest.fn(async () => {
+          throw new Error('database unavailable');
+        }),
+      };
+      const service = new GetQueueService({
+        userRepository: failingUserRepository,
+        mediaQueryRepository,
+      });
+
+      await expect(service.execute(new QueueInput({ userId: 'user001' }))).rejects.toThrow('database unavailable');
     });
   });
 });
