@@ -331,6 +331,11 @@
           formMessage.className = 'message';
           formMessage.textContent = '';
 
+          const confirmed = window.confirm('このメディアを削除します。よろしいですか？');
+          if (!confirmed) {
+            return;
+          }
+
           try {
             const response = await fetch(`/api/media/${mediaId}`, {
               method: 'DELETE',
