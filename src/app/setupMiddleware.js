@@ -37,6 +37,11 @@ const attachSessionHelpers = req => {
     attachSessionHelpers(req);
     callback(null);
   };
+  req.session.destroy = callback => {
+    req.session = {};
+    attachSessionHelpers(req);
+    callback(null);
+  };
 };
 
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
