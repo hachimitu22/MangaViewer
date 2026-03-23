@@ -5,11 +5,11 @@ describe('SessionStateAuthAdapter', () => {
     const sessionStateStore = {
       findUserIdBySessionToken: jest.fn().mockReturnValue('u1'),
     };
-    const resolver = new SessionStateAuthAdapter({
+    const adapter = new SessionStateAuthAdapter({
       sessionStateStore,
     });
 
-    await expect(resolver.execute('token-1')).resolves.toBe('u1');
+    await expect(adapter.execute('token-1')).resolves.toBe('u1');
     expect(sessionStateStore.findUserIdBySessionToken).toHaveBeenCalledWith('token-1');
   });
 
