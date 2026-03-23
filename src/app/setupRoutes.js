@@ -57,6 +57,12 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     mediaRepository: dependencies.mediaRepository,
     unitOfWork: dependencies.unitOfWork,
   });
+  dependencies.routeSetters.setRouterApiMediaPatch({
+    router,
+    authResolver: dependencies.authResolver,
+    saveAdapter: dependencies.saveAdapter,
+    updateMediaService: dependencies.updateMediaService,
+  });
   dependencies.routeSetters.setRouterApiFavoriteAndQueue({
     router,
     authResolver: dependencies.authResolver,

@@ -37,7 +37,7 @@ describe('ContentSaveMiddleware (middle)', () => {
     const response = await request(app)
       .post('/api/media')
       .field('contents[0][position]', '2')
-      .field('contents[0][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
+      .field('contents[0][id]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
       .field('contents[1][position]', '1')
       .attach('contents[1][file]', Buffer.from('a'), 'same-name.jpg');
 
@@ -68,7 +68,7 @@ describe('ContentSaveMiddleware (middle)', () => {
       .field('contents[0][position]', '1')
       .attach('contents[0][file]', Buffer.from('a'), 'same-name.jpg')
       .field('contents[1][position]', '1')
-      .field('contents[1][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+      .field('contents[1][id]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ code: 1 });

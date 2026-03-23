@@ -4,6 +4,7 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
+const setRouterApiMediaPatch = require('../controller/router/media/setRouterApiMediaPatch');
 const setRouterApiLogin = require('../controller/router/user/setRouterApiLogin');
 const setRouterApiLogout = require('../controller/router/user/setRouterApiLogout');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
@@ -33,6 +34,7 @@ const { AddFavoriteService } = require('../application/user/command/AddFavoriteS
 const { RemoveFavoriteService } = require('../application/user/command/RemoveFavoriteService');
 const { AddQueueService } = require('../application/user/command/AddQueueService');
 const { RemoveQueueService } = require('../application/user/command/RemoveQueueService');
+const { UpdateMediaService } = require('../application/media/command/UpdateMediaService');
 const { LoginService } = require('../application/user/command/LoginService');
 const { LogoutService } = require('../application/user/command/LogoutService');
 const { hasDevelopmentSession } = require('./developmentSession');
@@ -81,6 +83,7 @@ const createDependencies = (env = {}) => {
     password: env.loginPassword || 'admin',
     userId: env.loginUserId || 'admin',
   });
+  const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
   const loginService = new LoginService({
     loginAuthenticator,
     sessionStateRegistrar,
@@ -115,6 +118,7 @@ const createDependencies = (env = {}) => {
     sessionStateRegistrar,
     sessionTerminator,
     loginAuthenticator,
+    updateMediaService,
     loginService,
     logoutService,
     authResolver: new SessionStateAuthAdapter({
@@ -126,6 +130,7 @@ const createDependencies = (env = {}) => {
     mediaIdValueGenerator: new UUIDMediaIdValueGenerator(),
     routeSetters: {
       setRouterApiMediaPost,
+      setRouterApiMediaPatch,
       setRouterApiLogin,
       setRouterApiLogout,
       setRouterScreenEntryGet,
