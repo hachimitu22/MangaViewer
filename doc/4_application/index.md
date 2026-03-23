@@ -25,7 +25,7 @@
   - [LogoutService](./user/command/LogoutService/readme.md)
 - query
   - [GetFavoriteSummariesService](./user/query/GetFavoriteSummariesService/readme.md)
-  - [GetQueue](./user/query/GetQueue/readme.md)
+  - [GetQueueService](./user/query/GetQueueService/readme.md)
 
 ## 実行コンテキスト設計方針
 - 境界は Application Service の `execute` で開始する。
