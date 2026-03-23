@@ -63,6 +63,11 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     saveAdapter: dependencies.saveAdapter,
     updateMediaService: dependencies.updateMediaService,
   });
+  dependencies.routeSetters.setRouterApiMediaDelete({
+    router,
+    authResolver: dependencies.authResolver,
+    deleteMediaService: dependencies.deleteMediaService,
+  });
   dependencies.routeSetters.setRouterApiFavoriteAndQueue({
     router,
     authResolver: dependencies.authResolver,
