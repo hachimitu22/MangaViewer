@@ -32,3 +32,6 @@
   - GetQueueService を実行する
 - **結果**
   - エラーが返却される
+
+## medium テスト方針
+- medium では `SequelizeUserRepository` と `SequelizeMediaQueryRepository` を接続し、queue から画面表示用 `mediaOverviews` への変換を確認する。

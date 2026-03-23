@@ -38,3 +38,6 @@
   - 描画ハンドラーを実行する。
 - **結果**
   - `next(error)` が呼ばれる。
+
+## medium テストで担保する観点
+- `GetFavoriteSummariesService` と永続化済み favorite データを接続し、画面描画に必要な `mediaOverviews` 生成を medium で確認する。

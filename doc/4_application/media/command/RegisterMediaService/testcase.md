@@ -81,3 +81,7 @@
   - リポジトリに対して保存対象のメディアが指定される
 
 ---
+
+## medium テスト方針
+- small では入力検証とドメイン生成を確認し、medium では `SequelizeMediaRepository` / `SequelizeUnitOfWork` を組み合わせて登録結果が検索・詳細取得に接続されることを確認する。
+- `MediaId` や `Tag` などの単純値オブジェクトは medium で個別再検証せず、上位サービス経由で間接保証する。

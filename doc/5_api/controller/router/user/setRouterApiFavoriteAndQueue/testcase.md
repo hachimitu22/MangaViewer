@@ -52,3 +52,7 @@
   - 登録済みハンドラーを実行する。
 - **結果**
   - `next(error)` が呼ばれる。
+
+## medium テストで担保する観点
+- ルーター単体のハンドラー登録確認に加えて、`SessionStateAuthAdapter`・`SequelizeUserRepository`・`SequelizeMediaRepository` を組み合わせた追加 / 削除の永続化配線を `__tests__/medium/controller/router/user/` で段階的に担保する。
+- medium では `favorite` / `queue` の API 応答だけでなく、後続のユーザー状態まで確認する。
