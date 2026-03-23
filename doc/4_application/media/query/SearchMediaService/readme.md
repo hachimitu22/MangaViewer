@@ -14,75 +14,14 @@
 - ユーザーとして認証済みであること。
 
 ## 入力
-
-```plantuml
-left to right direction
-
-struct Input #pink {
-    + タイトル : string
-    + タグ一覧 : array<InputTag>
-    + ソート方法 : InputSortType
-    + 取得開始位置 : number
-    + 取得数 : number
-}
-
-Note right of Input
-    デフォルト値
-        タイトル: なし
-        タグ一覧 : なし
-        ソート方法 : 登録日新しい順
-        取得開始位置 : 必須
-        取得数 : 必須
-End Note
-
-object InputTag {
-    + カテゴリー名 : string
-    + ラベル名 : string
-}
-
-enum InputSortType {
-    + 登録日新しい順
-    + 登録日古い順
-    + タイトル順
-    + タイトル逆順
-    + ランダム
-}
-
-Input o- InputTag
-Input o- InputSortType
-```
+- `Input` は `title` / `tags` / `sortType` / `start` / `size` を受け取る。
+- 詳細な型・制約・`sortType` の列挙値は [SearchCondition 設計書](/doc/4_application/media/port/SearchCondition/readme.md) を参照する。
+- `SearchMediaService` では画面入力 DTO を `SearchCondition` に変換してリポジトリへ渡す。
 
 ## 出力
-
-```plantuml
-left to right direction
-
-struct Output #pink {
-    + メディア一覧 : array<MediaOverview>
-    + 検索結果合計数 : number
-}
-
-struct MediaOverview {
-    + メディアID : string
-    + タイトル : string
-    + サムネイル : string
-    + タグ一覧 : array<MediaOverviewTag>
-    + カテゴリー優先度 : array<string>
-}
-
-struct MediaOverviewTag {
-    + カテゴリー名 : string
-    + ラベル名 : string
-}
-
-Note right of MediaOverview
-    サムネイル：パス文字列
-    カテゴリー優先度：カテゴリー名の配列、配列順=優先度
-End Note
-
-Output o- MediaOverview
-MediaOverview o- MediaOverviewTag
-```
+- `Output` は `mediaOverviews` と `totalCount` を返す。
+- `mediaOverviews` / `totalCount` の詳細構造は [SearchResult 設計書](/doc/4_application/media/port/SearchResult/readme.md) を参照する。
+- `SearchMediaService` は `SearchResult` を受け取り、画面利用しやすい DTO として再正規化して返却する。
 
 ## エラー処理
 - 検索失敗時はエラーとする。
