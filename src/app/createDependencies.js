@@ -4,6 +4,7 @@ const path = require('path');
 const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
+const setRouterApiLogin = require('../controller/router/user/setRouterApiLogin');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
 const setRouterScreenEditGet = require('../controller/router/screen/setRouterScreenEditGet');
@@ -20,6 +21,8 @@ const SequelizeMediaQueryRepository = require('../infrastructure/SequelizeMediaQ
 const SequelizeUserRepository = require('../infrastructure/SequelizeUserRepository');
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
 const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
+const SessionStateRegistrar = require('../infrastructure/SessionStateRegistrar');
+const StaticLoginAuthenticator = require('../infrastructure/StaticLoginAuthenticator');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
@@ -28,6 +31,7 @@ const { AddFavoriteService } = require('../application/user/command/AddFavoriteS
 const { RemoveFavoriteService } = require('../application/user/command/RemoveFavoriteService');
 const { AddQueueService } = require('../application/user/command/AddQueueService');
 const { RemoveQueueService } = require('../application/user/command/RemoveQueueService');
+const { LoginService } = require('../application/user/command/LoginService');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -67,6 +71,17 @@ const createDependencies = (env = {}) => {
   const removeFavoriteService = new RemoveFavoriteService({ userRepository, unitOfWork });
   const addQueueService = new AddQueueService({ mediaRepository, userRepository, unitOfWork });
   const removeQueueService = new RemoveQueueService({ userRepository, unitOfWork });
+  const sessionStateRegistrar = new SessionStateRegistrar({ sessionStateStore });
+  const loginAuthenticator = new StaticLoginAuthenticator({
+    username: env.loginUsername || 'admin',
+    password: env.loginPassword || 'admin',
+    userId: env.loginUserId || 'admin',
+  });
+  const loginService = new LoginService({
+    loginAuthenticator,
+    sessionStateRegistrar,
+    sessionTtlMs: env.loginSessionTtlMs || 86_400_000,
+  });
 
   if (hasDevelopmentSession(env)) {
     sessionStateStore.save({
@@ -90,6 +105,9 @@ const createDependencies = (env = {}) => {
     addQueueService,
     removeQueueService,
     sessionStateStore,
+    sessionStateRegistrar,
+    loginAuthenticator,
+    loginService,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
     }),
@@ -99,6 +117,7 @@ const createDependencies = (env = {}) => {
     mediaIdValueGenerator: new UUIDMediaIdValueGenerator(),
     routeSetters: {
       setRouterApiMediaPost,
+      setRouterApiLogin,
       setRouterScreenEntryGet,
       setRouterScreenDetailGet,
       setRouterScreenEditGet,

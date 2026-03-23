@@ -18,6 +18,10 @@ const createEnv = source => ({
   devSessionUserId: source.DEV_SESSION_USER_ID || '',
   devSessionTtlMs: Number.parseInt(source.DEV_SESSION_TTL_MS, 10) || 0,
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
+  loginUsername: source.LOGIN_USERNAME || 'admin',
+  loginPassword: source.LOGIN_PASSWORD || 'admin',
+  loginUserId: source.LOGIN_USER_ID || 'admin',
+  loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
 });
 
 const startServer = async () => {
