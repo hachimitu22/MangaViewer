@@ -1,20 +1,8 @@
 const express = require('express');
 const path = require('path');
-const { Sequelize } = require('sequelize');
 
 const setRouterScreenSummaryGet = require('../../../../../src/controller/router/screen/setRouterScreenSummaryGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
-const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
-const SequelizeMediaQueryRepository = require('../../../../../src/infrastructure/SequelizeMediaQueryRepository');
-const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
-const { SearchMediaService } = require('../../../../../src/application/media/query/SearchMediaService');
-const Media = require('../../../../../src/domain/media/media');
-const MediaId = require('../../../../../src/domain/media/mediaId');
-const MediaTitle = require('../../../../../src/domain/media/mediaTitle');
-const ContentId = require('../../../../../src/domain/media/contentId');
-const Tag = require('../../../../../src/domain/media/tag');
-const Category = require('../../../../../src/domain/media/category');
-const Label = require('../../../../../src/domain/media/label');
 
 class InMemorySessionStateStore {
   constructor(entries = []) {
@@ -48,40 +36,22 @@ const requestApp = async ({ app, targetPath, headers = {} }) => {
   }
 };
 
-const createMedia = ({ mediaId, title, author }) => new Media(
-  new MediaId(mediaId),
-  new MediaTitle(title),
-  [new ContentId(`${mediaId}-content-001`)],
-  [new Tag(new Category('作者'), new Label(author))],
-  [new Category('作者')],
-);
-
 describe('setRouterScreenSummaryGet (middle)', () => {
-  let sequelize;
-  let unitOfWork;
-  let mediaRepository;
-  let mediaQueryRepository;
-
-  beforeEach(async () => {
-    sequelize = new Sequelize('sqlite::memory:', { logging: false });
-    unitOfWork = new SequelizeUnitOfWork({ sequelize });
-    mediaRepository = new SequelizeMediaRepository({ sequelize, unitOfWorkContext: unitOfWork });
-    mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
-    await mediaRepository.sync();
-
-    await unitOfWork.run(async () => {
-      await mediaRepository.save(createMedia({ mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', title: '太郎の冒険', author: '山田' }));
-      await mediaRepository.save(createMedia({ mediaId: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', title: '花子の冒険', author: '佐藤' }));
-    });
-  });
-
-  afterEach(async () => {
-    await sequelize.close();
-  });
-
-  const createApp = () => {
+  const createApp = ({ searchMediaService } = {}) => {
     const app = express();
     const router = express.Router();
+    const service = searchMediaService ?? {
+      execute: jest.fn().mockResolvedValue({
+        mediaOverviews: [{
+          mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+          title: '太郎の冒険',
+          thumbnail: 'content-001',
+          tags: [{ category: '作者', label: '山田' }],
+          priorityCategories: ['作者'],
+        }],
+        totalCount: 1,
+      }),
+    };
 
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
@@ -100,16 +70,17 @@ describe('setRouterScreenSummaryGet (middle)', () => {
       authResolver: new SessionStateAuthAdapter({
         sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user001']]),
       }),
-      searchMediaService: new SearchMediaService({ mediaQueryRepository }),
+      searchMediaService: service,
     });
 
     app.use(router);
-    return app;
+    return { app, searchMediaService: service };
   };
 
   test('GET /screen/summary で検索条件を正規化して一覧を描画する', async () => {
+    const { app, searchMediaService } = createApp();
     const response = await requestApp({
-      app: createApp(),
+      app,
       targetPath: '/screen/summary?summaryPage=1&title=%E5%A4%AA%E9%83%8E&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&tags=%E4%B8%8D%E6%AD%A3&sort=title_desc',
       headers: { 'x-session-token': 'valid-token' },
     });
@@ -121,5 +92,10 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     expect(response.bodyText).toContain(':太郎:作者:山田:');
     expect(response.bodyText).toContain('太郎の冒険');
     expect(response.bodyText).toContain(':1</body>');
+    expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
+      title: '太郎',
+      tags: [{ category: '作者', label: '山田' }],
+      start: 1,
+    }));
   });
 });
