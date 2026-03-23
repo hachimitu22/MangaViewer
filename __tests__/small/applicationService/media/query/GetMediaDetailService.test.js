@@ -48,6 +48,7 @@ describe("GetMediaDetailService", () => {
         registeredAt: '2026-03-20 12:34 UTC',
         contents: [{ id: 'CID', thumbnail: 'CID', position: 1 }],
         tags: [{ category: 'C', label: 'L' }],
+        categories: ['C'],
         priorityCategories: ['C'],
       },
     }));
@@ -68,6 +69,7 @@ describe("GetMediaDetailService", () => {
     const result = await service.execute(input);
 
     expect(result.mediaDetail.registeredAt).toBe('');
+    expect(result.mediaDetail.categories).toEqual(['作者']);
     expect(result.mediaDetail.contents).toEqual([
       { id: 'CID1', thumbnail: 'CID1', position: 1 },
       { id: 'CID2', thumbnail: 'CID2', position: 2 },

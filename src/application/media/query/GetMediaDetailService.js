@@ -33,6 +33,9 @@ class Output {
     if (!(mediaDetail.tags instanceof Array) || !mediaDetail.tags.every(tag => ['category', 'label'].every(prop => prop in tag))) {
       throw new Error();
     }
+    if (!(mediaDetail.categories instanceof Array) || !mediaDetail.categories.every(category => typeof category === 'string')) {
+      throw new Error();
+    }
     if (!(mediaDetail.priorityCategories instanceof Array) || !mediaDetail.priorityCategories.every(pc => typeof pc === 'string')) {
       throw new Error();
     }
@@ -40,6 +43,8 @@ class Output {
     this.mediaDetail = mediaDetail;
   }
 }
+
+const createCategories = tags => [...new Set(tags.map(tag => tag.category))];
 
 const formatRegisteredAt = registeredAt => {
   if (!(registeredAt instanceof Date) || Number.isNaN(registeredAt.getTime())) {
@@ -77,6 +82,11 @@ class GetMediaDetailService {
       throw new Error();
     }
 
+    const tags = media.getTags().map(tag => ({
+      category: tag.getCategory().getValue(),
+      label: tag.getLabel().getLabel(),
+    }));
+
     const output = new Output({
       mediaDetail: {
         id: media.getId().getId(),
@@ -87,10 +97,8 @@ class GetMediaDetailService {
           thumbnail: content.getId(),
           position: index + 1,
         })),
-        tags: media.getTags().map(tag => ({
-          category: tag.getCategory().getValue(),
-          label: tag.getLabel().getLabel(),
-        })),
+        tags,
+        categories: createCategories(tags),
         priorityCategories: media.getPriorityCategories().map(pc => pc.getValue()),
       },
     });

@@ -344,6 +344,7 @@ describe('media application services (middle)', () => {
           { category: '作者', label: '詳細作者' },
           { category: 'ジャンル', label: '詳細ジャンル' },
         ],
+        categories: ['作者', 'ジャンル'],
         priorityCategories: ['ジャンル', '作者'],
       });
     });

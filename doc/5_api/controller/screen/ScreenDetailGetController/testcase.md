@@ -16,6 +16,7 @@
   - service が `Input.mediaId = req.params.mediaId` で呼び出される。
   - `screen/detail` が `200` で描画される。
   - `pageTitle` と `mediaDetail` が描画モデルへ設定される。
+  - `mediaDetail.categories` に詳細画面で表示するカテゴリー一覧が含まれる。
 
 ---
 
@@ -36,4 +37,5 @@
 ## 今回の更新反映
 - 追加出力/表示の確認対象に `登録日時` を追加する。
 - 追加出力/表示の確認対象に `サムネイル表示用の contents(id / thumbnail / position)` を追加する。
+- 追加出力/表示の確認対象に `カテゴリー一覧` を追加する。
 - 追加出力/表示の確認対象に `タグ検索リンク` と既存の `優先カテゴリ` を追加する。
