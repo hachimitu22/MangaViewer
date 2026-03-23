@@ -15,17 +15,30 @@ class InMemorySessionStateStore {
 }
 
 describe('setRouterScreenQueueGet', () => {
-  test('GET /screen/queue であとで見る一覧HTMLを返す', async () => {
+  test('GET /screen/queue でクエリ条件つきあとで見る一覧HTMLを返す', async () => {
     const app = express();
     const router = express.Router();
     const getQueueService = {
       execute: jest.fn().mockResolvedValue(new Output({
+        sort: 'title_asc',
+        queuePage: 2,
+        start: 21,
+        totalCount: 25,
         mediaOverviews: [{
           mediaId: 'media-001',
           title: 'タイトル1',
           thumbnail: '/contents/1.jpg',
           tags: [{ category: '作者', label: '山田' }],
           priorityCategories: ['作者'],
+        }],
+        currentPageMediaOverviews: [{
+          mediaId: 'media-001',
+          title: 'タイトル1',
+          thumbnail: '/contents/1.jpg',
+          tags: [{ category: '作者', label: '山田' }],
+          priorityCategories: ['作者'],
+          isFavorite: true,
+          isQueued: true,
         }],
       })),
     };
@@ -50,7 +63,7 @@ describe('setRouterScreenQueueGet', () => {
     const server = app.listen(0);
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
-    const response = await fetch(`http://127.0.0.1:${port}/screen/queue`, {
+    const response = await fetch(`http://127.0.0.1:${port}/screen/queue?sort=title_asc&queuePage=2`, {
       headers: { 'x-session-token': 'valid-token' },
     });
     const bodyText = await response.text();
@@ -61,6 +74,14 @@ describe('setRouterScreenQueueGet', () => {
     expect(bodyText).toContain('タイトル1');
     expect(bodyText).toContain('/screen/detail/media-001');
     expect(bodyText).toContain('/screen/summary?summaryPage=1&sort=date_asc&tags=');
-    expect(getQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({ userId: 'user-001' }));
+    expect(bodyText).toContain('お気に入り解除');
+    expect(bodyText).toContain('あとで見る解除');
+    expect(bodyText).toContain('/screen/queue?queuePage=1&amp;sort=title_asc');
+    expect(getQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({
+      userId: 'user-001',
+      sort: 'title_asc',
+      queuePage: 2,
+      start: 21,
+    }));
   });
 });

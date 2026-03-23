@@ -6,30 +6,69 @@ const MediaId = require('../../../../../src/domain/media/mediaId');
 const {
   Input,
   GetQueueService,
+  InputSortType,
 } = require('../../../../../src/application/user/query/GetQueueService');
 
 describe('GetQueueService', () => {
-  test('user の queue を media overview 一覧へ変換して返す', async () => {
+  test('user の queue をページング済み media overview 一覧へ変換して返す', async () => {
     const userRepository = new MockUserRepository();
     const mediaQueryRepository = new MockMediaQueryRepository();
     const user = new User(new UserId('user001'));
     user.addQueue(new MediaId('media-001'));
     user.addQueue(new MediaId('media-002'));
+    user.addFavorite(new MediaId('media-001'));
 
     userRepository.findByUserId.mockResolvedValue(user);
     mediaQueryRepository.findOverviewsByMediaIds.mockResolvedValue([
-      { mediaId: 'media-001', title: 'タイトル1', thumbnail: '/c1.jpg', tags: [], priorityCategories: [] },
-      { mediaId: 'media-002', title: 'タイトル2', thumbnail: '/c2.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-001', title: 'タイトルB', thumbnail: '/c1.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-002', title: 'タイトルA', thumbnail: '/c2.jpg', tags: [], priorityCategories: [] },
     ]);
 
     const service = new GetQueueService({ userRepository, mediaQueryRepository });
-    const result = await service.execute(new Input({ userId: 'user001' }));
+    const result = await service.execute(new Input({ userId: 'user001', sort: InputSortType.DATE_DESC, queuePage: 1 }));
 
     expect(userRepository.findByUserId).toHaveBeenCalledWith(new UserId('user001'));
     expect(mediaQueryRepository.findOverviewsByMediaIds).toHaveBeenCalledWith(['media-001', 'media-002']);
+    expect(result.sort).toBe(InputSortType.DATE_DESC);
+    expect(result.queuePage).toBe(1);
+    expect(result.start).toBe(1);
+    expect(result.totalCount).toBe(2);
     expect(result.mediaOverviews).toEqual([
-      { mediaId: 'media-001', title: 'タイトル1', thumbnail: '/c1.jpg', tags: [], priorityCategories: [] },
-      { mediaId: 'media-002', title: 'タイトル2', thumbnail: '/c2.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-002', title: 'タイトルA', thumbnail: '/c2.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-001', title: 'タイトルB', thumbnail: '/c1.jpg', tags: [], priorityCategories: [] },
+    ]);
+    expect(result.currentPageMediaOverviews).toEqual([
+      { mediaId: 'media-002', title: 'タイトルA', thumbnail: '/c2.jpg', tags: [], priorityCategories: [], isFavorite: false, isQueued: true },
+      { mediaId: 'media-001', title: 'タイトルB', thumbnail: '/c1.jpg', tags: [], priorityCategories: [], isFavorite: true, isQueued: true },
+    ]);
+  });
+
+  test('タイトル並び替えと開始位置を指定できる', async () => {
+    const userRepository = new MockUserRepository();
+    const mediaQueryRepository = new MockMediaQueryRepository();
+    const user = new User(new UserId('user001'));
+    ['media-001', 'media-002', 'media-003'].forEach(mediaId => user.addQueue(new MediaId(mediaId)));
+
+    userRepository.findByUserId.mockResolvedValue(user);
+    mediaQueryRepository.findOverviewsByMediaIds.mockResolvedValue([
+      { mediaId: 'media-001', title: 'かきく', thumbnail: '/1.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-002', title: 'さしす', thumbnail: '/2.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-003', title: 'あいう', thumbnail: '/3.jpg', tags: [], priorityCategories: [] },
+    ]);
+
+    const service = new GetQueueService({ userRepository, mediaQueryRepository });
+    const result = await service.execute(new Input({ userId: 'user001', sort: InputSortType.TITLE_ASC, start: 2 }));
+
+    expect(result.queuePage).toBe(1);
+    expect(result.start).toBe(2);
+    expect(result.totalCount).toBe(3);
+    expect(result.mediaOverviews).toEqual([
+      { mediaId: 'media-001', title: 'かきく', thumbnail: '/1.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-002', title: 'さしす', thumbnail: '/2.jpg', tags: [], priorityCategories: [] },
+    ]);
+    expect(result.currentPageMediaOverviews).toEqual([
+      { mediaId: 'media-001', title: 'かきく', thumbnail: '/1.jpg', tags: [], priorityCategories: [], isFavorite: false, isQueued: true },
+      { mediaId: 'media-002', title: 'さしす', thumbnail: '/2.jpg', tags: [], priorityCategories: [], isFavorite: false, isQueued: true },
     ]);
   });
 
@@ -44,6 +83,7 @@ describe('GetQueueService', () => {
 
     expect(userRepository.findByUserId).toHaveBeenCalledWith(new UserId('user001'));
     expect(mediaQueryRepository.findOverviewsByMediaIds).not.toHaveBeenCalled();
+    expect(result.totalCount).toEqual(0);
     expect(result.mediaOverviews).toEqual([]);
   });
 
@@ -58,6 +98,7 @@ describe('GetQueueService', () => {
 
     expect(userRepository.findByUserId).toHaveBeenCalledWith(new UserId('user001'));
     expect(mediaQueryRepository.findOverviewsByMediaIds).not.toHaveBeenCalled();
+    expect(result.totalCount).toEqual(0);
     expect(result.mediaOverviews).toEqual([]);
   });
 

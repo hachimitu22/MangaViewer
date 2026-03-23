@@ -5,9 +5,11 @@
   - ユーザーに複数のあとで見るメディアが存在する
   - 認証済みである
 - **操作**
-  - GetQueueServiceInput にユーザーIDを指定して実行する
+  - GetQueueServiceInput にユーザーID・並び順・ページ番号または開始位置を指定して実行する
 - **結果**
-  - あとで見るメディア一覧が取得できる
+  - 並び順とページ条件を反映した現在ページのあとで見るメディア一覧が取得できる
+  - 総件数と現在ページ情報が取得できる
+  - お気に入り / あとで見るの表示状態が取得できる
   - エラーは発生しない
 
 ---
@@ -34,4 +36,4 @@
   - エラーが返却される
 
 ## medium テスト方針
-- medium では `SequelizeUserRepository` と `SequelizeMediaQueryRepository` を接続し、queue から画面表示用 `mediaOverviews` への変換を確認する。
+- medium では `SequelizeUserRepository` と `SequelizeMediaQueryRepository` を接続し、queue から画面表示用 `mediaOverviews` への変換に加えて、並び順・ページ条件・状態フラグの反映を確認する。
