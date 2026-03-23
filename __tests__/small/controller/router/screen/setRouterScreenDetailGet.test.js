@@ -83,7 +83,7 @@ describe('setRouterScreenDetailGet', () => {
 
     expect(html).toContain('登録日:');
     expect(html).toContain('2026-03-20 12:34 UTC');
-    expect(html).toContain('/screen/summary?summaryPage=1&amp;sort=date_asc&amp;tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0%20%E5%A4%AA%E9%83%8E');
+    expect(html).toContain('/screen/summary?summaryPage=1&sort=date_asc&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0%20%E5%A4%AA%E9%83%8E');
     expect(html).toContain('/screen/viewer/media-1/1');
     expect(html).toContain('alt="作品タイトル 1 枚目のサムネイル"');
     expect(html).toContain('サムネイル未設定');
