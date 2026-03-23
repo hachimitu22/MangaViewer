@@ -1,86 +1,64 @@
 # SequelizeMediaRepository テストケース
 
 ## テストケース一覧
-- [save で Media 集約を永続化できる](#save-で-media-集約を永続化できる)
-- [findByMediaId で永続化済み Media 集約を復元できる](#findbymediaid-で永続化済み-media-集約を復元できる)
-- [delete で対象メディアを削除できる](#delete-で対象メディアを削除できる)
-- [findByMediaId は未登録IDで null を返す](#findbymediaid-は未登録idで-null-を返す)
-- [save は Media 以外を受け取ると例外を送出する](#save-は-media-以外を受け取ると例外を送出する)
-- [findByMediaId は MediaId 以外を受け取ると例外を送出する](#findbymediaid-は-mediaid-以外を受け取ると例外を送出する)
-- [delete は Media 以外を受け取ると例外を送出する](#delete-は-media-以外を受け取ると例外を送出する)
-- [外部トランザクションを受け取り rollback できる](#外部トランザクションを受け取り-rollback-できる)
+- [sync で未指定 models のテーブルを初期化できる](#sync-で未指定-models-のテーブルを初期化できる)
+- [空の content / tag / priorityCategories を持つ Media も保存して復元できる](#空の-content--tag--prioritycategories-を持つ-media-も保存して復元できる)
+- [存在しない media_id の findByMediaId は null、delete は例外なく完了する](#存在しない-media_id-の-findbymediaid-は-nulldelete-は例外なく完了する)
+- [save は既存メディア更新時に古い関連を置き換える](#save-は既存メディア更新時に古い関連を置き換える)
+- [save / findByMediaId / delete は不正引数で例外を送出する](#save--findbymediaid--delete-は不正引数で例外を送出する)
+- [Service境界で開始した実行文脈を使って rollback できる](#service境界で開始した実行文脈を使って-rollback-できる)
 
 ---
 
-### save で Media 集約を永続化できる
+### sync で未指定 models のテーブルを初期化できる
 - 前提
-  - 有効な Media 集約が存在する
+  - `sequelize` と `unitOfWorkContext` を注入してリポジトリを生成する
 - 操作
-  - `save(media)` を実行する
+  - `sync()` を実行する
 - 期待結果
-  - `media` / `content` / `media_tag` に対応データが保存される
-  - `content.position` は 1 始まりで連番保存される
+  - `media` / `content` / `category` / `tag` / `media_tag` / `media_category` テーブルが作成される
 
-### findByMediaId で永続化済み Media 集約を復元できる
+### 空の content / tag / priorityCategories を持つ Media も保存して復元できる
 - 前提
-  - Media 集約が `save` 済みである
+  - `contents` / `tags` / `priorityCategories` が空配列の `Media` 集約が存在する
 - 操作
-  - `findByMediaId(mediaId)` を実行する
+  - `save(media)` 実行後に `findByMediaId(mediaId)` を呼ぶ
 - 期待結果
-  - `Media` インスタンスが返る
-  - タイトル・コンテンツ順・タグ・カテゴリー優先順が一致する
+  - `Media` が復元される
+  - `contents` / `tags` / `priorityCategories` は空配列のまま保持される
 
-### delete で対象メディアを削除できる
-- 前提
-  - Media 集約が `save` 済みである
-- 操作
-  - `delete(media)` を実行する
-- 期待結果
-  - 対象 `media_id` が削除される
-  - `findByMediaId(mediaId)` は `null` を返す
-
-### findByMediaId は未登録IDで null を返す
+### 存在しない media_id の findByMediaId は null、delete は例外なく完了する
 - 前提
   - 指定 `media_id` は未登録である
 - 操作
-  - `findByMediaId(mediaId)` を実行する
+  - `findByMediaId(mediaId)` と `delete(media)` を実行する
 - 期待結果
-  - `null` が返る
+  - `findByMediaId` は `null` を返す
+  - `delete` は不要な例外を送出しない
 
+### save は既存メディア更新時に古い関連を置き換える
+- 前提
+  - 同一 `media_id` の `Media` を再保存できる状態である
+- 操作
+  - `save` で初回保存した後、タイトル・コンテンツ・タグ・優先カテゴリーを変更した `Media` を再度 `save` する
+- 期待結果
+  - 取得結果は更新後の値だけを保持する
+  - 古い `content` / `media_tag` / `media_category` は残らない
 
-### save は Media 以外を受け取ると例外を送出する
+### save / findByMediaId / delete は不正引数で例外を送出する
 - 前提
   - リポジトリが生成済みである
 - 操作
-  - `save` に `Media` 以外の値を渡して実行する
+  - 各メソッドへ期待型以外の値を渡して実行する
 - 期待結果
   - `Error` が送出される
 
-### findByMediaId は MediaId 以外を受け取ると例外を送出する
+### Service境界で開始した実行文脈を使って rollback できる
 - 前提
   - リポジトリが生成済みである
+  - 呼び出し側で開始した実行文脈がある
 - 操作
-  - `findByMediaId` に `MediaId` 以外の値を渡して実行する
+  - `unitOfWork.run(async () => { ... })` 内で `save(media)` を実行し、その後例外を送出する
 - 期待結果
-  - `Error` が送出される
-
-### delete は Media 以外を受け取ると例外を送出する
-- 前提
-  - リポジトリが生成済みである
-- 操作
-  - `delete` に `Media` 以外の値を渡して実行する
-- 期待結果
-  - `Error` が送出される
-
-
-### 外部トランザクションを受け取り rollback できる
-- 前提
-  - リポジトリが生成済みである
-  - 呼び出し側で開始した Sequelize のトランザクションがある
-- 操作
-  - `save(media, transaction)` で保存し、同一 `transaction` を渡して `findByMediaId(mediaId, transaction)` を実行する
-  - その後 `transaction.rollback()` を実行し、トランザクションなしで `findByMediaId(mediaId)` を実行する
-- 期待結果
-  - トランザクション内の `findByMediaId` では保存した `Media` が取得できる
-  - rollback 後にトランザクション外からは対象 `Media` が取得できず `null` になる
-
+  - 実行文脈内では保存した `Media` が取得できる
+  - 例外後は rollback され、文脈外からは `null` になる
