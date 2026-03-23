@@ -21,6 +21,8 @@
   - [RemoveFavorite](./user/command/RemoveFavorite/readme.md)
   - [AddQueue](./user/command/AddQueue/readme.md)
   - [RemoveQueue](./user/command/RemoveQueue/readme.md)
+  - [LoginService](./user/command/LoginService/readme.md)
+  - [LogoutService](./user/command/LogoutService/readme.md)
 - query
   - [GetFavorites](./user/query/GetFavorites/readme.md)
   - [GetQueue](./user/query/GetQueue/readme.md)
