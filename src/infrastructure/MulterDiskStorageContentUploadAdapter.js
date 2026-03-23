@@ -119,10 +119,11 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
     }
 
     const hasFile = uploadedFile !== null;
-    const hasUrl = typeof content.url === 'string' && content.url.length > 0;
+    const contentId = this.#readExistingContentId(content);
+    const hasExistingContentId = contentId !== null;
 
-    if (hasFile === hasUrl) {
-      throw new Error('file xor url is required');
+    if (hasFile === hasExistingContentId) {
+      throw new Error('file xor id is required');
     }
 
     if (hasFile) {
@@ -137,15 +138,27 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
       };
     }
 
-    if (!(/^[0-9a-f]{32}$/).test(content.url)) {
-      throw new Error('url contentId is invalid');
+    if (!(/^[0-9a-f]{32}$/).test(contentId)) {
+      throw new Error('contentId is invalid');
     }
 
     return {
       index,
       position,
-      contentId: content.url,
+      contentId,
     };
+  }
+
+  #readExistingContentId(content) {
+    if (typeof content.id === 'string' && content.id.length > 0) {
+      return content.id;
+    }
+
+    if (typeof content.url === 'string' && content.url.length > 0) {
+      return content.url;
+    }
+
+    return null;
   }
 
   #createUniqueContentId() {

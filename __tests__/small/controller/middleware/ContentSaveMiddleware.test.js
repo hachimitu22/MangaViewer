@@ -50,6 +50,19 @@ describe('ContentSaveMiddleware', () => {
     expect(res.status).not.toHaveBeenCalled();
   });
 
+  it('contentIdsが既存IDと新規ファイルの混在でも後続へ委譲する', async () => {
+    const req = {
+      context: {
+        contentIds: ['c1', '0123456789abcdef0123456789abcdef'],
+      },
+    };
+
+    const { next, res } = await execute({ req });
+
+    expect(next).toHaveBeenCalledTimes(1);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['contextが未設定', {}],
     ['contentIdsが未設定', { context: {} }],
