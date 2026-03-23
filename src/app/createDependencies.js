@@ -5,6 +5,7 @@ const { Sequelize } = require('sequelize');
 
 const setRouterApiMediaPost = require('../controller/router/media/setRouterApiMediaPost');
 const setRouterApiMediaPatch = require('../controller/router/media/setRouterApiMediaPatch');
+const setRouterApiMediaDelete = require('../controller/router/media/setRouterApiMediaDelete');
 const setRouterApiLogin = require('../controller/router/user/setRouterApiLogin');
 const setRouterApiLogout = require('../controller/router/user/setRouterApiLogout');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
@@ -35,6 +36,7 @@ const { RemoveFavoriteService } = require('../application/user/command/RemoveFav
 const { AddQueueService } = require('../application/user/command/AddQueueService');
 const { RemoveQueueService } = require('../application/user/command/RemoveQueueService');
 const { UpdateMediaService } = require('../application/media/command/UpdateMediaService');
+const { DeleteMediaService } = require('../application/media/command/DeleteMediaService');
 const { LoginService } = require('../application/user/command/LoginService');
 const { LogoutService } = require('../application/user/command/LogoutService');
 const { hasDevelopmentSession } = require('./developmentSession');
@@ -84,6 +86,7 @@ const createDependencies = (env = {}) => {
     userId: env.loginUserId || 'admin',
   });
   const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
+  const deleteMediaService = new DeleteMediaService({ mediaRepository, unitOfWork });
   const loginService = new LoginService({
     loginAuthenticator,
     sessionStateRegistrar,
@@ -119,6 +122,7 @@ const createDependencies = (env = {}) => {
     sessionTerminator,
     loginAuthenticator,
     updateMediaService,
+    deleteMediaService,
     loginService,
     logoutService,
     authResolver: new SessionStateAuthAdapter({
@@ -131,6 +135,7 @@ const createDependencies = (env = {}) => {
     routeSetters: {
       setRouterApiMediaPost,
       setRouterApiMediaPatch,
+      setRouterApiMediaDelete,
       setRouterApiLogin,
       setRouterApiLogout,
       setRouterScreenEntryGet,
