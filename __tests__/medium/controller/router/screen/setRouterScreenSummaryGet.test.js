@@ -56,7 +56,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.engine('ejs', (filePath, options, callback) => {
-      callback(null, `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.currentConditions.title}:${options.currentConditions.tags.map(tag => `${tag.category}:${tag.label}`).join(',')}:${options.mediaOverviews.map(media => media.title).join(',')}:${options.pagination.currentPage}</body></html>`);
+      callback(null, `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.currentConditions.title}:${options.currentConditions.tags.map(tag => `${tag.category}:${tag.label}`).join(',')}:${options.currentConditions.start}:${options.currentConditions.size}:${options.mediaOverviews.map(media => media.title).join(',')}:${options.pagination.currentPage}</body></html>`);
     });
 
     app.use((req, _res, next) => {
@@ -81,7 +81,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     const { app, searchMediaService } = createApp();
     const response = await requestApp({
       app,
-      targetPath: '/screen/summary?summaryPage=1&title=%E5%A4%AA%E9%83%8E&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&tags=%E4%B8%8D%E6%AD%A3&sort=title_desc',
+      targetPath: '/screen/summary?summaryPage=1&start=11&size=5&title=%E5%A4%AA%E9%83%8E&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&tags=%E4%B8%8D%E6%AD%A3&sort=title_desc',
       headers: { 'x-session-token': 'valid-token' },
     });
 
@@ -89,13 +89,14 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     expect(response.headers.get('content-type')).toContain('text/html');
     expect(response.bodyText).toContain('<title>メディア一覧</title>');
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'summary.ejs'));
-    expect(response.bodyText).toContain(':太郎:作者:山田:');
+    expect(response.bodyText).toContain(':太郎:作者:山田:11:5:');
     expect(response.bodyText).toContain('太郎の冒険');
     expect(response.bodyText).toContain(':1</body>');
     expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       title: '太郎',
       tags: [{ category: '作者', label: '山田' }],
-      start: 1,
+      start: 11,
+      size: 5,
     }));
   });
 });

@@ -64,6 +64,20 @@
           <input type="hidden" id="summary-page" name="summaryPage" value="<%= summaryPage %>" />
 
           <section>
+            <div class="tag-inputs">
+              <div>
+                <label class="field-label" for="start">取得開始位置</label>
+                <input id="start" name="start" class="text-input" type="number" min="1" step="1" value="<%= start %>" />
+              </div>
+              <div>
+                <label class="field-label" for="size">取得数</label>
+                <input id="size" name="size" class="text-input" type="number" min="1" step="1" value="<%= size %>" />
+              </div>
+            </div>
+            <hr class="divider" />
+          </section>
+
+          <section>
             <label class="field-label" for="title">タイトル部分一致</label>
             <input id="title" name="title" class="text-input" type="text" />
             <hr class="divider" />
@@ -117,6 +131,8 @@
         const form = document.getElementById('search-form');
         const summaryPageInput = document.getElementById('summary-page');
         const titleInput = document.getElementById('title');
+        const startInput = document.getElementById('start');
+        const sizeInput = document.getElementById('size');
         const sortInput = document.getElementById('sort');
         const categoryInput = document.getElementById('category-input');
         const tagInput = document.getElementById('tag-input');
@@ -191,6 +207,8 @@
             params.set('title', title);
           }
           params.set('summaryPage', summaryPageInput.value);
+          params.set('start', startInput.value);
+          params.set('size', sizeInput.value);
           params.set('sort', sortInput.value);
           selectedTags.forEach(tag => {
             params.append('tags', `${tag.category}:${tag.label}`);

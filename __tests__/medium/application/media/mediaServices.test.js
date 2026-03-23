@@ -59,6 +59,7 @@ describe('media application services (middle)', () => {
         tags: [{ category: '作者', label: '山田太郎' }],
         sortType: InputSortType.TITLE_ASC,
         start: 1,
+        size: 20,
       }));
       const detailResult = await getMediaDetailService.execute(new DetailInput({ mediaId: registerResult.mediaId }));
 
@@ -192,6 +193,7 @@ describe('media application services (middle)', () => {
         tags: [{ category: '掲載誌', label: 'テスト雑誌' }],
         sortType: InputSortType.TITLE_ASC,
         start: 1,
+        size: 20,
       }));
 
       expect(searchResult.mediaOverviews).toEqual([
@@ -235,6 +237,7 @@ describe('media application services (middle)', () => {
         tags: [],
         sortType: InputSortType.TITLE_ASC,
         start: 1,
+        size: 20,
       }));
       expect(searchResult).toEqual({ mediaOverviews: [], totalCount: 0 });
     });
@@ -280,6 +283,7 @@ describe('media application services (middle)', () => {
         tags: [{ category: '作者', label: '田中' }],
         sortType: InputSortType.TITLE_ASC,
         start: 1,
+        size: 20,
       }));
 
       expect(searchResult.totalCount).toBe(2);

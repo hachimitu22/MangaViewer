@@ -1,5 +1,9 @@
 const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 
+const DEFAULT_SUMMARY_PAGE = 1;
+const DEFAULT_START = 1;
+const DEFAULT_SIZE = 20;
+
 const setRouterScreenSearchGet = ({
   router,
   authResolver,
@@ -11,7 +15,9 @@ const setRouterScreenSearchGet = ({
     (_req, res) => {
       res.status(200).render('screen/search', {
         pageTitle: 'メディア検索',
-        summaryPage: 1,
+        summaryPage: DEFAULT_SUMMARY_PAGE,
+        start: DEFAULT_START,
+        size: DEFAULT_SIZE,
         categoryOptions: ['作者', 'ジャンル', 'シリーズ'],
         tagsByCategory: {
           作者: ['山田', '佐藤', '鈴木'],
@@ -31,3 +37,6 @@ const setRouterScreenSearchGet = ({
 };
 
 module.exports = setRouterScreenSearchGet;
+module.exports.DEFAULT_SUMMARY_PAGE = DEFAULT_SUMMARY_PAGE;
+module.exports.DEFAULT_START = DEFAULT_START;
+module.exports.DEFAULT_SIZE = DEFAULT_SIZE;

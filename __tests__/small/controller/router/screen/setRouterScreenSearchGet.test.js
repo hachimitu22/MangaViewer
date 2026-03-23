@@ -70,6 +70,8 @@ describe('setRouterScreenSearchGet', () => {
     expect(res.render).toHaveBeenCalledWith('screen/search', {
       pageTitle: 'メディア検索',
       summaryPage: 1,
+      start: 1,
+      size: 20,
       categoryOptions: ['作者', 'ジャンル', 'シリーズ'],
       tagsByCategory: {
         作者: ['山田', '佐藤', '鈴木'],
