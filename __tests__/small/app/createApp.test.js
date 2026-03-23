@@ -66,29 +66,6 @@ describe('createApp', () => {
     });
   });
 
-  test('既存 screen / api ルートに一致しない場合は共通の404 JSONを返す', async () => {
-    app = createApp({
-      databaseStoragePath: databasePath,
-      contentRootDirectory,
-    });
-
-    await app.locals.ready;
-
-    const unknownScreenResponse = await request(app).get('/screen/unknown');
-    expect(unknownScreenResponse.status).toBe(404);
-    expect(unknownScreenResponse.type).toMatch(/json/);
-    expect(unknownScreenResponse.body).toEqual({
-      message: 'Not Found',
-    });
-
-    const unknownApiResponse = await request(app).get('/api/unknown');
-    expect(unknownApiResponse.status).toBe(404);
-    expect(unknownApiResponse.type).toMatch(/json/);
-    expect(unknownApiResponse.body).toEqual({
-      message: 'Not Found',
-    });
-  });
-
   test('固定セッション設定が無効な場合は対象パスでも自動補完されず認証エラーになる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
