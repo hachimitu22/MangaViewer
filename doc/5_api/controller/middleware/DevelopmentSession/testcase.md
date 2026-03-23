@@ -48,7 +48,15 @@
 ### 固定セッション設定のいずれかが欠けると無効と判定する
 
 - **対応テスト**
-  - 未実装（追加候補）
+  - `__tests__/small/app/developmentSession.test.js`
+  - `devSessionToken が欠落している場合は固定セッションを無効と判定する`
+  - `devSessionUserId が欠落している場合は固定セッションを無効と判定する`
+  - `devSessionTtlMs が 0 の場合は固定セッションを無効と判定する`
+  - `devSessionTtlMs が 負数 の場合は固定セッションを無効と判定する`
+  - `devSessionTtlMs が 非整数 の場合は固定セッションを無効と判定する`
+  - `__tests__/medium/app/developmentSession.integration.test.js`
+  - `createDependencies は固定セッション設定が無効な場合はセッションを事前登録しない`
+  - `server.js 相当の初期化では固定セッション設定が無効な場合に有効化ログを出力しない`
 - **前提**
   - 以下のいずれかが成り立つ。
     - `devSessionToken` が未設定・空文字である。
@@ -66,7 +74,12 @@
 ### 固定セッションが無効な場合は対象パスでも補完対象にしない
 
 - **対応テスト**
-  - 未実装（追加候補）
+  - `__tests__/small/app/developmentSession.test.js`
+  - `固定セッションが無効な場合は対象パスでも補完対象にしない`
+  - `__tests__/small/app/createApp.test.js`
+  - `固定セッション設定が無効な場合は対象パスでも自動補完されず認証エラーになる`
+  - `__tests__/medium/app/developmentSession.integration.test.js`
+  - `setupMiddleware は固定セッション設定が無効な場合は req.session.session_token を補完しない`
 - **前提**
   - `requestPath` は `devSessionPaths` に含まれている。
   - ただし `hasDevelopmentSession(env)` は `false` である。
