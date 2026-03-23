@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root { color-scheme: light; font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif; background: #f5f6f8; color: #1f2937; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      a { color: #2563eb; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+      .stack { display: grid; gap: 24px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06); }
+      .toolbar { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+      .sort-form { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+      .select-input { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; background:#fff; }
+      .media-grid { display: grid; gap: 16px; }
+      .media-card { border: 1px solid #dbe3f0; border-radius: 16px; background: #f8fafc; padding: 16px; }
+      .media-body { display: grid; grid-template-columns: 160px 1fr; gap: 16px; }
+      .thumbnail { width: 160px; height: 120px; border-radius: 12px; background: #dbeafe; overflow: hidden; display:flex; align-items:center; justify-content:center; color:#1d4ed8; font-size:12px; }
+      .thumbnail img { width:100%; height:100%; object-fit:cover; }
+      .meta { display:grid; gap: 12px; }
+      .tag-list, .actions { display:flex; gap:12px; flex-wrap:wrap; }
+      .chip { background: #eff6ff; color: #1d4ed8; border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+      .button { border: 0; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer; background:#475569; color:#fff; }
+      .empty { color: #64748b; }
+      @media (max-width: 720px) { .media-body { grid-template-columns: 1fr; } .thumbnail { width: 100%; height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="stack">
+        <section class="card">
+          <h1><%= pageTitle %></h1>
+          <p>あとで見るに登録したメディアを一覧表示します。</p>
+        </section>
+
+        <section class="card">
+          <div class="toolbar">
+            <p><strong><%= mediaOverviews.length %></strong> 件</p>
+            <form class="sort-form" method="get" action="/screen/queue">
+              <label for="sort">並び順</label>
+              <select id="sort" name="sort" class="select-input" disabled>
+                <option selected>登録が新しい順</option>
+                <option>登録が古い順</option>
+                <option>ランダム</option>
+              </select>
+            </form>
+          </div>
+
+          <% if (mediaOverviews.length === 0) { %>
+            <p class="empty">検索結果0件ラベル</p>
+          <% } else { %>
+            <div class="media-grid">
+              <% mediaOverviews.forEach((media) => { %>
+                <article class="media-card">
+                  <div class="media-body">
+                    <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
+                      <% if (media.thumbnail) { %>
+                        <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
+                      <% } else { %>
+                        <span>NO IMAGE</span>
+                      <% } %>
+                    </a>
+                    <div class="meta">
+                      <div>
+                        <h2><a href="/screen/detail/<%= media.mediaId %>"><%= media.title %></a></h2>
+                      </div>
+                      <div class="tag-list">
+                        <% media.tags.forEach((tag) => { %>
+                          <a class="chip" href="/screen/summary?summaryPage=1&sort=date_asc&tags=<%= encodeURIComponent(`${tag.category}:${tag.label}`) %>"><%= tag.category %>:<%= tag.label %></a>
+                        <% }) %>
+                      </div>
+                      <div class="actions">
+                        <a href="/screen/detail/<%= media.mediaId %>">詳細画面へ</a>
+                        <button class="button" type="button" disabled>あとで見る一覧</button>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>
