@@ -34,6 +34,10 @@ describe('GetQueueService', () => {
     expect(result.start).toBe(1);
     expect(result.totalCount).toBe(2);
     expect(result.mediaOverviews).toEqual([
+      { mediaId: 'media-002', title: 'タイトルA', thumbnail: '/c2.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-001', title: 'タイトルB', thumbnail: '/c1.jpg', tags: [], priorityCategories: [] },
+    ]);
+    expect(result.currentPageMediaOverviews).toEqual([
       { mediaId: 'media-002', title: 'タイトルA', thumbnail: '/c2.jpg', tags: [], priorityCategories: [], isFavorite: false, isQueued: true },
       { mediaId: 'media-001', title: 'タイトルB', thumbnail: '/c1.jpg', tags: [], priorityCategories: [], isFavorite: true, isQueued: true },
     ]);
@@ -59,6 +63,10 @@ describe('GetQueueService', () => {
     expect(result.start).toBe(2);
     expect(result.totalCount).toBe(3);
     expect(result.mediaOverviews).toEqual([
+      { mediaId: 'media-001', title: 'かきく', thumbnail: '/1.jpg', tags: [], priorityCategories: [] },
+      { mediaId: 'media-002', title: 'さしす', thumbnail: '/2.jpg', tags: [], priorityCategories: [] },
+    ]);
+    expect(result.currentPageMediaOverviews).toEqual([
       { mediaId: 'media-001', title: 'かきく', thumbnail: '/1.jpg', tags: [], priorityCategories: [], isFavorite: false, isQueued: true },
       { mediaId: 'media-002', title: 'さしす', thumbnail: '/2.jpg', tags: [], priorityCategories: [], isFavorite: false, isQueued: true },
     ]);

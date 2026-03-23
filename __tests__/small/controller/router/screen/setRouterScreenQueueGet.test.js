@@ -30,6 +30,13 @@ describe('setRouterScreenQueueGet', () => {
           thumbnail: '/contents/1.jpg',
           tags: [{ category: '作者', label: '山田' }],
           priorityCategories: ['作者'],
+        }],
+        currentPageMediaOverviews: [{
+          mediaId: 'media-001',
+          title: 'タイトル1',
+          thumbnail: '/contents/1.jpg',
+          tags: [{ category: '作者', label: '山田' }],
+          priorityCategories: ['作者'],
           isFavorite: true,
           isQueued: true,
         }],

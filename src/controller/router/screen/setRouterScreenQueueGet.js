@@ -50,7 +50,7 @@ const setRouterScreenQueueGet = ({ router, authResolver, getQueueService }) => {
 
         res.status(200).render('screen/queue', {
           pageTitle: 'あとで見る一覧',
-          mediaOverviews: result.mediaOverviews,
+          mediaOverviews: result.currentPageMediaOverviews ?? result.mediaOverviews,
           currentConditions: {
             sort: result.sort,
             queuePage: pagination.currentPage,

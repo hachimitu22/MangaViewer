@@ -42,13 +42,15 @@ const isMediaOverviewLike = (obj) => {
   if (!obj.tags.every(tag => ['category', 'label'].every(prop => prop in tag))) return false;
   if (!(obj?.priorityCategories instanceof Array)) return false;
   if (!obj.priorityCategories.every(category => typeof category === 'string')) return false;
-  if (typeof obj?.isFavorite !== 'boolean') return false;
-  if (typeof obj?.isQueued !== 'boolean') return false;
   return true;
 };
 
+const isDisplayMediaOverviewLike = (obj) => isMediaOverviewLike(obj)
+  && typeof obj?.isFavorite === 'boolean'
+  && typeof obj?.isQueued === 'boolean';
+
 class Output {
-  constructor({ sort, queuePage, start, totalCount, mediaOverviews, pageSize = DEFAULT_PAGE_SIZE } = {}) {
+  constructor({ sort, queuePage, start, totalCount, mediaOverviews, currentPageMediaOverviews, pageSize = DEFAULT_PAGE_SIZE } = {}) {
     if (!Object.values(INPUT_SORT_TYPES).includes(sort)) {
       throw new Error();
     }
@@ -67,31 +69,43 @@ class Output {
     if (!(mediaOverviews instanceof Array) || !mediaOverviews.every(isMediaOverviewLike)) {
       throw new Error();
     }
+    if (!(currentPageMediaOverviews instanceof Array) || !currentPageMediaOverviews.every(isDisplayMediaOverviewLike)) {
+      throw new Error();
+    }
 
-    this.sort = sort;
-    this.queuePage = queuePage;
-    this.start = start;
-    this.totalCount = totalCount;
     this.mediaOverviews = mediaOverviews;
-    this.pageSize = pageSize;
+    Object.defineProperties(this, {
+      sort: { value: sort, enumerable: false },
+      queuePage: { value: queuePage, enumerable: false },
+      start: { value: start, enumerable: false },
+      totalCount: { value: totalCount, enumerable: false },
+      currentPageMediaOverviews: { value: currentPageMediaOverviews, enumerable: false },
+      pageSize: { value: pageSize, enumerable: false },
+    });
   }
 }
 
 const sortMediaOverviews = ({ sort, queueMediaIds, mediaOverviewMap, favoriteMediaIdSet }) => {
-  const toOverview = mediaId => ({
-    ...mediaOverviewMap.get(mediaId),
-    isFavorite: favoriteMediaIdSet.has(mediaId),
-    isQueued: true,
-  });
+  const toDisplayOverview = mediaId => {
+    const mediaOverview = mediaOverviewMap.get(mediaId);
+    return Object.assign(
+      Object.create(Object.getPrototypeOf(mediaOverview)),
+      mediaOverview,
+      {
+        isFavorite: favoriteMediaIdSet.has(mediaId),
+        isQueued: true,
+      },
+    );
+  };
 
   if (sort === INPUT_SORT_TYPES.DATE_ASC) {
-    return [...queueMediaIds].map(toOverview);
+    return [...queueMediaIds].map(toDisplayOverview);
   }
   if (sort === INPUT_SORT_TYPES.DATE_DESC) {
-    return [...queueMediaIds].reverse().map(toOverview);
+    return [...queueMediaIds].reverse().map(toDisplayOverview);
   }
 
-  const sorted = [...queueMediaIds].map(toOverview);
+  const sorted = [...queueMediaIds].map(toDisplayOverview);
   sorted.sort((left, right) => {
     const compared = left.title.localeCompare(right.title, 'ja');
     return sort === INPUT_SORT_TYPES.TITLE_ASC ? compared : compared * -1;
@@ -128,6 +142,7 @@ class GetQueueService {
         start: input.start,
         totalCount: 0,
         mediaOverviews: [],
+        currentPageMediaOverviews: [],
       });
     }
 
@@ -139,6 +154,7 @@ class GetQueueService {
         start: input.start,
         totalCount: 0,
         mediaOverviews: [],
+        currentPageMediaOverviews: [],
       });
     }
 
@@ -152,12 +168,15 @@ class GetQueueService {
       favoriteMediaIdSet,
     });
 
+    const currentPageMediaOverviews = sortedMediaOverviews.slice(input.start - 1, (input.start - 1) + input.pageSize);
+
     return new Output({
       sort: input.sort,
       queuePage: input.queuePage,
       start: input.start,
       totalCount: sortedMediaOverviews.length,
-      mediaOverviews: sortedMediaOverviews.slice(input.start - 1, (input.start - 1) + input.pageSize),
+      mediaOverviews: currentPageMediaOverviews.map(({ isFavorite, isQueued, ...mediaOverview }) => mediaOverview),
+      currentPageMediaOverviews,
     });
   }
 }
