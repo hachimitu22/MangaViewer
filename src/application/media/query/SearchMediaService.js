@@ -54,21 +54,6 @@ const isMediaOverviewLike = (obj) => {
   return true;
 };
 
-class Output {
-  constructor({ mediaOverviews, totalCount }) {
-    if (!(mediaOverviews instanceof Array) || !mediaOverviews.every(isMediaOverviewLike)) {
-      throw new Error();
-    }
-    if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
-      throw new Error();
-    }
-
-    this.mediaOverviews = mediaOverviews;
-    this.totalCount = totalCount;
-  }
-}
-
-
 const normalizeTag = tag => ({
   category: typeof tag?.category === 'string' ? tag.category : '',
   label: typeof tag?.label === 'string' ? tag.label : '',
@@ -83,6 +68,26 @@ const normalizeMediaOverview = mediaOverview => ({
     ? mediaOverview.priorityCategories.filter(category => typeof category === 'string')
     : [],
 });
+
+class Output {
+  constructor({ mediaOverviews, totalCount }) {
+    if (!(mediaOverviews instanceof Array)) {
+      throw new Error();
+    }
+    if (typeof totalCount !== 'number' || totalCount < 0 || !Number.isInteger(totalCount)) {
+      throw new Error();
+    }
+
+    const normalizedMediaOverviews = mediaOverviews.map(normalizeMediaOverview);
+    if (!normalizedMediaOverviews.every(isMediaOverviewLike)) {
+      throw new Error();
+    }
+
+    this.mediaOverviews = normalizedMediaOverviews;
+    this.totalCount = totalCount;
+  }
+}
+
 
 class SearchMediaService {
   #mediaQueryRepository;
