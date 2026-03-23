@@ -12,7 +12,9 @@ module.exports = class Media {
   #contents = [];
   #tags = [];
   #priorityCategories = [];
-  constructor(id, title, contents, tags, priorityCategories) {
+  #registeredAt = null;
+
+  constructor(id, title, contents, tags, priorityCategories, registeredAt = null) {
     if (!(id instanceof MediaId)) {
       throw new Error();
     }
@@ -22,6 +24,7 @@ module.exports = class Media {
     this.changeContents(contents);
     this.changeTags(tags);
     this.changePriorityCategories(priorityCategories);
+    this.changeRegisteredAt(registeredAt);
   }
   getId() {
     return this.#id;
@@ -86,6 +89,18 @@ module.exports = class Media {
       }
     });
     return arr;
+  }
+  changeRegisteredAt(registeredAt) {
+    if (!(registeredAt === null || registeredAt instanceof Date)) {
+      throw new Error();
+    }
+    if (registeredAt instanceof Date && Number.isNaN(registeredAt.getTime())) {
+      throw new Error();
+    }
+    this.#registeredAt = registeredAt;
+  }
+  getRegisteredAt() {
+    return this.#registeredAt;
   }
   getContentsByPositions(positions) {
     return positions.map(position => {

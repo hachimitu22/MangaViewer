@@ -30,28 +30,23 @@ describe("GetMediaDetailService", () => {
       new MediaTitle('TITLE'),
       [new ContentId('CID')],
       [new Tag(new Category('C'), new Label('L'))],
-      [new Category('C')]
+      [new Category('C')],
+      new Date('2026-03-20T12:34:00Z'),
     );
   };
 
-  // =========================
-  // 正常系
-  // =========================
-
   test("メディアIDをリポジトリに渡して取得できる", async () => {
-    // arrange
     const input = new Input({ mediaId: 'ID' });
     mockRepo.findByMediaId.mockResolvedValue(createMedia());
 
-    // action
     const result = await service.execute(input);
 
-    // assert
     expect(result).toEqual(new Output({
       mediaDetail: {
         id: 'ID',
         title: 'TITLE',
-        contents: ['CID'],
+        registeredAt: '2026-03-20 12:34 UTC',
+        contents: [{ id: 'CID', thumbnail: 'CID', position: 1 }],
         tags: [{ category: 'C', label: 'L' }],
         priorityCategories: ['C'],
       },
@@ -60,38 +55,45 @@ describe("GetMediaDetailService", () => {
     expect(mockRepo.findByMediaId).toHaveBeenCalledWith(new MediaId('ID'));
   });
 
-  // =========================
-  // 異常系
-  // =========================
+  test('登録日時が取得できない場合は空文字で返す', async () => {
+    const input = new Input({ mediaId: 'ID' });
+    mockRepo.findByMediaId.mockResolvedValue(new Media(
+      new MediaId('ID'),
+      new MediaTitle('TITLE'),
+      [new ContentId('CID1'), new ContentId('CID2')],
+      [new Tag(new Category('作者'), new Label('山田'))],
+      [new Category('作者')],
+    ));
+
+    const result = await service.execute(input);
+
+    expect(result.mediaDetail.registeredAt).toBe('');
+    expect(result.mediaDetail.contents).toEqual([
+      { id: 'CID1', thumbnail: 'CID1', position: 1 },
+      { id: 'CID2', thumbnail: 'CID2', position: 2 },
+    ]);
+  });
+
   test("メディアID以外が指定された場合は取得に失敗する", async () => {
-    // arrange
     const input = { ...(new Input({ mediaId: 'ID' })) };
 
-    // action
-    // assert
     await expect(service.execute(input)).rejects.toThrow();
     expect(mockRepo.findByMediaId).not.toHaveBeenCalled();
   });
 
   test("リポジトリの取得結果が空だと取得に失敗する", async () => {
-    // arrange
     const input = new Input({ mediaId: 'ID' });
     mockRepo.findByMediaId.mockResolvedValue(undefined);
 
-    // action
-    // assert
     await expect(service.execute(input)).rejects.toThrow();
     expect(mockRepo.findByMediaId).toHaveBeenCalledTimes(1);
     expect(mockRepo.findByMediaId).toHaveBeenCalledWith(new MediaId('ID'));
   });
 
   test("リポジトリの検索処理が失敗した場合は検索に失敗する", async () => {
-    // arrange
     const input = new Input({ mediaId: 'ID' });
     mockRepo.findByMediaId.mockRejectedValue(new Error("mockRepo error"));
 
-    // action
-    // assert
     await expect(service.execute(input)).rejects.toThrow("mockRepo error");
     expect(mockRepo.findByMediaId).toHaveBeenCalledTimes(1);
     expect(mockRepo.findByMediaId).toHaveBeenCalledWith(new MediaId('ID'));
