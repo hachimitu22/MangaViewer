@@ -45,7 +45,7 @@ describe('developmentSession wiring', () => {
 
     await dependencies.ready;
 
-    await expect(dependencies.authResolver.execute('dev-token')).resolves.toBeNull();
+    await expect(dependencies.authResolver.execute('dev-token')).resolves.toBeUndefined();
   });
 
   test('setupMiddleware は固定セッション設定が無効な場合は req.session.session_token を補完しない', async () => {
