@@ -67,6 +67,17 @@
         background: #2563eb;
         color: #fff;
       }
+      .message {
+        margin-top: 12px;
+        min-height: 1.5em;
+        font-size: 14px;
+        color: #dc2626;
+      }
+      .noscript-note {
+        margin-top: 12px;
+        font-size: 13px;
+        color: #475569;
+      }
     </style>
   </head>
   <body>
@@ -74,7 +85,7 @@
       <div class="card">
         <h1><%= pageTitle %></h1>
         <p class="description">アカウント情報を入力してログインしてください。</p>
-        <form method="post" action="<%= formAction %>">
+        <form id="loginForm" method="post" action="<%= formAction %>">
           <div class="field">
             <label class="field-label" for="username"><%= usernameLabel %></label>
             <input id="username" name="username" class="text-input" type="text" autocomplete="username" required />
@@ -84,8 +95,53 @@
             <input id="password" name="password" class="text-input" type="password" autocomplete="current-password" required />
           </div>
           <button class="button" type="submit"><%= submitLabel %></button>
+          <p id="loginMessage" class="message" aria-live="polite"></p>
         </form>
+        <noscript>
+          <p class="noscript-note">JavaScriptが無効なため、通常のフォーム送信でログインします。</p>
+        </noscript>
       </div>
     </div>
+    <script>
+      (() => {
+        const form = document.getElementById("loginForm");
+        const message = document.getElementById("loginMessage");
+
+        if (!form || !message || !window.fetch || !window.URLSearchParams) {
+          return;
+        }
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          message.textContent = "";
+
+          const formData = new FormData(form);
+          const body = new URLSearchParams();
+          for (const [key, value] of formData.entries()) {
+            body.append(key, value);
+          }
+
+          try {
+            const response = await fetch("/api/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+              },
+              body: body.toString()
+            });
+            const data = await response.json();
+
+            if (data.code === 0) {
+              window.location.href = "/screen/summary";
+              return;
+            }
+
+            message.textContent = data.message || "ログインに失敗しました。入力内容をご確認ください。";
+          } catch (error) {
+            message.textContent = "通信エラーが発生しました。時間をおいて再度お試しください。";
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
