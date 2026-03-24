@@ -1,0 +1,71 @@
+# createDependencies テスト観点
+
+## このドキュメントの位置づけ（`readme.md` との責務分担）
+- `readme.md`: `createDependencies` が**何を生成し、どう振る舞うべきか**という仕様・設計意図を説明する。
+- `testcase.md`（本書）: 仕様に対して**何を検証するか**（テスト観点）を、前提・操作・期待結果で明文化する。
+- これにより、仕様説明（設計）と検証観点（テスト設計）を分離し、変更時の追従先を明確にする。
+
+---
+
+## small 観点
+
+### 1) 依存オブジェクト生成
+**前提**
+- `databaseStoragePath` と `contentRootDirectory` を含む最小限の `env` を用意する。
+
+**操作**
+- `createDependencies(env)` を実行し、返却オブジェクトを取得する。
+
+**期待結果**
+- 返却オブジェクトに、アプリ起動・ルーティングに必要な依存（例: 各 Service、認証解決、`routeSetters`、`ready`、`close`）が揃っている。
+- `ready` が Promise として初期化完了を表現し、`close` が終了処理の入口として提供される。
+
+### 2) デフォルト値適用
+**前提**
+- `loginUsername` / `loginPassword` / `loginUserId` / `loginSessionTtlMs` など、任意設定の一部または全部を省略した `env` を用意する。
+
+**操作**
+- `createDependencies(env)` 実行後、`loginService` など関連依存の挙動を確認する。
+
+**期待結果**
+- 省略した設定に対して既定値（例: `admin`、`86400000` など）が適用される。
+- 呼び出し側が最小構成でも起動・ログイン系依存を利用できる。
+
+### 3) 初期化失敗時の扱い
+**前提**
+- 永続化初期化やディレクトリ準備が失敗する条件（不正パス・権限不足など）を意図的に作る。
+
+**操作**
+- `createDependencies(env)` を実行し、`ready` の解決結果と `close` の挙動を確認する。
+
+**期待結果**
+- 初期化失敗が `ready` の reject 等で検知可能である。
+- 失敗ケースでも `close` 呼び出しで後始末でき、テストがハングせず終了できる。
+
+---
+
+## medium 観点
+
+### 4) 依存配線経由のログイン成立とセッション解決
+（対応テスト: `__tests__/medium/app/createDependencies.login.test.js`）
+
+**前提**
+- `loginUsername` / `loginPassword` / `loginUserId` / `loginSessionTtlMs` を明示した `env` で `createDependencies` を生成する。
+- `session.regenerate` を持つセッションオブジェクトを用意する。
+
+**操作**
+1. `await dependencies.ready` で初期化完了を待つ。
+2. `Query`（username/password/session）を使って `dependencies.loginService.execute(...)` を実行する。
+3. 返却された `sessionToken` を `dependencies.authResolver.execute(sessionToken)` に渡す。
+
+**期待結果**
+- `LoginSucceededResult` が返る。
+- ログイン結果コードが成功値であり、`sessionToken` が期待形式（32 桁 hex）で採番される。
+- セッションオブジェクトに `session_token` が格納される。
+- `authResolver` が `sessionToken` から `loginUserId` を解決できる。
+
+---
+
+## メンテナンス方針
+- 仕様変更時は、まず `readme.md` を更新し、その変更が検証対象に影響する場合のみ本書の該当観点を更新する。
+- テスト追加時は「どの観点を担保するテストか」を本書へ対応付け、重複と抜け漏れを防ぐ。
