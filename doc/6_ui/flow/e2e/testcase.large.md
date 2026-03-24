@@ -44,7 +44,16 @@
   - 保護画面へのアクセス制御
   - ログアウト後の遷移/再アクセス制御
 
-### TC-E2E-005: 不正なルートパラメータでエラー画面に遷移し復帰できる
+### TC-E2E-005: ビューアーのページ遷移と URL パラメータ整合が機能する
+
+- 対応テスト: `__tests__/large/e2e/viewer/viewer-navigation.large.test.js`
+- 観点:
+  - ログイン後に一覧から `/screen/viewer/:mediaId/:mediaPage` へ遷移できる
+  - `mediaPage=1` から次ページへ進み、前ページへ戻れる
+  - 先頭ページで前ページ移動不可、末尾ページで次ページ移動不可の表示制御
+  - URL パラメータ（mediaId, mediaPage）と画面表示（画像/ページ番号）の一致
+
+### TC-E2E-006: 不正なルートパラメータでエラー画面に遷移し復帰できる
 
 - 対応テスト: `__tests__/large/e2e/error/invalid-route-params.large.test.js`
 - 観点:
