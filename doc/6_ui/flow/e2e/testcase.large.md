@@ -14,7 +14,7 @@
 
 ### TC-E2E-001: ログイン後にメディア一覧へ遷移できる
 
-- 対応テスト: `__tests__/large/e2e/login-to-summary.large.test.js`
+- 対応テスト: `__tests__/large/e2e/auth/login-to-summary.large.test.js`
 - 観点:
   - ログイン画面の表示
   - 認証成功後の `/screen/summary` 遷移
@@ -72,7 +72,7 @@
 
 ### TC-E2E-008: 登録画面からメディアを新規登録し、一覧・詳細へ反映できる
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/entry/entry-create-media.large.test.js`
 - 観点:
   - `/screen/entry` でタイトル・タグ・コンテンツ追加 UI（ドラッグ&ドロップ/ファイル選択）が操作できる
   - `POST /api/media` で登録成功（`200`）し、新規 `mediaId` を取得できる
@@ -80,7 +80,7 @@
 
 ### TC-E2E-009: 編集画面でメディア更新（タイトル・タグ・コンテンツ順序）が反映される
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/edit/edit-update-media.large.test.js`
 - 観点:
   - `/screen/edit/:mediaId` で既存データ（タイトル・タグ・コンテンツ）が初期表示される
   - `PATCH /api/media/:mediaId` で更新成功（`200`）し、変更内容が詳細/一覧/ビューアーに反映される
@@ -88,7 +88,7 @@
 
 ### TC-E2E-010: 編集画面からメディア削除後に各導線で参照不可になる
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/edit/edit-delete-media.large.test.js`
 - 観点:
   - `/screen/edit/:mediaId` から `DELETE /api/media/:mediaId` を実行し成功（`200`）する
   - 削除後、`/screen/summary` から対象カードが消える
@@ -96,7 +96,7 @@
 
 ### TC-E2E-011: 検索画面から条件作成して一覧条件へ正しく引き継げる
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/search/search-to-summary.large.test.js`
 - 観点:
   - `/screen/search` でタイトル・start/size・sort・複数タグを入力して検索実行できる
   - `/screen/summary` の URL クエリ（`title`, `tags`, `start`, `size`, `sort`, `summaryPage`）に条件が反映される
@@ -104,7 +104,7 @@
 
 ### TC-E2E-012: お気に入り・あとで見る一覧の並び替えとページングが機能する
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/favorite-queue/favorite-queue-sort-pagination.large.test.js`
 - 観点:
   - 複数件データで `/screen/favorite` と `/screen/queue` のページング UI が機能する
   - sort クエリ変更で表示順（date/title, asc/desc）が切り替わる
@@ -112,7 +112,7 @@
 
 ### TC-E2E-013: ログイン失敗時に遷移せずエラーメッセージを表示する
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/auth/login-failure.large.test.js`
 - 観点:
   - 誤った認証情報で `POST /api/login` を送信した際に失敗コード（`code: 1`）を受け取る
   - `/screen/login` に留まり、`/screen/summary` へ遷移しない
@@ -121,7 +121,7 @@
 
 ### TC-E2E-014: 認可境界の未カバー導線（viewer/search と API post/logout）を検証する
 
-- 対応テスト: 未作成
+- 対応テスト: `__tests__/large/e2e/auth/auth-guard-uncovered-routes.large.test.js`
 - 観点:
   - 未ログインで `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
   - 未ログインで `POST /api/media`, `POST /api/logout`, `DELETE /api/favorite/:mediaId`, `DELETE /api/queue/:mediaId` を実行した際に `401` で拒否される
@@ -136,5 +136,4 @@
 ## メンテナンス方針
 
 - `__tests__/large/e2e/` にシナリオを追加した場合、本書へ同名観点を追記する
-- 未作成ケースは、テストファイル実装後に「対応テスト」を更新する
 - シナリオ名はテストファイルの basename と対応づけ、追跡しやすくする
