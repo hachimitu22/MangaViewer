@@ -34,3 +34,7 @@
 
 ### ナビゲーションからの遷移
 @import "./flow/navigation.puml"
+
+## E2E テストケース
+
+- [E2E テストケース（large）](./flow/e2e/testcase.large.md)
