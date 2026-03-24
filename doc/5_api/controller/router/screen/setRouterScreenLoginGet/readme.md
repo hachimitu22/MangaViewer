@@ -22,4 +22,4 @@
 - 本 router 自身では例外処理を持たず、描画失敗時は Express の既定挙動に委譲する。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenLoginGet/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenLoginGet/testcase.medium.md)

@@ -55,3 +55,7 @@ Middleware -> Router: next()
   - `req.context.contentIds` が未設定 / 配列以外 / 空配列の場合。
   - `contentIds` 要素が空文字列を含む場合。
   - `contentIds` に重複がある場合。
+
+## 関連ドキュメント
+- [small テストケース](./testcase.small.md)
+- [medium テストケース](./testcase.medium.md)

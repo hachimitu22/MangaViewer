@@ -46,5 +46,5 @@
 - 認証や route 登録順序、Express 統合は router テストに委譲する。
 
 ## 関連ドキュメント
-- [controllerテストケース](/doc/5_api/controller/screen/ScreenDetailGetController/testcase.md)
+- [controllerテストケース](/doc/5_api/controller/screen/ScreenDetailGetController/testcase.medium.md)
 - [router設計書](/doc/5_api/controller/router/screen/setRouterScreenDetailGet/readme.md)

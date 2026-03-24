@@ -63,4 +63,5 @@
 - [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md)
 - [setupRoutes 設計書](/doc/5_api/controller/router/setupRoutes/readme.md)
 - [server 設計書](/doc/4_application/app/server/readme.md)
-- [createApp テストケース整理](/doc/4_application/app/createApp/testcase.md)
+- [createApp small テストケース](/doc/4_application/app/createApp/testcase.small.md)
+- [createApp medium テストケース](/doc/4_application/app/createApp/testcase.medium.md)

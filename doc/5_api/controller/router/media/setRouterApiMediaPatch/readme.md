@@ -41,4 +41,4 @@
 - 入力不正・保存失敗・更新失敗時はミドルウェア／コントローラー側の例外ハンドリングに委譲する。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaPatch/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaPatch/testcase.medium.md)

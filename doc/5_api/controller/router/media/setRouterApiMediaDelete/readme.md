@@ -35,4 +35,4 @@
 - 削除処理失敗時はコントローラー側の例外ハンドリングに委譲する。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaDelete/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaDelete/testcase.medium.md)

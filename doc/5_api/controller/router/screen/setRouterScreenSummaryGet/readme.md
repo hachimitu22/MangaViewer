@@ -36,4 +36,4 @@
 - 検索処理失敗時は `next(error)` に委譲する。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenSummaryGet/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenSummaryGet/testcase.medium.md)

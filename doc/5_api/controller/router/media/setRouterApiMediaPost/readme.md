@@ -45,4 +45,4 @@
 
 ## 関連ドキュメント
 - [OpenAPI /api/media](/doc/5_api/openapi/paths/api/media.yaml)
-- [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaPost/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaPost/testcase.medium.md)

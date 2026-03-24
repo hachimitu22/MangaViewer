@@ -89,6 +89,6 @@ Controller <-- Application: Result
 
 
 ## 関連ドキュメント
-- [テストケース](./testcase.md)
+- [テストケース](./testcase.medium.md)
 - [ScreenViewerGetController 設計書](/doc/5_api/controller/screen/ScreenViewerGetController/readme.md)
 - [router (GET /screen/viewer/:mediaId/:mediaPage) 設計書](/doc/5_api/controller/router/screen/setRouterScreenViewerGet/readme.md)

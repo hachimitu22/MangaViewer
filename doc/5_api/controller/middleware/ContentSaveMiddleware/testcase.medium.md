@@ -1,4 +1,4 @@
-# ContentSaveMiddleware テストケース（middle）
+# ContentSaveMiddleware テストケース（medium）
 
 ## テストケース一覧
 - [contents[n].file / position / url の構造で送信し、position順のcontentIdsで後続へ委譲できる](#contentsnfile--position--url-の構造で送信しposition順のcontentidsで後続へ委譲できる)

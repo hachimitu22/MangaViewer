@@ -51,4 +51,4 @@
 - サービス実行中の例外は `next(error)` に委譲する。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/user/setRouterApiFavoriteAndQueue/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/user/setRouterApiFavoriteAndQueue/testcase.medium.md)

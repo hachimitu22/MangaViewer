@@ -47,4 +47,4 @@
 - 一覧取得失敗時は `next(error)` に委譲する。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenQueueGet/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenQueueGet/testcase.medium.md)

@@ -73,4 +73,4 @@
 - route path・認証ミドルウェア接続・実 HTTP 応答は router テストに委譲し、責務重複を避ける。
 
 ## 関連ドキュメント
-- [controllerテストケース](/doc/5_api/controller/screen/ScreenViewerGetController/testcase.md)
+- [controllerテストケース](/doc/5_api/controller/screen/ScreenViewerGetController/testcase.medium.md)
