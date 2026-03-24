@@ -44,7 +44,6 @@
   - 保護画面へのアクセス制御
   - ログアウト後の遷移/再アクセス制御
 
-
 ### TC-E2E-005: 認可境界で未認証拒否と認証後許可が切り替わる
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard.large.test.js`
@@ -71,6 +70,46 @@
   - エラー画面からナビゲーションリンク経由で `/screen/summary` に安全に復帰できること
   - 未定義パスで定義済みの HTTP ステータス (`404`) とレスポンスボディを返すこと
 
+### TC-E2E-008: 登録画面からメディアを新規登録し、一覧・詳細へ反映できる
+
+- 対応テスト: 未作成
+- 観点:
+  - `/screen/entry` でタイトル・タグ・コンテンツ追加 UI（ドラッグ&ドロップ/ファイル選択）が操作できる
+  - `POST /api/media` で登録成功（`200`）し、新規 `mediaId` を取得できる
+  - 登録後に `/screen/summary` と `/screen/detail/:mediaId` でタイトル・タグ・先頭コンテンツが表示される
+
+### TC-E2E-009: 編集画面でメディア更新（タイトル・タグ・コンテンツ順序）が反映される
+
+- 対応テスト: 未作成
+- 観点:
+  - `/screen/edit/:mediaId` で既存データ（タイトル・タグ・コンテンツ）が初期表示される
+  - `PATCH /api/media/:mediaId` で更新成功（`200`）し、変更内容が詳細/一覧/ビューアーに反映される
+  - コンテンツの並び替え（上へ/下へ）結果が `/screen/viewer/:mediaId/:mediaPage` のページ順に反映される
+
+### TC-E2E-010: 編集画面からメディア削除後に各導線で参照不可になる
+
+- 対応テスト: 未作成
+- 観点:
+  - `/screen/edit/:mediaId` から `DELETE /api/media/:mediaId` を実行し成功（`200`）する
+  - 削除後、`/screen/summary` から対象カードが消える
+  - 削除済み `mediaId` への `/screen/detail/:mediaId` / `/screen/viewer/:mediaId/:mediaPage` 直接アクセスでエラー遷移する
+
+### TC-E2E-011: 検索画面から条件作成して一覧条件へ正しく引き継げる
+
+- 対応テスト: 未作成
+- 観点:
+  - `/screen/search` でタイトル・start/size・sort・複数タグを入力して検索実行できる
+  - `/screen/summary` の URL クエリ（`title`, `tags`, `start`, `size`, `sort`, `summaryPage`）に条件が反映される
+  - 一覧の「現在の検索条件」チップ表示と結果件数が入力条件に整合する
+
+### TC-E2E-012: お気に入り・あとで見る一覧の並び替えとページングが機能する
+
+- 対応テスト: 未作成
+- 観点:
+  - 複数件データで `/screen/favorite` と `/screen/queue` のページング UI が機能する
+  - sort クエリ変更で表示順（date/title, asc/desc）が切り替わる
+  - 一覧上の解除操作（`DELETE /api/favorite/:mediaId`, `DELETE /api/queue/:mediaId`）後に件数とページ表示が整合する
+
 ## 判定基準
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
@@ -80,4 +119,5 @@
 ## メンテナンス方針
 
 - `__tests__/large/e2e/` にシナリオを追加した場合、本書へ同名観点を追記する
+- 未作成ケースは、テストファイル実装後に「対応テスト」を更新する
 - シナリオ名はテストファイルの basename と対応づけ、追跡しやすくする
