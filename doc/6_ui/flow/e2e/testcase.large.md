@@ -124,7 +124,7 @@
 - 対応テスト: 未作成
 - 観点:
   - 未ログインで `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
-  - 未ログインで `POST /api/media` と `POST /api/logout` を実行した際に `401` で拒否される
+  - 未ログインで `POST /api/media`, `POST /api/logout`, `DELETE /api/favorite/:mediaId`, `DELETE /api/queue/:mediaId` を実行した際に `401` で拒否される
   - ログイン後は同一導線が許可される
 
 ## 判定基準
