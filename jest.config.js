@@ -14,6 +14,7 @@ module.exports = {
       displayName: 'e2e',
       testMatch: ['<rootDir>/__tests__/large/e2e/**/*.test.js'],
       preset: "jest-puppeteer",
+      setupFilesAfterEnv: ['<rootDir>/__tests__/large/e2e/setup/patch-page-remove-listener.js'],
     },
   ],
 }
