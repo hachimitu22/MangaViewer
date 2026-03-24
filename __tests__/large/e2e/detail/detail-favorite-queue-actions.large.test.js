@@ -10,6 +10,7 @@ const ContentId = require('../../../../src/domain/media/contentId');
 const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
+const { waitForApiResponse } = require('../support/api-response');
 
 const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
@@ -34,11 +35,6 @@ const createSeedMedia = ({ mediaId, title, contentId }) => new Media(
   [new Category('カテゴリ')],
 );
 
-const waitForApiResponse = ({ pageInstance, baseUrl, pathSuffix, method }) => {
-  const expectedUrl = `${baseUrl}${pathSuffix}`;
-  return pageInstance.waitForResponse(response => response.url() === expectedUrl
-    && response.request().method() === method);
-};
 
 describe('large e2e: 詳細画面から favorite/queue の追加と解除を行う', () => {
   const seedMediaId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
