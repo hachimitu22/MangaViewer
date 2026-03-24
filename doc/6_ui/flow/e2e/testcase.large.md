@@ -53,6 +53,24 @@
   - 未ログインで保護 API（お気に入り、あとで見る、メディア更新/削除）を呼んだ際の拒否
   - ログイン後に同一 API / 画面アクセスが許可されること
 
+### TC-E2E-006: ビューアーのページ遷移と URL パラメータ整合が機能する
+
+- 対応テスト: `__tests__/large/e2e/viewer/viewer-navigation.large.test.js`
+- 観点:
+  - ログイン後に一覧から `/screen/viewer/:mediaId/:mediaPage` へ遷移できる
+  - `mediaPage=1` から次ページへ進み、前ページへ戻れる
+  - 先頭ページで前ページ移動不可、末尾ページで次ページ移動不可の表示制御
+  - URL パラメータ（mediaId, mediaPage）と画面表示（画像/ページ番号）の一致
+
+### TC-E2E-007: 不正なルートパラメータでエラー画面に遷移し復帰できる
+
+- 対応テスト: `__tests__/large/e2e/error/invalid-route-params.large.test.js`
+- 観点:
+  - 存在しない `mediaId` での `/screen/detail/:mediaId` / `/screen/viewer/:mediaId/:mediaPage` のエラー遷移
+  - `mediaPage=0` や過大ページ番号での `/screen/viewer/:mediaId/:mediaPage` のエラー遷移
+  - エラー画面からナビゲーションリンク経由で `/screen/summary` に安全に復帰できること
+  - 未定義パスで定義済みの HTTP ステータス (`404`) とレスポンスボディを返すこと
+
 ## 判定基準
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
