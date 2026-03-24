@@ -17,7 +17,7 @@
 - 対応テスト: `__tests__/large/e2e/login-to-summary.large.test.js`
 - 観点:
   - ログイン画面の表示
-  - 認証成功後の `/summary` 遷移
+  - 認証成功後の `/screen/summary` 遷移
   - 一覧画面の主要要素表示
 
 ### TC-E2E-002: 一覧画面で検索・並び替え・ページングが機能する
@@ -48,8 +48,8 @@
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard.large.test.js`
 - 観点:
-  - 未ログインで保護画面へ直接アクセスした際の統一的な拒否（401）
-  - 未ログインで保護 API（お気に入り、あとで見る、メディア更新/削除）を呼んだ際の拒否
+  - 未ログインで保護画面（`/screen/summary`, `/screen/detail/:mediaId`, `/screen/favorite`, `/screen/queue`, `/screen/entry`, `/screen/edit/:mediaId`）へ直接アクセスした際の統一的な拒否（401）
+  - 未ログインで保護 API（`PUT /api/favorite/:mediaId`, `PUT /api/queue/:mediaId`, `PATCH /api/media/:mediaId`, `DELETE /api/media/:mediaId`）を呼んだ際の拒否
   - ログイン後に同一 API / 画面アクセスが許可されること
 
 ### TC-E2E-006: ビューアーのページ遷移と URL パラメータ整合が機能する
@@ -110,7 +110,6 @@
   - sort クエリ変更で表示順（date/title, asc/desc）が切り替わる
   - 一覧上の解除操作（`DELETE /api/favorite/:mediaId`, `DELETE /api/queue/:mediaId`）後に件数とページ表示が整合する
 
-
 ### TC-E2E-013: ログイン失敗時に遷移せずエラーメッセージを表示する
 
 - 対応テスト: 未作成
@@ -118,6 +117,15 @@
   - 誤った認証情報で `POST /api/login` を送信した際に失敗コード（`code: 1`）を受け取る
   - `/screen/login` に留まり、`/screen/summary` へ遷移しない
   - ログイン画面に失敗メッセージが表示され、再入力可能な状態を維持する
+
+
+### TC-E2E-014: 認可境界の未カバー導線（viewer/search と API post/logout）を検証する
+
+- 対応テスト: 未作成
+- 観点:
+  - 未ログインで `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
+  - 未ログインで `POST /api/media` と `POST /api/logout` を実行した際に `401` で拒否される
+  - ログイン後は同一導線が許可される
 
 ## 判定基準
 
