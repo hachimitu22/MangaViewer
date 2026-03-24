@@ -10,6 +10,7 @@ const ContentId = require('../../../../src/domain/media/contentId');
 const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
+const { readSummaryTitles } = require('../helpers/summaryDom');
 
 const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
@@ -57,12 +58,6 @@ const login = async ({ page, baseUrl }) => {
   await page.waitForNavigation({ waitUntil: 'networkidle0' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
-
-const readSummaryTitles = async (currentPage) => currentPage.evaluate(() => {
-  const headingElements = Array.from(document.querySelectorAll('.media-card h2'));
-  return headingElements.map(node => (node.textContent || '').trim()).filter(Boolean);
-});
-
 const readDetailLinks = async (currentPage) => currentPage.evaluate(() => {
   return Array.from(document.querySelectorAll('.media-card .actions a'))
     .filter(link => (link.textContent || '').includes('詳細画面へ'))
