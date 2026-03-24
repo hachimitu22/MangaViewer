@@ -6,14 +6,20 @@ const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
 
-const createSeedMedia = ({ mediaId, title, contentId }) => new Media(
+const createSeedMedia = ({
+  mediaId,
+  title,
+  contentId,
+  tags = [{ category: 'カテゴリ', label: 'ラベル' }],
+  priorityCategories = tags.length > 0 ? [tags[0].category] : [],
+  registeredAt,
+}) => new Media(
   new MediaId(mediaId),
   new MediaTitle(title),
   [new ContentId(contentId)],
-  [
-    new Tag(new Category('カテゴリ'), new Label('ラベル')),
-  ],
-  [new Category('カテゴリ')],
+  tags.map(tag => new Tag(new Category(tag.category), new Label(tag.label))),
+  priorityCategories.map(category => new Category(category)),
+  registeredAt,
 );
 
 module.exports = {
