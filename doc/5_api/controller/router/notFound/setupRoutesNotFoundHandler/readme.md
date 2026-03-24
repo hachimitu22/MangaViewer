@@ -26,4 +26,5 @@
 - `__tests__/small/app/createApp.test.js` の統合テストで、画面系未定義ルートと API 系未定義ルートの双方が同一の 404 JSON 応答になることを継続確認する。
 
 ## 関連ドキュメント
-- [テスト観点](/doc/5_api/controller/router/notFound/setupRoutesNotFoundHandler/testcase.md)
+- [small テスト観点](/doc/5_api/controller/router/notFound/setupRoutesNotFoundHandler/testcase.small.md)
+- [medium テスト観点](/doc/5_api/controller/router/notFound/setupRoutesNotFoundHandler/testcase.medium.md)

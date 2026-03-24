@@ -49,4 +49,4 @@
 - 想定外例外は外へ再送出せず、ログアウト失敗として扱う。
 
 ## 関連ドキュメント
-- [Controllerテストケース](/doc/5_api/controller/api/LogoutPostController/testcase.md)
+- [Controllerテストケース](/doc/5_api/controller/api/LogoutPostController/testcase.medium.md)

@@ -30,4 +30,4 @@
 - 認証失敗時は `401` を返す（SessionAuthMiddleware）。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenSearchGet/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/screen/setRouterScreenSearchGet/testcase.medium.md)

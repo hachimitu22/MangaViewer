@@ -71,4 +71,4 @@
 - Cookie設定処理を含む `execute` 内の想定外例外も同様に失敗レスポンスへ変換する。
 
 ## 関連ドキュメント
-- [Controllerテストケース](/doc/5_api/controller/api/LoginPostController/testcase.md)
+- [Controllerテストケース](/doc/5_api/controller/api/LoginPostController/testcase.medium.md)

@@ -46,4 +46,4 @@
 - DTO生成やレスポンス組み立て中の想定外例外も同じ失敗レスポンスに正規化する。
 
 ## 関連ドキュメント
-- [Controllerテストケース](/doc/5_api/controller/api/MediaDeleteController/testcase.md)
+- [Controllerテストケース](/doc/5_api/controller/api/MediaDeleteController/testcase.medium.md)

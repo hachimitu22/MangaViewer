@@ -56,4 +56,4 @@
 - `priorityCategories` 生成や入力DTO生成中の想定外例外も外へ送出せず、失敗レスポンスへ変換する。
 
 ## 関連ドキュメント
-- [Controllerテストケース](/doc/5_api/controller/api/MediaPatchController/testcase.md)
+- [Controllerテストケース](/doc/5_api/controller/api/MediaPatchController/testcase.medium.md)

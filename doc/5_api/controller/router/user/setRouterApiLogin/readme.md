@@ -29,4 +29,4 @@
 - 入力不正や認証失敗時は `LoginPostController` のレスポンス仕様に従う。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/user/setRouterApiLogin/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/user/setRouterApiLogin/testcase.medium.md)

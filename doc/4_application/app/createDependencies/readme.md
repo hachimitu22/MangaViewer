@@ -87,3 +87,6 @@
 - [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md)
 - [setupRoutes 設計書](/doc/5_api/controller/router/setupRoutes/readme.md)
 - [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md)
+
+- [createDependencies small テスト観点](/doc/4_application/app/createDependencies/testcase.small.md)
+- [createDependencies medium テスト観点](/doc/4_application/app/createDependencies/testcase.medium.md)

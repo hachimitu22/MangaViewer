@@ -69,4 +69,4 @@ Controller --> Client: 200 レスポンス
 
 ## 関連ドキュメント
 - [OpenAPI](/doc/5_api/openapi/paths/api/media.yaml)
-- [Controllerテストケース](/doc/5_api/controller/api/MediaPostController/testcase.md)
+- [Controllerテストケース](/doc/5_api/controller/api/MediaPostController/testcase.medium.md)

@@ -35,4 +35,4 @@
 - ログアウト失敗時は `LogoutPostController` のレスポンス仕様に従う。
 
 ## 関連ドキュメント
-- [routerテストケース](/doc/5_api/controller/router/user/setRouterApiLogout/testcase.md)
+- [routerテストケース](/doc/5_api/controller/router/user/setRouterApiLogout/testcase.medium.md)
