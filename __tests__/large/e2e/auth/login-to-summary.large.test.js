@@ -1,5 +1,5 @@
-const { bootstrapE2eApp } = require('./helpers/bootstrapE2eApp');
-const { createSeedMedia } = require('./helpers/seedMedia');
+const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
+const { createSeedMedia } = require('../helpers/seedMedia');
 
 describe('large e2e: ログイン画面からサマリー画面まで遷移する', () => {
   const seedTitle = 'seed済みタイトル';
