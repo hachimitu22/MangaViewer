@@ -13,11 +13,13 @@ function defineModels(sequelize) {
   const FavoriteModel = sequelize.define('favorite', {
     user_id: { type: DataTypes.STRING, primaryKey: true },
     media_id: { type: DataTypes.STRING, primaryKey: true },
+    created_at: { type: DataTypes.DATE, allowNull: true, defaultValue: DataTypes.NOW },
   }, { tableName: 'favorite', timestamps: false });
 
   const QueueModel = sequelize.define('queue', {
     user_id: { type: DataTypes.STRING, primaryKey: true },
     media_id: { type: DataTypes.STRING, primaryKey: true },
+    created_at: { type: DataTypes.DATE, allowNull: true, defaultValue: DataTypes.NOW },
   }, { tableName: 'queue', timestamps: false });
 
   UserModel.hasMany(FavoriteModel, { foreignKey: 'user_id', as: 'favorites', onDelete: 'CASCADE' });
@@ -64,6 +66,24 @@ module.exports = class SequelizeUserRepository extends IUserRepository {
     const executionScope = this.#unitOfWorkContext.getCurrent();
     const { UserModel, FavoriteModel, QueueModel } = this.#models;
     const userId = user.getUserId().getId();
+    const now = new Date();
+
+    const existingFavorites = await FavoriteModel.findAll({
+      where: { user_id: userId },
+      attributes: ['media_id', 'created_at'],
+      transaction: executionScope,
+    });
+    const existingQueueItems = await QueueModel.findAll({
+      where: { user_id: userId },
+      attributes: ['media_id', 'created_at'],
+      transaction: executionScope,
+    });
+    const favoriteCreatedAtMap = new Map(
+      existingFavorites.map(favorite => [favorite.media_id, favorite.created_at]),
+    );
+    const queueCreatedAtMap = new Map(
+      existingQueueItems.map(queueItem => [queueItem.media_id, queueItem.created_at]),
+    );
 
     await UserModel.upsert({ user_id: userId }, { transaction: executionScope });
     await FavoriteModel.destroy({ where: { user_id: userId }, transaction: executionScope });
@@ -72,10 +92,14 @@ module.exports = class SequelizeUserRepository extends IUserRepository {
     const favorites = user.getFavorites().map(mediaId => ({
       user_id: userId,
       media_id: mediaId.getId(),
+      // ユースケース要件（追加日時順）を満たすため、既存行の追加日時を media_id 単位で維持する。
+      created_at: favoriteCreatedAtMap.get(mediaId.getId()) || now,
     }));
     const queue = user.getQueue().map(mediaId => ({
       user_id: userId,
       media_id: mediaId.getId(),
+      // ユースケース要件（追加日時順）を満たすため、既存行の追加日時を media_id 単位で維持する。
+      created_at: queueCreatedAtMap.get(mediaId.getId()) || now,
     }));
 
     if (favorites.length > 0) {
@@ -97,6 +121,13 @@ module.exports = class SequelizeUserRepository extends IUserRepository {
       include: [
         { model: FavoriteModel, as: 'favorites' },
         { model: QueueModel, as: 'queueItems' },
+      ],
+      // ユースケース要件（追加日時順）に合わせる。既存データの created_at 欠損時は主キー順で暫定フォールバックする。
+      order: [
+        [{ model: FavoriteModel, as: 'favorites' }, 'created_at', 'DESC'],
+        [{ model: FavoriteModel, as: 'favorites' }, 'media_id', 'ASC'],
+        [{ model: QueueModel, as: 'queueItems' }, 'created_at', 'DESC'],
+        [{ model: QueueModel, as: 'queueItems' }, 'media_id', 'ASC'],
       ],
       transaction: executionScope,
     });
