@@ -44,6 +44,15 @@
   - 保護画面へのアクセス制御
   - ログアウト後の遷移/再アクセス制御
 
+### TC-E2E-005: 不正なルートパラメータでエラー画面に遷移し復帰できる
+
+- 対応テスト: `__tests__/large/e2e/error/invalid-route-params.large.test.js`
+- 観点:
+  - 存在しない `mediaId` での `/screen/detail/:mediaId` / `/screen/viewer/:mediaId/:mediaPage` のエラー遷移
+  - `mediaPage=0` や過大ページ番号での `/screen/viewer/:mediaId/:mediaPage` のエラー遷移
+  - エラー画面からナビゲーションリンク経由で `/screen/summary` に安全に復帰できること
+  - 未定義パスで定義済みの HTTP ステータス (`404`) とレスポンスボディを返すこと
+
 ## 判定基準
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
