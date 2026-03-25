@@ -15,7 +15,8 @@
     "test:all:coverage": "start-server-and-test start http://localhost:3000 jest __tests__/ --coverage",
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s",
-    "dev:entry": "cross-env DEV_SESSION_TOKEN=dev-token DEV_SESSION_USER_ID=admin-dev DEV_SESSION_TTL_MS=86400000 DEV_SESSION_PATHS=/screen/entry,/api/media nodemon ./src/server.js --watch ./src"
+    "dev:entry": "cross-env DEV_SESSION_TOKEN=dev-token DEV_SESSION_USER_ID=admin-dev DEV_SESSION_TTL_MS=86400000 DEV_SESSION_PATHS=/screen/entry,/api/media nodemon ./src/server.js --watch ./src",
+    "test:playwright": "start-server-and-test start http://localhost:3000 \"playwright test\""
   },
   "author": "",
   "license": "MIT",
@@ -33,6 +34,7 @@
     "jest-puppeteer": "^6.1.0",
     "nodemon": "^3.1.10",
     "start-server-and-test": "^1.14.0",
-    "supertest": "^6.2.3"
+    "supertest": "^6.2.3",
+    "@playwright/test": "^1.52.0"
   }
 }
