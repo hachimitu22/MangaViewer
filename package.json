@@ -16,7 +16,7 @@
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s",
     "dev:entry": "cross-env DEV_SESSION_TOKEN=dev-token DEV_SESSION_USER_ID=admin-dev DEV_SESSION_TTL_MS=86400000 DEV_SESSION_PATHS=/screen/entry,/api/media nodemon ./src/server.js --watch ./src",
-    "test:playwright": "start-server-and-test start http://127.0.0.1:3000/screen/login \"playwright test\""
+    "test:playwright": "start-server-and-test start http://127.0.0.1:3000/screen/login \"npx playwright test\""
   },
   "author": "",
   "license": "MIT",
