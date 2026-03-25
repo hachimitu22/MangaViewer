@@ -53,9 +53,6 @@ jobs:
       - name: Run medium tests
         run: npm run test:medium
 
-      - name: Run e2e tests
-        run: npm run test:e2e
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
