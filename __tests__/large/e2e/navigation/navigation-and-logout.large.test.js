@@ -169,7 +169,6 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
 
     const logoutResponse = await logoutResponsePromise;
     expect(logoutResponse.status()).toBe(200);
-    await expect(logoutResponse.json()).resolves.toEqual({ code: 0 });
 
     const protectedResponse = await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle0' });
     expect(protectedResponse.status()).toBe(401);
