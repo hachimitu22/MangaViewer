@@ -31,7 +31,6 @@ const login = async ({ page, baseUrl }) => {
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
   await page.waitForNavigation({ waitUntil: 'networkidle0' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);

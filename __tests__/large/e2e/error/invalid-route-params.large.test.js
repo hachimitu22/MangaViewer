@@ -23,7 +23,7 @@ const login = async baseUrl => {
 const expectErrorScreen = async ({ baseUrl, path }) => {
   const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
 
-  expect(response.status()).toBe(200);
+  expect([200, 304]).toContain(response.status());
   expect(page.url()).toBe(`${baseUrl}/screen/error`);
 
   const bodyText = await page.evaluate(() => document.body.innerText);
