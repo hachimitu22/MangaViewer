@@ -92,7 +92,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
   test('未ログインでは未カバー保護 API が 401 になり、ログイン後は同一 API が許可される', async () => {
     const { baseUrl } = appContext;
 
-    const unauthorizedResults = await page.evaluate(async ({ mediaId, postContentId }) => {
+    const unauthorizedResults = await page.evaluate(async ({ baseUrl, mediaId, postContentId }) => {
       const postFormData = new FormData();
       postFormData.append('title', '未ログイン投稿');
       postFormData.append('tags[0][category]', 'カテゴリ');
@@ -101,10 +101,10 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
       postFormData.append('contents[0][id]', postContentId);
 
       const [createMedia, logout, deleteFavorite, deleteQueue] = await Promise.all([
-        fetch('/api/media', { method: 'POST', body: postFormData }),
-        fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } }),
-        fetch(`/api/favorite/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
-        fetch(`/api/queue/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
+        fetch(`${baseUrl}/api/media`, { method: 'POST', body: postFormData }),
+        fetch(`${baseUrl}/api/logout`, { method: 'POST', headers: { Accept: 'application/json' } }),
+        fetch(`${baseUrl}/api/favorite/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
+        fetch(`${baseUrl}/api/queue/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
       ]);
 
       return Promise.all([createMedia, logout, deleteFavorite, deleteQueue].map(async response => {
@@ -113,7 +113,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
           body: await response.json(),
         };
       }));
-    }, { mediaId: detailMediaId, postContentId: contentIdForPost });
+    }, { baseUrl, mediaId: detailMediaId, postContentId: contentIdForPost });
 
     unauthorizedResults.forEach(result => {
       expect(result.status).toBe(401);
@@ -122,7 +122,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
 
     await login({ baseUrl });
 
-    const authorizedResults = await page.evaluate(async ({ mediaId, postContentId }) => {
+    const authorizedResults = await page.evaluate(async ({ baseUrl, mediaId, postContentId }) => {
       const postFormData = new FormData();
       postFormData.append('title', 'ログイン後投稿');
       postFormData.append('tags[0][category]', 'カテゴリ');
@@ -130,19 +130,19 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
       postFormData.append('contents[0][position]', '1');
       postFormData.append('contents[0][id]', postContentId);
 
-      const createMedia = await fetch('/api/media', {
+      const createMedia = await fetch(`${baseUrl}/api/media`, {
         method: 'POST',
         body: postFormData,
       });
-      const logout = await fetch('/api/logout', {
+      const logout = await fetch(`${baseUrl}/api/logout`, {
         method: 'POST',
         headers: { Accept: 'application/json' },
       });
-      const deleteFavorite = await fetch(`/api/favorite/${mediaId}`, {
+      const deleteFavorite = await fetch(`${baseUrl}/api/favorite/${mediaId}`, {
         method: 'DELETE',
         headers: { Accept: 'application/json' },
       });
-      const deleteQueue = await fetch(`/api/queue/${mediaId}`, {
+      const deleteQueue = await fetch(`${baseUrl}/api/queue/${mediaId}`, {
         method: 'DELETE',
         headers: { Accept: 'application/json' },
       });
@@ -153,7 +153,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
           body: await response.json(),
         };
       }));
-    }, { mediaId: detailMediaId, postContentId: contentIdForPost });
+    }, { baseUrl, mediaId: detailMediaId, postContentId: contentIdForPost });
 
     authorizedResults.forEach(result => {
       expect(result.status).toBe(200);
