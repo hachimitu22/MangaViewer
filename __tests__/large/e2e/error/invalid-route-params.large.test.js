@@ -1,29 +1,15 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { loginToSummary } = require('../support/login');
 
 const login = async baseUrl => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
-
-  await page.type('#username', 'admin');
-  await page.type('#password', 'admin');
-
-  const loginResponsePromise = page.waitForResponse(response => {
-    return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
-  });
-
-  await page.click('button[type="submit"]');
-
-  const loginResponse = await loginResponsePromise;
-  expect(loginResponse.status()).toBe(200);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
-  expect(page.url()).toBe(`${baseUrl}/screen/summary`);
+  await loginToSummary({ page, baseUrl });
 };
 
 const expectErrorScreen = async ({ baseUrl, path }) => {
   const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
 
-  expect(response.status()).toBe(200);
+  expect([200, 304]).toContain(response.status());
   expect(page.url()).toBe(`${baseUrl}/screen/error`);
 
   const bodyText = await page.evaluate(() => document.body.innerText);

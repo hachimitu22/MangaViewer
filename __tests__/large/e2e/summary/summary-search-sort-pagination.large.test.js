@@ -11,6 +11,7 @@ const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
 const { readSummaryTitles } = require('../helpers/summaryDom');
+const { loginToSummary } = require('../support/login');
 
 const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
@@ -41,22 +42,7 @@ const createSeedMedia = ({
 );
 
 const login = async ({ page, baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
-
-  await page.type('#username', 'admin');
-  await page.type('#password', 'admin');
-
-  const loginResponsePromise = page.waitForResponse(response => {
-    return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
-  });
-
-  await page.click('button[type="submit"]');
-
-  const loginResponse = await loginResponsePromise;
-  expect(loginResponse.status()).toBe(200);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
-  expect(page.url()).toBe(`${baseUrl}/screen/summary`);
+  await loginToSummary({ page, baseUrl });
 };
 const readDetailLinks = async (currentPage) => currentPage.evaluate(() => {
   return Array.from(document.querySelectorAll('.media-card .actions a'))
