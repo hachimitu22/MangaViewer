@@ -8,11 +8,11 @@
     "dev": "nodemon ./src/server.js --watch ./src",
     "test": "jest",
     "jest-puppeteer": "jest e2e",
-    "test:e2e": "start-server-and-test start http://127.0.0.1:3000 jest-puppeteer",
+    "test:e2e": "start-server-and-test start http://127.0.0.1:3000/screen/login jest-puppeteer",
     "test:small": "jest small",
     "test:medium": "jest medium",
     "test:all": "npm run test:small && npm run test:e2e",
-    "test:all:coverage": "start-server-and-test start http://127.0.0.1:3000 jest __tests__/ --coverage",
+    "test:all:coverage": "start-server-and-test start http://127.0.0.1:3000/screen/login jest __tests__/ --coverage",
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s",
     "dev:entry": "cross-env DEV_SESSION_TOKEN=dev-token DEV_SESSION_USER_ID=admin-dev DEV_SESSION_TTL_MS=86400000 DEV_SESSION_PATHS=/screen/entry,/api/media nodemon ./src/server.js --watch ./src"
