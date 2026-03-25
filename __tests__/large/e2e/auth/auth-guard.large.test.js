@@ -85,7 +85,9 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
   test('未ログインでは保護 API が拒否され、ログイン後は同一操作が許可される', async () => {
     const { baseUrl } = appContext;
 
-    const unauthorizedResult = await page.evaluate(async ({ baseUrl, mediaId, targetDeleteMediaId }) => {
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+
+    const unauthorizedResult = await page.evaluate(async ({ mediaId, targetDeleteMediaId }) => {
       const patchFormData = new FormData();
       patchFormData.append('title', '未ログイン更新');
       patchFormData.append('tags[0][category]', 'カテゴリ');
@@ -94,10 +96,10 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
       patchFormData.append('contents[0][id]', 'seed/auth-content-1.jpg');
 
       const [favorite, queue, patch, remove] = await Promise.all([
-        fetch(`${baseUrl}/api/favorite/${mediaId}`, { method: 'PUT', headers: { Accept: 'application/json' } }),
-        fetch(`${baseUrl}/api/queue/${mediaId}`, { method: 'PUT', headers: { Accept: 'application/json' } }),
-        fetch(`${baseUrl}/api/media/${mediaId}`, { method: 'PATCH', body: patchFormData }),
-        fetch(`${baseUrl}/api/media/${targetDeleteMediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
+        fetch(`/api/favorite/${mediaId}`, { method: 'PUT', headers: { Accept: 'application/json' } }),
+        fetch(`/api/queue/${mediaId}`, { method: 'PUT', headers: { Accept: 'application/json' } }),
+        fetch(`/api/media/${mediaId}`, { method: 'PATCH', body: patchFormData }),
+        fetch(`/api/media/${targetDeleteMediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
       ]);
 
       return Promise.all([favorite, queue, patch, remove].map(async response => {
@@ -106,7 +108,7 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
           body: await response.json(),
         };
       }));
-    }, { baseUrl, mediaId: detailMediaId, targetDeleteMediaId: deleteMediaId });
+    }, { mediaId: detailMediaId, targetDeleteMediaId: deleteMediaId });
 
     unauthorizedResult.forEach(result => {
       expect(result.status).toBe(401);
@@ -115,7 +117,7 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
 
     await login({ baseUrl });
 
-    const authorizedResult = await page.evaluate(async ({ baseUrl, mediaId, targetDeleteMediaId }) => {
+    const authorizedResult = await page.evaluate(async ({ mediaId, targetDeleteMediaId }) => {
       const patchFormData = new FormData();
       patchFormData.append('title', 'ログイン後更新済み');
       patchFormData.append('tags[0][category]', 'カテゴリ');
@@ -123,19 +125,19 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
       patchFormData.append('contents[0][position]', '1');
       patchFormData.append('contents[0][id]', 'seed/auth-content-1.jpg');
 
-      const favorite = await fetch(`${baseUrl}/api/favorite/${mediaId}`, {
+      const favorite = await fetch(`/api/favorite/${mediaId}`, {
         method: 'PUT',
         headers: { Accept: 'application/json' },
       });
-      const queue = await fetch(`${baseUrl}/api/queue/${mediaId}`, {
+      const queue = await fetch(`/api/queue/${mediaId}`, {
         method: 'PUT',
         headers: { Accept: 'application/json' },
       });
-      const patch = await fetch(`${baseUrl}/api/media/${mediaId}`, {
+      const patch = await fetch(`/api/media/${mediaId}`, {
         method: 'PATCH',
         body: patchFormData,
       });
-      const remove = await fetch(`${baseUrl}/api/media/${targetDeleteMediaId}`, {
+      const remove = await fetch(`/api/media/${targetDeleteMediaId}`, {
         method: 'DELETE',
         headers: { Accept: 'application/json' },
       });
@@ -146,7 +148,7 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
           body: await response.json(),
         };
       }));
-    }, { baseUrl, mediaId: detailMediaId, targetDeleteMediaId: deleteMediaId });
+    }, { mediaId: detailMediaId, targetDeleteMediaId: deleteMediaId });
 
     authorizedResult.forEach(result => {
       expect(result.status).toBe(200);
