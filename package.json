@@ -30,7 +30,7 @@
     "aglio": "^2.3.0",
     "cross-env": "^10.1.0",
     "jest": "^28.1.0",
-    "jest-puppeteer": "^6.1.0",
+    "jest-puppeteer": "^11.0.0",
     "nodemon": "^3.1.10",
     "start-server-and-test": "^1.14.0",
     "supertest": "^6.2.3"
