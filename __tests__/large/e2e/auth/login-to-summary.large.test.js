@@ -1,12 +1,16 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
 
-describe('large e2e: ログイン画面からサマリー画面まで遷移する', () => {
+let page;
+
+test.describe('large e2e: ログイン画面からサマリー画面まで遷移する', () => {
   const seedTitle = 'seed済みタイトル';
 
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       seed: async ({ app, tempContentDirectory, fs, path }) => {
         await app.locals.dependencies.unitOfWork.run(async () => {
@@ -23,7 +27,7 @@ describe('large e2e: ログイン画面からサマリー画面まで遷移す�
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -34,7 +38,7 @@ describe('large e2e: ログイン画面からサマリー画面まで遷移す�
   test('ログイン成功後に /screen/summary へ遷移して seed データが表示される', async () => {
     const { baseUrl } = appContext;
 
-    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     await page.type('#username', 'admin');
     await page.type('#password', 'admin');
@@ -50,7 +54,7 @@ describe('large e2e: ログイン画面からサマリー画面まで遷移す�
     await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
 
     await page.waitForNavigation({
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle',
     });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 

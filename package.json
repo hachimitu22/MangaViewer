@@ -7,11 +7,10 @@
     "start": "node ./src/server.js",
     "dev": "nodemon ./src/server.js --watch ./src",
     "test": "jest",
-    "jest-puppeteer": "jest e2e",
-    "test:e2e": "start-server-and-test start http://localhost:3000 jest-puppeteer",
+    "test:e2e": "playwright test",
     "test:small": "jest small",
     "test:medium": "jest medium",
-    "test:large": "jest e2e",
+    "test:large": "playwright test",
     "test:all": "npm run test:small && npm run test:e2e",
     "test:all:coverage": "start-server-and-test start http://localhost:3000 jest __tests__/ --coverage",
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
@@ -31,9 +30,9 @@
     "aglio": "^2.3.0",
     "cross-env": "^10.1.0",
     "jest": "^28.1.0",
-    "jest-puppeteer": "^11.0.0",
     "nodemon": "^3.1.10",
     "start-server-and-test": "^1.14.0",
-    "supertest": "^6.2.3"
+    "supertest": "^6.2.3",
+    "@playwright/test": "^1.53.0"
   }
 }

@@ -1,8 +1,11 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const login = async ({ baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
 
@@ -16,7 +19,7 @@ const login = async ({ baseUrl }) => {
   expect(loginResponse.status()).toBe(200);
   await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
@@ -26,14 +29,15 @@ const expectUnauthorizedJsonResponse = async response => {
   await expect(response.json()).resolves.toEqual({ message: '認証に失敗しました' });
 };
 
-describe('large e2e: 認可境界（未カバー導線）', () => {
+test.describe('large e2e: 認可境界（未カバー導線）', () => {
   const detailMediaId = 'auth-uncovered-media-1';
   const contentIdForViewer = 'seed/auth-uncovered-content-1.jpg';
   const contentIdForPost = '11111111111111111111111111111111';
 
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-auth-guard-uncovered-',
       seed: async ({ app, tempContentDirectory, fs, path }) => {
@@ -55,7 +59,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -71,21 +75,21 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
     ];
 
     for (const protectedPath of protectedPaths) {
-      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle0' });
+      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle' });
       await expectUnauthorizedJsonResponse(response);
     }
 
     await login({ baseUrl });
 
     for (const protectedPath of protectedPaths) {
-      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle0' });
+      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle' });
       expect(response.status()).toBe(200);
     }
 
     const viewerImageSource = await page.$eval('.stage img', element => element.getAttribute('src'));
     expect(viewerImageSource).toBe(contentIdForViewer);
 
-    await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle' });
     await page.waitForSelector('form');
   });
 

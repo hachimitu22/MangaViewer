@@ -1,6 +1,8 @@
 const fs = require('fs/promises');
-const os = require('os');
 const path = require('path');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const createApp = require('../../../../src/app');
 const Media = require('../../../../src/domain/media/media');
@@ -10,8 +12,8 @@ const ContentId = require('../../../../src/domain/media/contentId');
 const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
+const { createE2eTempDirectory } = require('../helpers/e2eTempDirectory');
 
-const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
 const removePathIfExists = async targetPath => {
   if (!targetPath) {
@@ -34,7 +36,7 @@ const createSeedMedia = ({ mediaId, title, contentId }) => new Media(
   [new Category('カテゴリ')],
 );
 
-describe('large e2e: サマリー・詳細遷移とログアウト後導線', () => {
+test.describe('large e2e: サマリー・詳細遷移とログアウト後導線', () => {
   const seedMediaId = 'media-seed-navigation-1';
   const seedTitle = '遷移確認用タイトル';
 
@@ -45,8 +47,9 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
   let tempDatabasePath;
   let tempContentDirectory;
 
-  beforeEach(async () => {
-    tempRootDirectory = await createTempDirectory('mangaviewer-e2e-navigation-');
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
+    tempRootDirectory = await createE2eTempDirectory('mangaviewer-e2e-navigation-');
     tempDatabasePath = path.join(tempRootDirectory, 'db', 'test.sqlite');
     tempContentDirectory = path.join(tempRootDirectory, 'contents');
 
@@ -85,7 +88,7 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
     baseUrl = `http://127.0.0.1:${address.port}`;
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (server) {
       await new Promise((resolve, reject) => {
         server.close(error => (error ? reject(error) : resolve()));
@@ -107,7 +110,7 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
   });
 
   const login = async () => {
-    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     await page.type('#username', 'admin');
     await page.type('#password', 'admin');
@@ -122,7 +125,7 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
     expect(loginResponse.status()).toBe(200);
     await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
 
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
   };
 
@@ -135,7 +138,7 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
       return response.url() === `${baseUrl}/screen/detail/${seedMediaId}` && response.request().method() === 'GET';
     });
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`a[href="/screen/detail/${seedMediaId}"]`),
     ]);
 
@@ -147,7 +150,7 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
       return response.url().startsWith(`${baseUrl}/screen/summary?`) && response.request().method() === 'GET';
     });
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click('a[href^="/screen/summary?"]'),
     ]);
 
@@ -172,10 +175,10 @@ describe('large e2e: サマリー・詳細遷移とログアウト後導線', ()
     expect(logoutResponse.status()).toBe(200);
     await expect(logoutResponse.json()).resolves.toEqual({ code: 0 });
 
-    const protectedResponse = await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle0' });
+    const protectedResponse = await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
     expect(protectedResponse.status()).toBe(401);
 
-    const loginScreenResponse = await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+    const loginScreenResponse = await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
     expect(loginScreenResponse.status()).toBe(200);
     expect(page.url()).toBe(`${baseUrl}/screen/login`);
 

@@ -1,8 +1,11 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const login = async ({ baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
 
@@ -16,7 +19,7 @@ const login = async ({ baseUrl }) => {
   expect(loginResponse.status()).toBe(200);
   await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
@@ -26,14 +29,15 @@ const expectUnauthorizedJsonResponse = async response => {
   await expect(response.json()).resolves.toEqual({ message: '認証に失敗しました' });
 };
 
-describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
+test.describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
   const detailMediaId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   const deleteMediaId = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   const existingContentId = 'seed/auth-content-1.jpg';
 
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-auth-guard-',
       seed: async ({ app, tempContentDirectory, fs, path }) => {
@@ -57,7 +61,7 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -76,7 +80,7 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
     ];
 
     for (const path of protectedPaths) {
-      const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
+      const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' });
       // 既存仕様では未認証アクセス時はログイン画面遷移ではなく JSON 401 を返す。
       await expectUnauthorizedJsonResponse(response);
     }
@@ -163,7 +167,7 @@ describe('large e2e: 認可境界（画面ガードと保護 API）', () => {
     ];
 
     for (const path of protectedPaths) {
-      const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
+      const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' });
       expect(response.status()).toBe(200);
     }
   });

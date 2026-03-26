@@ -1,4 +1,7 @@
 const fs = require('fs/promises');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const Media = require('../../../../src/domain/media/media');
 const MediaId = require('../../../../src/domain/media/mediaId');
@@ -18,7 +21,7 @@ const createSeedMedia = ({ mediaId, title, contentIds, tags }) => new Media(
 );
 
 const login = async ({ page, baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
@@ -33,7 +36,7 @@ const login = async ({ page, baseUrl }) => {
   expect(loginResponse.status()).toBe(200);
   await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
@@ -53,7 +56,7 @@ const assertViewerState = async ({ page, baseUrl, mediaId, mediaPage, expectedCo
   expect(imageState.alt).toBe(`${mediaId} の ${mediaPage} ページ`);
 };
 
-describe('large e2e: edit 画面での既存メディア更新', () => {
+test.describe('large e2e: edit 画面での既存メディア更新', () => {
   const seedMediaId = 'media-seed-edit-update-1';
   const initialTitle = '編集前タイトル';
   const updatedTitle = '編集後タイトル';
@@ -73,7 +76,8 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
 
   let context;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     context = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-edit-update-',
       seed: async ({ app, tempContentDirectory, path }) => {
@@ -94,7 +98,7 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (context?.teardown) {
       await context.teardown();
     }
@@ -106,7 +110,7 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
 
     await login({ page, baseUrl });
 
-    await page.goto(`${baseUrl}/screen/edit/${seedMediaId}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/edit/${seedMediaId}`, { waitUntil: 'networkidle' });
 
     await page.waitForSelector('#title');
     await expect(page.$eval('#title', element => element.value)).resolves.toBe(initialTitle);
@@ -160,13 +164,13 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     const successMessage = await page.$eval('#form-message', element => element.textContent.trim());
     expect(successMessage).toBe('メディアを更新しました。');
 
-    await page.goto(`${baseUrl}/screen/detail/${seedMediaId}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/detail/${seedMediaId}`, { waitUntil: 'networkidle' });
     const detailText = await page.evaluate(() => document.body.innerText);
     expect(detailText).toContain(updatedTitle);
     expect(detailText).toContain('ジャンル:更新タグ');
     expect(detailText).toContain('連載:連載中');
 
-    await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
     const summaryText = await page.evaluate(() => document.body.innerText);
     expect(summaryText).toContain(updatedTitle);
     expect(summaryText).toContain('ジャンル:更新タグ');
@@ -178,7 +182,7 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
       seedContentIds[0],
     ];
 
-    await page.goto(`${baseUrl}/screen/viewer/${seedMediaId}/1`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/viewer/${seedMediaId}/1`, { waitUntil: 'networkidle' });
     await assertViewerState({
       page,
       baseUrl,
@@ -188,7 +192,7 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     });
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/2"]`),
     ]);
     await assertViewerState({
@@ -200,7 +204,7 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     });
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/3"]`),
     ]);
     await assertViewerState({

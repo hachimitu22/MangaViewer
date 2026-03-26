@@ -1,8 +1,11 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const login = async baseUrl => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
@@ -17,12 +20,12 @@ const login = async baseUrl => {
   expect(loginResponse.status()).toBe(200);
   await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
 const expectErrorScreen = async ({ baseUrl, path }) => {
-  const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
+  const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' });
 
   expect(response.status()).toBe(200);
   expect(page.url()).toBe(`${baseUrl}/screen/error`);
@@ -33,13 +36,14 @@ const expectErrorScreen = async ({ baseUrl, path }) => {
   expect(bodyText).toContain('一覧・サマリー画面へ戻る');
 };
 
-describe('large e2e: 編集画面でメディア削除後に各画面から到達不能になることを確認する', () => {
+test.describe('large e2e: 編集画面でメディア削除後に各画面から到達不能になることを確認する', () => {
   const seedMediaId = 'dddddddddddddddddddddddddddddddd';
   const seedTitle = '削除対象の seed メディア';
 
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-edit-delete-',
       seed: async ({ app, tempContentDirectory, fs, path }) => {
@@ -57,7 +61,7 @@ describe('large e2e: 編集画面でメディア削除後に各画面から到�
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -70,7 +74,7 @@ describe('large e2e: 編集画面でメディア削除後に各画面から到�
 
     await login(baseUrl);
 
-    await page.goto(`${baseUrl}/screen/edit/${seedMediaId}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/edit/${seedMediaId}`, { waitUntil: 'networkidle' });
 
     const deleteResponsePromise = page.waitForResponse(response => {
       return response.url() === `${baseUrl}/api/media/${seedMediaId}` && response.request().method() === 'DELETE';
@@ -83,7 +87,7 @@ describe('large e2e: 編集画面でメディア削除後に各画面から到�
       });
     });
 
-    const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle0' });
+    const navigationPromise = page.waitForNavigation({ waitUntil: 'networkidle' });
 
     await page.click('#delete-button');
 

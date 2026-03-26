@@ -1,4 +1,7 @@
 const fs = require('fs/promises');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const Media = require('../../../../src/domain/media/media');
 const MediaId = require('../../../../src/domain/media/mediaId');
@@ -19,7 +22,7 @@ const createViewerSeedMedia = ({ mediaId, title, contentIds }) => new Media(
   [new Category('カテゴリ')],
 );
 
-describe('large e2e: viewer ナビゲーション', () => {
+test.describe('large e2e: viewer ナビゲーション', () => {
   const seedMediaId = 'media-seed-viewer-navigation-1';
   const seedTitle = 'ビューアー遷移確認用タイトル';
   const seedContentIds = [
@@ -30,7 +33,8 @@ describe('large e2e: viewer ナビゲーション', () => {
 
   let context;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     context = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-viewer-',
       seed: async ({ app, tempContentDirectory, path }) => {
@@ -51,7 +55,7 @@ describe('large e2e: viewer ナビゲーション', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (context?.teardown) {
       await context.teardown();
     }
@@ -59,7 +63,7 @@ describe('large e2e: viewer ナビゲーション', () => {
   });
 
   const login = async ({ page, baseUrl }) => {
-    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     await page.type('#username', 'admin');
     await page.type('#password', 'admin');
@@ -74,7 +78,7 @@ describe('large e2e: viewer ナビゲーション', () => {
     expect(loginResponse.status()).toBe(200);
     await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
 
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
   };
 
@@ -103,7 +107,7 @@ describe('large e2e: viewer ナビゲーション', () => {
     await page.waitForSelector(`a[href="${viewerEntryHref}"]`);
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`a[href="${viewerEntryHref}"]`),
     ]);
 
@@ -120,7 +124,7 @@ describe('large e2e: viewer ナビゲーション', () => {
     expect(previousDisabledTextAtFirstPage).toBe('前ページなし');
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/2"]`),
     ]);
 
@@ -133,7 +137,7 @@ describe('large e2e: viewer ナビゲーション', () => {
     });
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/1"]`),
     ]);
 
@@ -146,11 +150,11 @@ describe('large e2e: viewer ナビゲーション', () => {
     });
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/2"]`),
     ]);
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/3"]`),
     ]);
 

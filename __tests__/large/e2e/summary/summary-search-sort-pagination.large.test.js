@@ -1,6 +1,8 @@
 const fs = require('fs/promises');
-const os = require('os');
 const path = require('path');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const createApp = require('../../../../src/app');
 const Media = require('../../../../src/domain/media/media');
@@ -11,8 +13,8 @@ const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
 const { readSummaryTitles } = require('../helpers/summaryDom');
+const { createE2eTempDirectory } = require('../helpers/e2eTempDirectory');
 
-const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
 const removePathIfExists = async targetPath => {
   if (!targetPath) {
@@ -41,7 +43,7 @@ const createSeedMedia = ({
 );
 
 const login = async ({ page, baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
@@ -55,7 +57,7 @@ const login = async ({ page, baseUrl }) => {
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 const readDetailLinks = async (currentPage) => currentPage.evaluate(() => {
@@ -67,7 +69,7 @@ const readDetailLinks = async (currentPage) => currentPage.evaluate(() => {
     }));
 });
 
-describe('large e2e: summary の検索・並び替え・ページング', () => {
+test.describe('large e2e: summary の検索・並び替え・ページング', () => {
   let app;
   let server;
   let baseUrl;
@@ -75,8 +77,9 @@ describe('large e2e: summary の検索・並び替え・ページング', () => 
   let tempDatabasePath;
   let tempContentDirectory;
 
-  beforeEach(async () => {
-    tempRootDirectory = await createTempDirectory('mangaviewer-summary-e2e-');
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
+    tempRootDirectory = await createE2eTempDirectory('mangaviewer-summary-e2e-');
     tempDatabasePath = path.join(tempRootDirectory, 'db', 'test.sqlite');
     tempContentDirectory = path.join(tempRootDirectory, 'contents');
 
@@ -156,7 +159,7 @@ describe('large e2e: summary の検索・並び替え・ページング', () => 
     baseUrl = `http://127.0.0.1:${address.port}`;
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (server) {
       await new Promise((resolve, reject) => {
         server.close(error => (error ? reject(error) : resolve()));
@@ -181,7 +184,7 @@ describe('large e2e: summary の検索・並び替え・ページング', () => 
     await login({ page, baseUrl });
 
     const summaryUrl = `${baseUrl}/screen/summary?summaryPage=1&size=2&sort=title_asc&title=target&tags=${encodeURIComponent('シリーズ:対象')}`;
-    await page.goto(summaryUrl, { waitUntil: 'networkidle0' });
+    await page.goto(summaryUrl, { waitUntil: 'networkidle' });
 
     await page.waitForSelector('.media-card h2');
 
@@ -198,8 +201,8 @@ describe('large e2e: summary の検索・並び替え・ページング', () => 
       { text: '詳細画面へ', href: '/screen/detail/media-3' },
     ]);
 
-    await page.select('#sort', 'title_desc');
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await page.selectOption('#sort', 'title_desc');
+    await page.waitForNavigation({ waitUntil: 'networkidle' });
 
     const sortedTitles = await readSummaryTitles(page);
     expect(sortedTitles).toEqual(['Gamma target', 'Beta target']);
@@ -213,7 +216,7 @@ describe('large e2e: summary の検索・並び替え・ページング', () => 
     await page.goto(
       `${baseUrl}/screen/summary?summaryPage=1&size=1&sort=title_asc&title=target&tags=${encodeURIComponent('シリーズ:対象')}`,
       {
-      waitUntil: 'networkidle0',
+      waitUntil: 'networkidle',
       },
     );
 
@@ -236,7 +239,7 @@ describe('large e2e: summary の検索・並び替え・ページング', () => 
 
     await page.goto(
       `${baseUrl}/screen/summary?summaryPage=1&size=1&sort=title_asc&title=target&tags=${encodeURIComponent('ジャンル:少年')}`,
-      { waitUntil: 'networkidle0' },
+      { waitUntil: 'networkidle' },
     );
 
     const tagFilteredBodyText = await page.evaluate(() => document.body.innerText);

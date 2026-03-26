@@ -1,15 +1,19 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
+const { test, expect } = require('@playwright/test');
 
-describe('large e2e: ログイン失敗時の再入力導線', () => {
+let page;
+
+test.describe('large e2e: ログイン失敗時の再入力導線', () => {
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-auth-login-failure-',
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -19,7 +23,7 @@ describe('large e2e: ログイン失敗時の再入力導線', () => {
   test('誤った認証情報では /screen/login に留まり、失敗メッセージ表示後も再入力できる', async () => {
     const { baseUrl } = appContext;
 
-    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     await page.type('#username', 'admin');
     await page.type('#password', 'wrong-password');

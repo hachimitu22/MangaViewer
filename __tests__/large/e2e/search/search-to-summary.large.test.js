@@ -1,10 +1,14 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
 
-describe('large e2e: search から summary への条件引き継ぎ', () => {
+let page;
+
+test.describe('large e2e: search から summary への条件引き継ぎ', () => {
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-search-to-summary-e2e-',
       seed: async ({ app, tempContentDirectory, fs, path }) => {
@@ -63,7 +67,7 @@ describe('large e2e: search から summary への条件引き継ぎ', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -74,7 +78,7 @@ describe('large e2e: search から summary への条件引き継ぎ', () => {
   test('/screen/search で入力した条件を /screen/summary で URL と表示に引き継ぐ', async () => {
     const { baseUrl } = appContext;
 
-    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
     await page.type('#username', 'admin');
     await page.type('#password', 'admin');
 
@@ -87,17 +91,17 @@ describe('large e2e: search から summary への条件引き継ぎ', () => {
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
 
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 
-    await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle' });
 
     await page.type('#title', 'target');
     await page.click('#start', { clickCount: 3 });
     await page.type('#start', '1');
     await page.click('#size', { clickCount: 3 });
     await page.type('#size', '2');
-    await page.select('#sort', 'title_desc');
+    await page.selectOption('#sort', 'title_desc');
 
     await page.type('#category-input', 'シリーズ');
     await page.type('#tag-input', '対象');
@@ -108,7 +112,7 @@ describe('large e2e: search から summary への条件引き継ぎ', () => {
     await page.click('#add-tag-button');
 
     await page.click('button[type="submit"]');
-    await page.waitForNavigation({ waitUntil: 'networkidle0' });
+    await page.waitForNavigation({ waitUntil: 'networkidle' });
 
     const currentUrl = new URL(page.url());
     expect(currentUrl.pathname).toBe('/screen/summary');
