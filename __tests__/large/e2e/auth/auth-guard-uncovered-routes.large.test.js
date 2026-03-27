@@ -96,6 +96,7 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
 
   test('未ログインでは未カバー保護 API が 401 になり、ログイン後は同一 API が許可される', async () => {
     const { baseUrl } = appContext;
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     const unauthorizedResults = await page.evaluate(async ({ mediaId, postContentId, baseUrl }) => {
       const postFormData = new FormData();

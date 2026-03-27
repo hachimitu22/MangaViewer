@@ -86,6 +86,7 @@ test.describe('large e2e: 認可境界（画面ガードと保護 API）', () =>
 
   test('未ログインでは保護 API が拒否され、ログイン後は同一操作が許可される', async () => {
     const { baseUrl } = appContext;
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     const unauthorizedResult = await page.evaluate(async ({ mediaId, targetDeleteMediaId, baseUrl }) => {
       const patchFormData = new FormData();
