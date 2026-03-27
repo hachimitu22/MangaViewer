@@ -74,11 +74,7 @@ test.describe('large e2e: エントリー画面でメディアを新規登録で
     expect(postMediaResponse.status()).toBe(200);
 
     await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
-    await page.waitForFunction(
-      expectedTitle => document.body?.innerText.includes(expectedTitle),
-      {},
-      title,
-    );
+    await expect(page.locator('body')).toContainText(title);
 
     const mediaId = await page.evaluate(expectedTitle => {
       const cards = Array.from(document.querySelectorAll('.media-card'));
