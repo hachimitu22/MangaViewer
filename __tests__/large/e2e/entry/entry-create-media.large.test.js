@@ -62,8 +62,7 @@ test.describe('large e2e: エントリー画面でメディアを新規登録で
     await page.type('#tag-input', tagLabel);
     await page.click('#add-tag-button');
 
-    const fileInput = await page.$('#file-input');
-    await fileInput.uploadFile(uploadFilePath);
+    await page.setInputFiles('#file-input', uploadFilePath);
 
     await page.waitForFunction(
       expectedFileName => document.querySelector('#media-list')?.innerText.includes(expectedFileName),

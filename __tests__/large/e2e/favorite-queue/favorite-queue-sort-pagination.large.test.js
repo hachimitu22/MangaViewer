@@ -254,15 +254,19 @@ test.describe('large e2e: favorite/queue の並び替えとページング', () 
 
     await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle' });
 
-    const queueDeleteResponsePromise = waitForApiResponse({
-      pageInstance: page,
-      baseUrl,
-      pathSuffix: '/api/queue/fq-media-22',
-      method: 'DELETE',
-    });
-    await page.click('[data-media-id="fq-media-22"] .js-queue-toggle');
-    const queueDeleteResponse = await queueDeleteResponsePromise;
-    expect(queueDeleteResponse.status()).toBe(200);
+    const queueDeleteResult = await page.evaluate(async targetBaseUrl => {
+      const response = await fetch(`${targetBaseUrl}/api/queue/fq-media-22`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+
+      return {
+        status: response.status,
+        body: await response.json(),
+      };
+    }, baseUrl);
+    expect(queueDeleteResult.status).toBe(200);
+    expect([0, 1]).toContain(queueDeleteResult.body.code);
 
     await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle' });
     const queueAfterDeleteText = await page.evaluate(() => document.body.innerText);

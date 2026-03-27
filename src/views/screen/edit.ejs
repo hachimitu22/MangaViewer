@@ -140,7 +140,21 @@
         const deleteButton = document.getElementById('delete-button');
 
         const selectedTags = initialTags.map(tag => ({ ...tag }));
-        const mediaFiles = initialContents.map(contentId => ({ id: contentId }));
+        const resolveContentId = content => {
+          if (typeof content === 'string') {
+            return content;
+          }
+          if (content && typeof content === 'object') {
+            if (typeof content.id === 'string') {
+              return content.id;
+            }
+            if (typeof content.value === 'string') {
+              return content.value;
+            }
+          }
+          return String(content ?? '');
+        };
+        const mediaFiles = initialContents.map(content => ({ id: resolveContentId(content) }));
 
         const updateTagOptions = () => {
           const category = categoryInput.value.trim();
