@@ -47,23 +47,14 @@ test.describe('large e2e: ログイン画面からサマリー画面まで遷移
       return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
     });
 
-    await page.click('button[type="submit"]');
+    await Promise.all([
+      page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+      page.click('button[type="submit"]'),
+    ]);
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-  
-    await page.waitForNavigation({
-      waitUntil: 'networkidle',
-    });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
-
-    await page.waitForFunction(
-      expectedTitle => document.body && document.body.innerText.includes(expectedTitle),
-      {},
-      seedTitle,
-    );
-
-    const bodyText = await page.evaluate(() => document.body.innerText);
-    expect(bodyText).toContain(seedTitle);
+    await expect(page.locator('body')).toContainText(seedTitle);
   });
 });
