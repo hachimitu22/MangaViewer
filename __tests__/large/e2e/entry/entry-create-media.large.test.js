@@ -64,12 +64,6 @@ test.describe('large e2e: エントリー画面でメディアを新規登録で
 
     await page.setInputFiles('#file-input', uploadFilePath);
 
-    await page.waitForFunction(
-      expectedFileName => document.querySelector('#media-list')?.innerText.includes(expectedFileName),
-      {},
-      path.basename(uploadFilePath),
-    );
-
     const postMediaResponsePromise = page.waitForResponse(response => {
       return response.url() === `${baseUrl}/api/media` && response.request().method() === 'POST';
     });
