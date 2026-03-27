@@ -84,6 +84,9 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
       expect(response.status()).toBe(200);
     }
 
+    await page.goto(`${baseUrl}/screen/viewer/${detailMediaId}/1`, { waitUntil: 'networkidle' });
+    await page.waitForSelector('.stage img');
+
     const viewerImageSource = await page.$eval('.stage img', element => element.getAttribute('src'));
     expect(viewerImageSource).toBe(contentIdForViewer);
 
