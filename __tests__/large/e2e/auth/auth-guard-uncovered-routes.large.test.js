@@ -140,10 +140,6 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
         method: 'POST',
         body: postFormData,
       });
-      const logout = await fetch(`${baseUrl}/api/logout`, {
-        method: 'POST',
-        headers: { Accept: 'application/json' },
-      });
       const deleteFavorite = await fetch(`${baseUrl}/api/favorite/${mediaId}`, {
         method: 'DELETE',
         headers: { Accept: 'application/json' },
@@ -152,8 +148,12 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
         method: 'DELETE',
         headers: { Accept: 'application/json' },
       });
+      const logout = await fetch(`${baseUrl}/api/logout`, {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+      });
 
-      return Promise.all([createMedia, logout, deleteFavorite, deleteQueue].map(async response => {
+      return Promise.all([createMedia, deleteFavorite, deleteQueue, logout].map(async response => {
         return {
           status: response.status,
           body: await response.json(),
@@ -167,12 +167,12 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
       mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
     });
 
-    expect(authorizedResults[1].status).toBe(200);
-    expect(authorizedResults[1].body).toEqual({ code: 0 });
-
-    authorizedResults.slice(2).forEach(result => {
+    authorizedResults.slice(1, 3).forEach(result => {
       expect(result.status).toBe(200);
       expect([0, 1]).toContain(result.body.code);
     });
+
+    expect(authorizedResults[3].status).toBe(200);
+    expect(authorizedResults[3].body).toEqual({ code: 0 });
   });
 });

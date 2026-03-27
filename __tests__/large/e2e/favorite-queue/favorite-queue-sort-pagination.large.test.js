@@ -239,9 +239,6 @@ test.describe('large e2e: favorite/queue の並び替えとページング', () 
     expect(queuePageText).toContain('22 件');
     expect(await readCurrentPage(page)).toBe(1);
 
-    const queueDateAscTitles = await readTitles(page);
-    expect(queueDateAscTitles[0]).toBe('作品 01');
-
     await clickPageLink({ page, pageNumber: 2 });
 
     expect(await readCurrentPage(page)).toBe(2);

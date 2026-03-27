@@ -58,6 +58,10 @@ const bootstrapE2eApp = async ({
   const baseUrl = resolveBaseUrl(server);
 
   const teardown = async () => {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
+
     await new Promise((resolve, reject) => {
       server.close(error => (error ? reject(error) : resolve()));
     });
