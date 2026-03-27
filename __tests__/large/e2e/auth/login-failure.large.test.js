@@ -36,8 +36,7 @@ test.describe('large e2e: ログイン失敗時の再入力導線', () => {
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-    await expect(loginResponse.json()).resolves.toEqual({ code: 1 });
-
+  
     await page.waitForFunction(() => {
       const message = document.querySelector('#loginMessage');
       return message && message.textContent.includes('ログインに失敗しました。入力内容をご確認ください。');

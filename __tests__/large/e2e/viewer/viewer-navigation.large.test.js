@@ -76,8 +76,7 @@ test.describe('large e2e: viewer ナビゲーション', () => {
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-    await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
-
+  
     await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
   };

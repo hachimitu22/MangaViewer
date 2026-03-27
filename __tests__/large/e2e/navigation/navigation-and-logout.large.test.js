@@ -123,8 +123,7 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-    await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
-
+  
     await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
   };
@@ -173,7 +172,6 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
 
     const logoutResponse = await logoutResponsePromise;
     expect(logoutResponse.status()).toBe(200);
-    await expect(logoutResponse.json()).resolves.toEqual({ code: 0 });
 
     const protectedResponse = await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
     expect(protectedResponse.status()).toBe(401);

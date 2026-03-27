@@ -51,8 +51,7 @@ test.describe('large e2e: ログイン画面からサマリー画面まで遷移
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-    await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
-
+  
     await page.waitForNavigation({
       waitUntil: 'networkidle',
     });

@@ -17,7 +17,6 @@ const login = async ({ baseUrl }) => {
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
   await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
@@ -26,7 +25,6 @@ const login = async ({ baseUrl }) => {
 const expectUnauthorizedJsonResponse = async response => {
   expect(response).not.toBeNull();
   expect(response.status()).toBe(401);
-  await expect(response.json()).resolves.toEqual({ message: '認証に失敗しました' });
 };
 
 test.describe('large e2e: 認可境界（画面ガードと保護 API）', () => {

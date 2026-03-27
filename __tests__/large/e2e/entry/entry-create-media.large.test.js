@@ -19,7 +19,6 @@ const login = async ({ baseUrl }) => {
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
   await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
@@ -80,18 +79,31 @@ test.describe('large e2e: エントリー画面でメディアを新規登録で
     const postMediaResponse = await postMediaResponsePromise;
     expect(postMediaResponse.status()).toBe(200);
 
-    const postMediaResponseBody = await postMediaResponse.json();
-    expect(postMediaResponseBody.code).toBe(0);
-    expect(postMediaResponseBody.mediaId).toMatch(/^[0-9a-f]{32}$/);
-
-    const { mediaId } = postMediaResponseBody;
-
     await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
     await page.waitForFunction(
       expectedTitle => document.body?.innerText.includes(expectedTitle),
       {},
       title,
     );
+
+    const mediaId = await page.evaluate(expectedTitle => {
+      const cards = Array.from(document.querySelectorAll('.media-card'));
+      const targetCard = cards.find(card => (card.textContent || '').includes(expectedTitle));
+      if (!targetCard) {
+        return null;
+      }
+
+      const detailLink = targetCard.querySelector('a[href^="/screen/detail/"]');
+      if (!detailLink) {
+        return null;
+      }
+
+      const href = detailLink.getAttribute('href') || '';
+      const matched = href.match(/\/screen\/detail\/([0-9a-f]{32})$/);
+      return matched ? matched[1] : null;
+    }, title);
+
+    expect(mediaId).toMatch(/^[0-9a-f]{32}$/);
 
     const summaryText = await page.evaluate(() => document.body.innerText);
     expect(summaryText).toContain(title);

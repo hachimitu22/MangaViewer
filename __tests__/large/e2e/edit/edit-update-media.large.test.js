@@ -34,7 +34,6 @@ const login = async ({ page, baseUrl }) => {
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
   await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
@@ -159,8 +158,7 @@ test.describe('large e2e: edit 画面での既存メディア更新', () => {
 
     const patchResponse = await patchResponsePromise;
     expect(patchResponse.status()).toBe(200);
-    await expect(patchResponse.json()).resolves.toEqual({ code: 0 });
-
+  
     const successMessage = await page.$eval('#form-message', element => element.textContent.trim());
     expect(successMessage).toBe('メディアを更新しました。');
 

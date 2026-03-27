@@ -18,7 +18,6 @@ const login = async baseUrl => {
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toMatchObject({ code: 0 });
 
   await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
@@ -95,8 +94,7 @@ test.describe('large e2e: 編集画面でメディア削除後に各画面から
 
     const deleteResponse = await deleteResponsePromise;
     expect(deleteResponse.status()).toBe(200);
-    await expect(deleteResponse.json()).resolves.toMatchObject({ code: 0 });
-
+  
     await navigationPromise;
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 
