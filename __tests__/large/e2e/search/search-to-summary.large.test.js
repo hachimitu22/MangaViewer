@@ -86,12 +86,13 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
       return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
     });
 
-    await page.click('button[type="submit"]');
+    await Promise.all([
+      page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+      page.click('button[type="submit"]'),
+    ]);
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-
-    await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 
     await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle' });
@@ -111,8 +112,12 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
     await page.type('#tag-input', '少年');
     await page.click('#add-tag-button');
 
-    await page.click('button[type="submit"]');
-    await page.waitForNavigation({ waitUntil: 'networkidle' });
+    await Promise.all([
+      page.waitForURL(url => {
+        return url.pathname === '/screen/summary' && url.searchParams.get('title') === 'target';
+      }, { timeout: 30_000 }),
+      page.click('button[type="submit"]'),
+    ]);
 
     const currentUrl = new URL(page.url());
     expect(currentUrl.pathname).toBe('/screen/summary');

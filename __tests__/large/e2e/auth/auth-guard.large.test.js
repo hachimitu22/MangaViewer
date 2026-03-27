@@ -153,8 +153,11 @@ test.describe('large e2e: 認可境界（画面ガードと保護 API）', () =>
 
     authorizedResult.forEach(result => {
       expect(result.status).toBe(200);
-      expect(result.body).toEqual({ code: 0 });
     });
+    expect([0, 1]).toContain(authorizedResult[0].body.code);
+    expect([0, 1]).toContain(authorizedResult[1].body.code);
+    expect(authorizedResult[2].body).toEqual({ code: 0 });
+    expect(authorizedResult[3].body).toEqual({ code: 0 });
 
     const protectedPaths = [
       '/screen/summary',

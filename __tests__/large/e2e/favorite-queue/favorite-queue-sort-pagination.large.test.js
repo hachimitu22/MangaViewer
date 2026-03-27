@@ -61,12 +61,13 @@ const login = async ({ page, baseUrl }) => {
     method: 'POST',
   });
 
-  await page.click('button[type="submit"]');
+  await Promise.all([
+    page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+    page.click('button[type="submit"]'),
+  ]);
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
@@ -114,7 +115,8 @@ const clickPageLink = async ({ page, pageNumber }) => {
     link.click();
   }, pageNumber);
 
-  await page.waitForNavigation({ waitUntil: 'networkidle' });
+  await page.waitForURL(url => url.searchParams.get('page') === String(pageNumber)
+    || url.searchParams.get('queuePage') === String(pageNumber), { timeout: 30_000 });
 };
 
 test.describe('large e2e: favorite/queue の並び替えとページング', () => {

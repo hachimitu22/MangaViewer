@@ -161,6 +161,9 @@ test.describe('large e2e: summary の検索・並び替え・ページング', (
 
   test.afterEach(async () => {
     if (server) {
+      if (typeof server.closeAllConnections === 'function') {
+        server.closeAllConnections();
+      }
       await new Promise((resolve, reject) => {
         server.close(error => (error ? reject(error) : resolve()));
       });

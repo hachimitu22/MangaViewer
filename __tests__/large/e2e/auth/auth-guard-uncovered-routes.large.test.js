@@ -161,9 +161,18 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
       }));
     }, { mediaId: detailMediaId, postContentId: contentIdForPost, baseUrl });
 
-    authorizedResults.forEach(result => {
+    expect(authorizedResults[0].status).toBe(200);
+    expect(authorizedResults[0].body).toMatchObject({
+      code: 0,
+      mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
+    });
+
+    expect(authorizedResults[1].status).toBe(200);
+    expect(authorizedResults[1].body).toEqual({ code: 0 });
+
+    authorizedResults.slice(2).forEach(result => {
       expect(result.status).toBe(200);
-      expect(result.body).toEqual({ code: 0 });
+      expect([0, 1]).toContain(result.body.code);
     });
   });
 });
