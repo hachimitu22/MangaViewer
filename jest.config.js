@@ -10,10 +10,5 @@ module.exports = {
       testMatch: ['<rootDir>/__tests__/medium/**/*.test.js'],
       testEnvironment: 'node',
     },
-    {
-      displayName: 'e2e',
-      testMatch: ['<rootDir>/__tests__/large/e2e/**/*.test.js'],
-      preset: "jest-puppeteer",
-    },
   ],
-}
+};

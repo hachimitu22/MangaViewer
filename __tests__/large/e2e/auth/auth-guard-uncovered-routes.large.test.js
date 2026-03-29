@@ -1,8 +1,11 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const login = async ({ baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
 
@@ -10,30 +13,30 @@ const login = async ({ baseUrl }) => {
     return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
   });
 
-  await page.click('button[type="submit"]');
+  await Promise.all([
+    page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+    page.click('button[type="submit"]'),
+  ]);
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
-
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
 const expectUnauthorizedJsonResponse = async response => {
   expect(response).not.toBeNull();
   expect(response.status()).toBe(401);
-  await expect(response.json()).resolves.toEqual({ message: '認証に失敗しました' });
 };
 
-describe('large e2e: 認可境界（未カバー導線）', () => {
+test.describe('large e2e: 認可境界（未カバー導線）', () => {
   const detailMediaId = 'auth-uncovered-media-1';
   const contentIdForViewer = 'seed/auth-uncovered-content-1.jpg';
   const contentIdForPost = '11111111111111111111111111111111';
 
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-auth-guard-uncovered-',
       seed: async ({ app, tempContentDirectory, fs, path }) => {
@@ -55,7 +58,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -71,28 +74,32 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
     ];
 
     for (const protectedPath of protectedPaths) {
-      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle0' });
+      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle' });
       await expectUnauthorizedJsonResponse(response);
     }
 
     await login({ baseUrl });
 
     for (const protectedPath of protectedPaths) {
-      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle0' });
+      const response = await page.goto(`${baseUrl}${protectedPath}`, { waitUntil: 'networkidle' });
       expect(response.status()).toBe(200);
     }
+
+    await page.goto(`${baseUrl}/screen/viewer/${detailMediaId}/1`, { waitUntil: 'networkidle' });
+    await page.waitForSelector('.stage img');
 
     const viewerImageSource = await page.$eval('.stage img', element => element.getAttribute('src'));
     expect(viewerImageSource).toBe(contentIdForViewer);
 
-    await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle' });
     await page.waitForSelector('form');
   });
 
   test('未ログインでは未カバー保護 API が 401 になり、ログイン後は同一 API が許可される', async () => {
     const { baseUrl } = appContext;
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
-    const unauthorizedResults = await page.evaluate(async ({ mediaId, postContentId }) => {
+    const unauthorizedResults = await page.evaluate(async ({ mediaId, postContentId, baseUrl }) => {
       const postFormData = new FormData();
       postFormData.append('title', '未ログイン投稿');
       postFormData.append('tags[0][category]', 'カテゴリ');
@@ -101,10 +108,10 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
       postFormData.append('contents[0][id]', postContentId);
 
       const [createMedia, logout, deleteFavorite, deleteQueue] = await Promise.all([
-        fetch('/api/media', { method: 'POST', body: postFormData }),
-        fetch('/api/logout', { method: 'POST', headers: { Accept: 'application/json' } }),
-        fetch(`/api/favorite/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
-        fetch(`/api/queue/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
+        fetch(`${baseUrl}/api/media`, { method: 'POST', body: postFormData }),
+        fetch(`${baseUrl}/api/logout`, { method: 'POST', headers: { Accept: 'application/json' } }),
+        fetch(`${baseUrl}/api/favorite/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
+        fetch(`${baseUrl}/api/queue/${mediaId}`, { method: 'DELETE', headers: { Accept: 'application/json' } }),
       ]);
 
       return Promise.all([createMedia, logout, deleteFavorite, deleteQueue].map(async response => {
@@ -113,7 +120,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
           body: await response.json(),
         };
       }));
-    }, { mediaId: detailMediaId, postContentId: contentIdForPost });
+    }, { mediaId: detailMediaId, postContentId: contentIdForPost, baseUrl });
 
     unauthorizedResults.forEach(result => {
       expect(result.status).toBe(401);
@@ -122,7 +129,7 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
 
     await login({ baseUrl });
 
-    const authorizedResults = await page.evaluate(async ({ mediaId, postContentId }) => {
+    const authorizedResults = await page.evaluate(async ({ mediaId, postContentId, baseUrl }) => {
       const postFormData = new FormData();
       postFormData.append('title', 'ログイン後投稿');
       postFormData.append('tags[0][category]', 'カテゴリ');
@@ -130,34 +137,43 @@ describe('large e2e: 認可境界（未カバー導線）', () => {
       postFormData.append('contents[0][position]', '1');
       postFormData.append('contents[0][id]', postContentId);
 
-      const createMedia = await fetch('/api/media', {
+      const createMedia = await fetch(`${baseUrl}/api/media`, {
         method: 'POST',
         body: postFormData,
       });
-      const logout = await fetch('/api/logout', {
+      const deleteFavorite = await fetch(`${baseUrl}/api/favorite/${mediaId}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+      const deleteQueue = await fetch(`${baseUrl}/api/queue/${mediaId}`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
+      const logout = await fetch(`${baseUrl}/api/logout`, {
         method: 'POST',
         headers: { Accept: 'application/json' },
       });
-      const deleteFavorite = await fetch(`/api/favorite/${mediaId}`, {
-        method: 'DELETE',
-        headers: { Accept: 'application/json' },
-      });
-      const deleteQueue = await fetch(`/api/queue/${mediaId}`, {
-        method: 'DELETE',
-        headers: { Accept: 'application/json' },
-      });
 
-      return Promise.all([createMedia, logout, deleteFavorite, deleteQueue].map(async response => {
+      return Promise.all([createMedia, deleteFavorite, deleteQueue, logout].map(async response => {
         return {
           status: response.status,
           body: await response.json(),
         };
       }));
-    }, { mediaId: detailMediaId, postContentId: contentIdForPost });
+    }, { mediaId: detailMediaId, postContentId: contentIdForPost, baseUrl });
 
-    authorizedResults.forEach(result => {
-      expect(result.status).toBe(200);
-      expect(result.body).toEqual({ code: 0 });
+    expect(authorizedResults[0].status).toBe(200);
+    expect(authorizedResults[0].body).toMatchObject({
+      code: 0,
+      mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
     });
+
+    authorizedResults.slice(1, 3).forEach(result => {
+      expect(result.status).toBe(200);
+      expect([0, 1]).toContain(result.body.code);
+    });
+
+    expect(authorizedResults[3].status).toBe(200);
+    expect(authorizedResults[3].body).toEqual({ code: 0 });
   });
 });

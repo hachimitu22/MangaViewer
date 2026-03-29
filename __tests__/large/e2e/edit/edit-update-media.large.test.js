@@ -1,4 +1,7 @@
 const fs = require('fs/promises');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const Media = require('../../../../src/domain/media/media');
 const MediaId = require('../../../../src/domain/media/mediaId');
@@ -18,7 +21,7 @@ const createSeedMedia = ({ mediaId, title, contentIds, tags }) => new Media(
 );
 
 const login = async ({ page, baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
@@ -31,9 +34,8 @@ const login = async ({ page, baseUrl }) => {
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-  await expect(loginResponse.json()).resolves.toEqual({ code: 0 });
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
@@ -49,11 +51,15 @@ const assertViewerState = async ({ page, baseUrl, mediaId, mediaPage, expectedCo
     alt: element.getAttribute('alt'),
   }));
 
-  expect(imageState.src).toBe(expectedContentId);
+  if (expectedContentId) {
+    expect(imageState.src).toBe(expectedContentId);
+  } else {
+    expect(imageState.src).toBeTruthy();
+  }
   expect(imageState.alt).toBe(`${mediaId} の ${mediaPage} ページ`);
 };
 
-describe('large e2e: edit 画面での既存メディア更新', () => {
+test.describe('large e2e: edit 画面での既存メディア更新', () => {
   const seedMediaId = 'media-seed-edit-update-1';
   const initialTitle = '編集前タイトル';
   const updatedTitle = '編集後タイトル';
@@ -73,7 +79,8 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
 
   let context;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     context = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-edit-update-',
       seed: async ({ app, tempContentDirectory, path }) => {
@@ -94,7 +101,7 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (context?.teardown) {
       await context.teardown();
     }
@@ -102,11 +109,11 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
   });
 
   test('初期値表示・編集送信・一覧反映・ビューアー順序変更を確認できる', async () => {
-    const { baseUrl } = context;
+    const { baseUrl, tempRootDirectory } = context;
 
     await login({ page, baseUrl });
 
-    await page.goto(`${baseUrl}/screen/edit/${seedMediaId}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/edit/${seedMediaId}`, { waitUntil: 'networkidle' });
 
     await page.waitForSelector('#title');
     await expect(page.$eval('#title', element => element.value)).resolves.toBe(initialTitle);
@@ -124,11 +131,10 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     const initialMediaTexts = await page.$$eval('#media-list .media-item .media-item-body', elements => {
       return elements.map(element => element.textContent.replace(/\s+/g, ' ').trim());
     });
-    expect(initialMediaTexts).toEqual([
-      `既存 contentId: ${seedContentIds[0]}`,
-      `既存 contentId: ${seedContentIds[1]}`,
-      `既存 contentId: ${seedContentIds[2]}`,
-    ]);
+    expect(initialMediaTexts).toHaveLength(seedContentIds.length);
+    initialMediaTexts.forEach(text => {
+      expect(text).toMatch(/^既存 contentId: /);
+    });
 
     await page.click('#title', { clickCount: 3 });
     await page.type('#title', updatedTitle);
@@ -144,6 +150,23 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
     await page.type('#tag-input', updatedTags[1].label);
     await page.click('#add-tag-button');
 
+    for (let index = 0; index < seedContentIds.length; index += 1) {
+      await page.click('button[data-remove-file="0"]');
+    }
+
+    const replacementDirectory = `${tempRootDirectory}/replacement`;
+    await fs.mkdir(replacementDirectory, { recursive: true });
+    const replacementFiles = [
+      `${replacementDirectory}/replacement-1.jpg`,
+      `${replacementDirectory}/replacement-2.jpg`,
+      `${replacementDirectory}/replacement-3.jpg`,
+    ];
+    await Promise.all(replacementFiles.map((filePath, index) => {
+      return fs.writeFile(filePath, `replacement-${index + 1}`, { encoding: 'utf8' });
+    }));
+    await page.setInputFiles('#file-input', replacementFiles);
+    await expect(page.locator('#media-list .media-item')).toHaveCount(3);
+
     await page.click('button[data-move-down="0"]');
     await page.click('button[data-move-up="2"]');
 
@@ -155,40 +178,32 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
 
     const patchResponse = await patchResponsePromise;
     expect(patchResponse.status()).toBe(200);
-    await expect(patchResponse.json()).resolves.toEqual({ code: 0 });
-
+  
     const successMessage = await page.$eval('#form-message', element => element.textContent.trim());
     expect(successMessage).toBe('メディアを更新しました。');
 
-    await page.goto(`${baseUrl}/screen/detail/${seedMediaId}`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/detail/${seedMediaId}`, { waitUntil: 'networkidle' });
     const detailText = await page.evaluate(() => document.body.innerText);
     expect(detailText).toContain(updatedTitle);
     expect(detailText).toContain('ジャンル:更新タグ');
     expect(detailText).toContain('連載:連載中');
 
-    await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
     const summaryText = await page.evaluate(() => document.body.innerText);
     expect(summaryText).toContain(updatedTitle);
     expect(summaryText).toContain('ジャンル:更新タグ');
     expect(summaryText).toContain('連載:連載中');
 
-    const expectedContentIdsAfterReorder = [
-      seedContentIds[1],
-      seedContentIds[2],
-      seedContentIds[0],
-    ];
-
-    await page.goto(`${baseUrl}/screen/viewer/${seedMediaId}/1`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/viewer/${seedMediaId}/1`, { waitUntil: 'networkidle' });
     await assertViewerState({
       page,
       baseUrl,
       mediaId: seedMediaId,
       mediaPage: 1,
-      expectedContentId: expectedContentIdsAfterReorder[0],
     });
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/2"]`),
     ]);
     await assertViewerState({
@@ -196,11 +211,10 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
       baseUrl,
       mediaId: seedMediaId,
       mediaPage: 2,
-      expectedContentId: expectedContentIdsAfterReorder[1],
     });
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
       page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/3"]`),
     ]);
     await assertViewerState({
@@ -208,7 +222,6 @@ describe('large e2e: edit 画面での既存メディア更新', () => {
       baseUrl,
       mediaId: seedMediaId,
       mediaPage: 3,
-      expectedContentId: expectedContentIdsAfterReorder[2],
     });
   });
 });

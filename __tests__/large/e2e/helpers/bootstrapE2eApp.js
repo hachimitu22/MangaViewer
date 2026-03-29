@@ -1,11 +1,10 @@
 const fs = require('fs/promises');
-const os = require('os');
 const path = require('path');
 
 const createApp = require('../../../../src/app');
 const { removePathIfExists } = require('./fsCleanup');
+const { createE2eTempDirectory } = require('./e2eTempDirectory');
 
-const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
 const listenServer = app => new Promise((resolve, reject) => {
   const listeningServer = app.listen(0, () => resolve(listeningServer));
@@ -29,7 +28,7 @@ const bootstrapE2eApp = async ({
   loginSessionTtlMs = 60_000,
   seed,
 } = {}) => {
-  const tempRootDirectory = await createTempDirectory(prefix);
+  const tempRootDirectory = await createE2eTempDirectory(prefix);
   const tempDatabasePath = path.join(tempRootDirectory, 'db', 'test.sqlite');
   const tempContentDirectory = path.join(tempRootDirectory, 'contents');
 
@@ -59,6 +58,10 @@ const bootstrapE2eApp = async ({
   const baseUrl = resolveBaseUrl(server);
 
   const teardown = async () => {
+    if (typeof server.closeAllConnections === 'function') {
+      server.closeAllConnections();
+    }
+
     await new Promise((resolve, reject) => {
       server.close(error => (error ? reject(error) : resolve()));
     });

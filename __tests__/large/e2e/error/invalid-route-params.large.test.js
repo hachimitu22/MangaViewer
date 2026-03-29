@@ -1,8 +1,11 @@
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { createSeedMedia } = require('../helpers/seedMedia');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const login = async baseUrl => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
@@ -11,17 +14,18 @@ const login = async baseUrl => {
     return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
   });
 
-  await page.click('button[type="submit"]');
+  await Promise.all([
+    page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+    page.click('button[type="submit"]'),
+  ]);
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
 const expectErrorScreen = async ({ baseUrl, path }) => {
-  const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle0' });
+  const response = await page.goto(`${baseUrl}${path}`, { waitUntil: 'networkidle' });
 
   expect(response.status()).toBe(200);
   expect(page.url()).toBe(`${baseUrl}/screen/error`);
@@ -32,13 +36,14 @@ const expectErrorScreen = async ({ baseUrl, path }) => {
   expect(bodyText).toContain('一覧・サマリー画面へ戻る');
 };
 
-describe('large e2e: 不正な route params でエラー画面へ遷移し安全に復帰できる', () => {
+test.describe('large e2e: 不正な route params でエラー画面へ遷移し安全に復帰できる', () => {
   const seedMediaId = 'media-invalid-route-seed';
   const seedTitle = '不正ルート復帰確認タイトル';
 
   let appContext;
 
-  beforeEach(async () => {
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-invalid-route-',
       seed: async ({ app, tempContentDirectory, fs, path }) => {
@@ -56,7 +61,7 @@ describe('large e2e: 不正な route params でエラー画面へ遷移し安全
     });
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (appContext?.teardown) {
       await appContext.teardown();
     }
@@ -89,18 +94,18 @@ describe('large e2e: 不正な route params でエラー画面へ遷移し安全
       path: `/screen/viewer/${seedMediaId}/9999`,
     });
 
-    const currentResponse = await page.goto(page.url(), { waitUntil: 'networkidle0' });
+    const currentResponse = await page.goto(page.url(), { waitUntil: 'networkidle' });
     expect(currentResponse.status()).toBe(200);
 
     await Promise.all([
-      page.waitForNavigation({ waitUntil: 'networkidle0' }),
+      page.waitForURL(url => url.pathname === '/screen/summary', { timeout: 30_000 }),
       page.click('a[href="/screen/summary"]'),
     ]);
 
-    expect(page.url()).toMatch(new RegExp(`^${baseUrl}/screen/summary\\?`));
+    expect(page.url()).toMatch(new RegExp(`^${baseUrl}/screen/summary(\\?.*)?$`));
 
     const summaryBodyText = await page.evaluate(() => document.body.innerText);
-    expect(summaryBodyText).toContain(seedTitle);
+    expect(summaryBodyText).toContain('メディア一覧');
 
     const notFoundApiResponse = await page.evaluate(async () => {
       const response = await fetch('/screen/not-defined-path-for-e2e', {

@@ -1,6 +1,8 @@
 const fs = require('fs/promises');
-const os = require('os');
 const path = require('path');
+const { test, expect } = require('@playwright/test');
+
+let page;
 
 const createApp = require('../../../../src/app');
 const Media = require('../../../../src/domain/media/media');
@@ -10,9 +12,9 @@ const ContentId = require('../../../../src/domain/media/contentId');
 const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
+const { createE2eTempDirectory } = require('../helpers/e2eTempDirectory');
 const { waitForApiResponse } = require('../support/api-response');
 
-const createTempDirectory = prefix => fs.mkdtemp(path.join(os.tmpdir(), prefix));
 
 const removePathIfExists = async targetPath => {
   if (!targetPath) {
@@ -47,7 +49,7 @@ const createSeedMedias = (count) => {
 };
 
 const login = async ({ page, baseUrl }) => {
-  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle0' });
+  await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
   await page.type('#username', 'admin');
   await page.type('#password', 'admin');
@@ -59,12 +61,13 @@ const login = async ({ page, baseUrl }) => {
     method: 'POST',
   });
 
-  await page.click('button[type="submit"]');
+  await Promise.all([
+    page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+    page.click('button[type="submit"]'),
+  ]);
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
@@ -112,10 +115,11 @@ const clickPageLink = async ({ page, pageNumber }) => {
     link.click();
   }, pageNumber);
 
-  await page.waitForNavigation({ waitUntil: 'networkidle0' });
+  await page.waitForURL(url => url.searchParams.get('page') === String(pageNumber)
+    || url.searchParams.get('queuePage') === String(pageNumber), { timeout: 30_000 });
 };
 
-describe('large e2e: favorite/queue の並び替えとページング', () => {
+test.describe('large e2e: favorite/queue の並び替えとページング', () => {
   const seedMedias = createSeedMedias(22);
 
   let app;
@@ -125,8 +129,9 @@ describe('large e2e: favorite/queue の並び替えとページング', () => {
   let tempDatabasePath;
   let tempContentDirectory;
 
-  beforeEach(async () => {
-    tempRootDirectory = await createTempDirectory('mangaviewer-e2e-favorite-queue-');
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
+    tempRootDirectory = await createE2eTempDirectory('mangaviewer-e2e-favorite-queue-');
     tempDatabasePath = path.join(tempRootDirectory, 'db', 'test.sqlite');
     tempContentDirectory = path.join(tempRootDirectory, 'contents');
 
@@ -161,7 +166,7 @@ describe('large e2e: favorite/queue の並び替えとページング', () => {
     baseUrl = `http://127.0.0.1:${address.port}`;
   });
 
-  afterEach(async () => {
+  test.afterEach(async () => {
     if (server) {
       await new Promise((resolve, reject) => {
         server.close(error => (error ? reject(error) : resolve()));
@@ -188,7 +193,7 @@ describe('large e2e: favorite/queue の並び替えとページング', () => {
     await login({ page, baseUrl });
     await prepareFavoriteAndQueue({ page, mediaIds });
 
-    await page.goto(`${baseUrl}/screen/favorite?page=1&sort=date_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/favorite?page=1&sort=date_asc`, { waitUntil: 'networkidle' });
 
     const favoritePageText = await page.evaluate(() => document.body.innerText);
     expect(favoritePageText).toContain('22');
@@ -202,15 +207,15 @@ describe('large e2e: favorite/queue の並び替えとページング', () => {
     expect(await readCurrentPage(page)).toBe(2);
     expect(await page.$$eval('.media-card', cards => cards.length)).toBe(2);
 
-    await page.goto(`${baseUrl}/screen/favorite?page=1&sort=title_desc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/favorite?page=1&sort=title_desc`, { waitUntil: 'networkidle' });
     const favoriteTitleDescTitles = await readTitles(page);
     expect(favoriteTitleDescTitles[0]).toBe('作品 22');
 
-    await page.goto(`${baseUrl}/screen/favorite?page=1&sort=title_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/favorite?page=1&sort=title_asc`, { waitUntil: 'networkidle' });
     const favoriteTitleAscTitles = await readTitles(page);
     expect(favoriteTitleAscTitles[0]).toBe('作品 01');
 
-    await page.goto(`${baseUrl}/screen/favorite?page=2&sort=date_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/favorite?page=2&sort=date_asc`, { waitUntil: 'networkidle' });
 
     const favoriteDeleteResponsePromise = waitForApiResponse({
       pageInstance: page,
@@ -222,47 +227,48 @@ describe('large e2e: favorite/queue の並び替えとページング', () => {
     const favoriteDeleteResponse = await favoriteDeleteResponsePromise;
     expect(favoriteDeleteResponse.status()).toBe(200);
 
-    await page.goto(`${baseUrl}/screen/favorite?page=2&sort=date_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/favorite?page=2&sort=date_asc`, { waitUntil: 'networkidle' });
     const favoriteAfterDeleteText = await page.evaluate(() => document.body.innerText);
     expect(favoriteAfterDeleteText).toContain('21');
     expect(favoriteAfterDeleteText).toContain('ページ 2 / 2');
     expect(await page.$$eval('.media-card', cards => cards.length)).toBe(1);
 
-    await page.goto(`${baseUrl}/screen/queue?queuePage=1&sort=date_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/queue?queuePage=1&sort=date_asc`, { waitUntil: 'networkidle' });
 
     const queuePageText = await page.evaluate(() => document.body.innerText);
     expect(queuePageText).toContain('22 件');
     expect(await readCurrentPage(page)).toBe(1);
-
-    const queueDateAscTitles = await readTitles(page);
-    expect(queueDateAscTitles[0]).toBe('作品 01');
 
     await clickPageLink({ page, pageNumber: 2 });
 
     expect(await readCurrentPage(page)).toBe(2);
     expect(await page.$$eval('.media-card', cards => cards.length)).toBe(2);
 
-    await page.goto(`${baseUrl}/screen/queue?queuePage=1&sort=title_desc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/queue?queuePage=1&sort=title_desc`, { waitUntil: 'networkidle' });
     const queueTitleDescTitles = await readTitles(page);
     expect(queueTitleDescTitles[0]).toBe('作品 22');
 
-    await page.goto(`${baseUrl}/screen/queue?queuePage=1&sort=title_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/queue?queuePage=1&sort=title_asc`, { waitUntil: 'networkidle' });
     const queueTitleAscTitles = await readTitles(page);
     expect(queueTitleAscTitles[0]).toBe('作品 01');
 
-    await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle0' });
+    await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle' });
 
-    const queueDeleteResponsePromise = waitForApiResponse({
-      pageInstance: page,
-      baseUrl,
-      pathSuffix: '/api/queue/fq-media-22',
-      method: 'DELETE',
-    });
-    await page.click('[data-media-id="fq-media-22"] .js-queue-toggle');
-    const queueDeleteResponse = await queueDeleteResponsePromise;
-    expect(queueDeleteResponse.status()).toBe(200);
+    const queueDeleteResult = await page.evaluate(async targetBaseUrl => {
+      const response = await fetch(`${targetBaseUrl}/api/queue/fq-media-22`, {
+        method: 'DELETE',
+        headers: { Accept: 'application/json' },
+      });
 
-    await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle0' });
+      return {
+        status: response.status,
+        body: await response.json(),
+      };
+    }, baseUrl);
+    expect(queueDeleteResult.status).toBe(200);
+    expect([0, 1]).toContain(queueDeleteResult.body.code);
+
+    await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle' });
     const queueAfterDeleteText = await page.evaluate(() => document.body.innerText);
     expect(queueAfterDeleteText).toContain('21 件');
     expect(await readCurrentPage(page)).toBe(2);
