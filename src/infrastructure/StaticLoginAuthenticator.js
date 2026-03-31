@@ -1,26 +1,32 @@
+const { hashPassword } = require('./auth/fixedUserPasswordHasher');
+
 class StaticLoginAuthenticator {
   #username;
-  #password;
+  #passwordHash;
   #userId;
 
-  constructor({ username, password, userId } = {}) {
+  constructor({ username, passwordHash, userId } = {}) {
     if (!this.#isNonEmptyString(username)) {
       throw new Error('username must be a non-empty string');
     }
-    if (!this.#isNonEmptyString(password)) {
-      throw new Error('password must be a non-empty string');
+    if (!this.#isNonEmptyString(passwordHash)) {
+      throw new Error('passwordHash must be a non-empty string');
     }
     if (!this.#isNonEmptyString(userId)) {
       throw new Error('userId must be a non-empty string');
     }
 
     this.#username = username;
-    this.#password = password;
+    this.#passwordHash = passwordHash;
     this.#userId = userId;
   }
 
   async execute({ username, password } = {}) {
-    if (username === this.#username && password === this.#password) {
+    if (username !== this.#username || !this.#isNonEmptyString(password)) {
+      return null;
+    }
+
+    if (hashPassword(password) === this.#passwordHash) {
       return this.#userId;
     }
 

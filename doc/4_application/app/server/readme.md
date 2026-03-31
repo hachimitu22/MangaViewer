@@ -19,9 +19,9 @@
 | `DEV_SESSION_USER_ID` | `devSessionUserId` | 空文字 | 開発用固定セッションの利用者ID |
 | `DEV_SESSION_TTL_MS` | `devSessionTtlMs` | `parseInt(..., 10) || 0` | 開発用固定セッションの TTL |
 | `DEV_SESSION_PATHS` | `devSessionPaths` | カンマ区切り分解後の配列 | 固定セッションを適用するパス一覧 |
-| `LOGIN_USERNAME` | `loginUsername` | `admin` | 固定ログイン認証のユーザー名 |
-| `LOGIN_PASSWORD` | `loginPassword` | `admin` | 固定ログイン認証のパスワード |
-| `LOGIN_USER_ID` | `loginUserId` | `admin` | ログイン成功時の利用者ID |
+| `FIXED_LOGIN_USERNAME` (`LOGIN_USERNAME` 互換) | `loginUsername` | 空文字 | 固定ログイン認証のユーザー名 |
+| `FIXED_LOGIN_PASSWORD` (`LOGIN_PASSWORD` 互換) | `loginPassword` | 空文字 | 固定ログイン認証のパスワード |
+| `FIXED_LOGIN_USER_ID` (`LOGIN_USER_ID` 互換) | `loginUserId` | 空文字 | ログイン成功時の利用者ID |
 | `LOGIN_SESSION_TTL_MS` | `loginSessionTtlMs` | `parseInt(..., 10) || 86400000` | 通常ログインセッション TTL |
 
 ## `createEnv` の仕様

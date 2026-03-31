@@ -18,9 +18,9 @@ const createEnv = source => ({
   devSessionUserId: source.DEV_SESSION_USER_ID || '',
   devSessionTtlMs: Number.parseInt(source.DEV_SESSION_TTL_MS, 10) || 0,
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
-  loginUsername: source.LOGIN_USERNAME || 'admin',
-  loginPassword: source.LOGIN_PASSWORD || 'admin',
-  loginUserId: source.LOGIN_USER_ID || 'admin',
+  loginUsername: source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '',
+  loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
+  loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',
   loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
 });
 
