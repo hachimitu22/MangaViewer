@@ -44,7 +44,6 @@ const { DeleteMediaService } = require('../application/media/command/DeleteMedia
 const { LoginService } = require('../application/user/command/LoginService');
 const { LogoutService } = require('../application/user/command/LogoutService');
 const { hasDevelopmentSession } = require('./developmentSession');
-const { hashPassword } = require('../infrastructure/auth/fixedUserPasswordHasher');
 
 const ensureParentDirectory = targetPath => {
   const directory = path.dirname(targetPath);
@@ -88,9 +87,9 @@ const createDependencies = (env = {}) => {
   const sessionStateRegistrar = new SessionStateRegistrar({ sessionStateStore });
   const sessionTerminator = new SessionTerminator({ sessionStateStore });
   const loginAuthenticator = new StaticLoginAuthenticator({
-    username: env.loginUsername,
-    passwordHash: hashPassword(env.loginPassword),
-    userId: env.loginUserId,
+    username: env.loginUsername || 'admin',
+    password: env.loginPassword || 'admin',
+    userId: env.loginUserId || 'admin',
   });
   const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
   const deleteMediaService = new DeleteMediaService({ mediaRepository, unitOfWork });

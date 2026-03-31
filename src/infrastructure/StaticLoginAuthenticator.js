@@ -5,19 +5,21 @@ class StaticLoginAuthenticator {
   #passwordHash;
   #userId;
 
-  constructor({ username, passwordHash, userId } = {}) {
+  constructor({ username, password, passwordHash, userId } = {}) {
     if (!this.#isNonEmptyString(username)) {
       throw new Error('username must be a non-empty string');
     }
-    if (!this.#isNonEmptyString(passwordHash)) {
-      throw new Error('passwordHash must be a non-empty string');
+
+    if (!this.#isNonEmptyString(passwordHash) && !this.#isNonEmptyString(password)) {
+      throw new Error('password must be a non-empty string');
     }
+
     if (!this.#isNonEmptyString(userId)) {
       throw new Error('userId must be a non-empty string');
     }
 
     this.#username = username;
-    this.#passwordHash = passwordHash;
+    this.#passwordHash = this.#isNonEmptyString(passwordHash) ? passwordHash : hashPassword(password);
     this.#userId = userId;
   }
 
