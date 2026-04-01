@@ -78,7 +78,7 @@
             <p><strong><%= totalCount %></strong> 件</p>
             <form class="sort-form" method="get" action="/screen/summary">
               <input type="hidden" name="summaryPage" value="1" />
-              <input type="hidden" name="start" value="<%= currentConditions.start %>" />
+              <input type="hidden" name="start" value="1" />
               <input type="hidden" name="size" value="<%= currentConditions.size %>" />
               <% if (currentConditions.title) { %><input type="hidden" name="title" value="<%= currentConditions.title %>" /><% } %>
               <% currentConditions.tags.forEach((tag) => { %>

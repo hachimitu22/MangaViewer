@@ -71,6 +71,7 @@ describe('setRouterScreenSummaryGet', () => {
     expect(bodyText).toContain('<title>メディア一覧</title>');
     expect(bodyText).toContain('タイトル1');
     expect(bodyText).toContain('/screen/detail/media-001');
+    expect(bodyText).toContain('name="start" value="1"');
     expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       title: '太郎',
       tags: [{ category: '作者', label: '山田' }],
