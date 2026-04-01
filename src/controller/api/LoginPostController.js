@@ -15,12 +15,18 @@ class LoginPostController {
   }
 
   async execute(req, res) {
+    const logger = req.app?.locals?.dependencies?.logger;
+    const requestId = req.context?.requestId;
     try {
       const username = req?.body?.username;
       const password = req?.body?.password;
       const session = req?.session;
 
       if (!this.#isValidCredential(username) || !this.#isValidCredential(password) || !session) {
+        logger?.warn('auth.login.failed', {
+          request_id: requestId,
+          reason: 'invalid_input',
+        });
         return this.#fail(res);
       }
 
@@ -35,10 +41,24 @@ class LoginPostController {
           httpOnly: true,
           path: '/',
         });
+
+        logger?.info('auth.login.success', {
+          request_id: requestId,
+          user_id: session.user_id || 'unknown',
+        });
+      } else {
+        logger?.warn('auth.login.failed', {
+          request_id: requestId,
+          reason: 'authentication_failed',
+        });
       }
 
       return res.status(200).json({ code: result.code });
-    } catch (_error) {
+    } catch (error) {
+      logger?.error('auth.login.error', {
+        request_id: requestId,
+        message: error?.message,
+      });
       return this.#fail(res);
     }
   }

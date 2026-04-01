@@ -1,4 +1,5 @@
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 
 const { shouldApplyDevelopmentSession } = require('./developmentSession');
@@ -63,6 +64,35 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
       req.session.session_token = env.devSessionToken;
     }
+
+    next();
+  });
+
+  app.use((req, res, next) => {
+    const logger = req.app?.locals?.dependencies?.logger;
+    const startedAt = Date.now();
+    const requestId = req.header('x-request-id') || crypto.randomUUID();
+    req.context.requestId = requestId;
+
+    res.setHeader('x-request-id', requestId);
+    logger?.debug('http.request.started', {
+      request_id: requestId,
+      method: req.method,
+      path: req.originalUrl,
+      user_id: req.context?.userId || 'anonymous',
+    });
+
+    res.on('finish', () => {
+      const durationMs = Date.now() - startedAt;
+      logger?.info('http.request.completed', {
+        request_id: requestId,
+        method: req.method,
+        path: req.originalUrl,
+        status: res.statusCode,
+        duration_ms: durationMs,
+        user_id: req.context?.userId || 'anonymous',
+      });
+    });
 
     next();
   });

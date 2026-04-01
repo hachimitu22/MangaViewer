@@ -43,6 +43,7 @@ const { UpdateMediaService } = require('../application/media/command/UpdateMedia
 const { DeleteMediaService } = require('../application/media/command/DeleteMediaService');
 const { LoginService } = require('../application/user/command/LoginService');
 const { LogoutService } = require('../application/user/command/LogoutService');
+const { AppLogger } = require('../shared/AppLogger');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -57,6 +58,12 @@ const ensureDirectory = targetPath => {
 const createDependencies = (env = {}) => {
   ensureParentDirectory(env.databaseStoragePath);
   ensureDirectory(env.contentRootDirectory);
+  ensureParentDirectory(env.logFilePath);
+
+  const logger = new AppLogger({
+    level: env.logLevel || 'INFO',
+    filePath: env.logFilePath,
+  });
 
   const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -133,6 +140,7 @@ const createDependencies = (env = {}) => {
     deleteMediaService,
     loginService,
     logoutService,
+    logger,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
     }),

@@ -94,6 +94,19 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
       message: 'Not Found',
     });
   });
+
+  app.use((error, req, res, _next) => {
+    dependencies.logger?.error('http.request.error', {
+      request_id: req.context?.requestId,
+      method: req.method,
+      path: req.originalUrl,
+      user_id: req.context?.userId || 'anonymous',
+      message: error?.message,
+    });
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  });
 };
 
 module.exports = setupRoutes;
