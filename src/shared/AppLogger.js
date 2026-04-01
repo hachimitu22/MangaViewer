@@ -53,10 +53,21 @@ class AppLogger {
 
   #filePath;
 
-  constructor({ level = 'INFO', filePath } = {}) {
+  #outputs;
+
+  #memoryRecords;
+
+  constructor({ level = 'INFO', filePath, outputs = ['console', 'file'] } = {}) {
     this.#level = normalizeLevel(level);
     this.#filePath = filePath;
-    ensureParentDirectory(filePath);
+    this.#outputs = new Set(Array.isArray(outputs) ? outputs : ['console', 'file']);
+    this.#memoryRecords = [];
+
+    if (this.#outputs.has('file') && typeof filePath === 'string' && filePath.length > 0) {
+      ensureParentDirectory(filePath);
+    } else if (this.#outputs.has('file')) {
+      this.#outputs.delete('file');
+    }
   }
 
   debug(event, payload = {}) {
@@ -88,13 +99,29 @@ class AppLogger {
     };
     const message = JSON.stringify(record);
 
-    if (level === 'ERROR' || level === 'WARN') {
-      console.error(message);
-    } else {
-      console.log(message);
+    if (this.#outputs.has('console')) {
+      if (level === 'ERROR' || level === 'WARN') {
+        console.error(message);
+      } else {
+        console.log(message);
+      }
     }
 
-    fs.appendFile(this.#filePath, `${message}\n`, () => {});
+    if (this.#outputs.has('file')) {
+      fs.appendFile(this.#filePath, `${message}\n`, () => {});
+    }
+
+    if (this.#outputs.has('memory')) {
+      this.#memoryRecords.push(record);
+    }
+  }
+
+  getRecords() {
+    return [...this.#memoryRecords];
+  }
+
+  clearRecords() {
+    this.#memoryRecords.length = 0;
   }
 }
 
