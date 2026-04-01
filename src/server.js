@@ -22,6 +22,10 @@ const createEnv = source => ({
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
   loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',
   loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
+  logFilePath: source.LOG_FILE_PATH || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log'),
+  logLevel: source.LOG_LEVEL || 'INFO',
+  logOutputs: source.LOG_OUTPUTS
+    || (source.NODE_ENV === 'test' ? 'memory' : 'console,file'),
 });
 
 const startServer = async () => {

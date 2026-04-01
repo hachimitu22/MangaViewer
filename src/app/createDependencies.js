@@ -43,6 +43,7 @@ const { UpdateMediaService } = require('../application/media/command/UpdateMedia
 const { DeleteMediaService } = require('../application/media/command/DeleteMediaService');
 const { LoginService } = require('../application/user/command/LoginService');
 const { LogoutService } = require('../application/user/command/LogoutService');
+const { AppLogger } = require('../shared/AppLogger');
 const { hasDevelopmentSession } = require('./developmentSession');
 
 const ensureParentDirectory = targetPath => {
@@ -54,9 +55,23 @@ const ensureDirectory = targetPath => {
   fs.mkdirSync(targetPath, { recursive: true });
 };
 
+const parseLogOutputs = value => String(value || '')
+  .split(',')
+  .map(entry => entry.trim())
+  .filter(entry => entry.length > 0);
+
 const createDependencies = (env = {}) => {
   ensureParentDirectory(env.databaseStoragePath);
   ensureDirectory(env.contentRootDirectory);
+  const resolvedLogFilePath = env.logFilePath || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log');
+  ensureParentDirectory(resolvedLogFilePath);
+
+  const logOutputs = parseLogOutputs(env.logOutputs);
+  const logger = new AppLogger({
+    level: env.logLevel || 'INFO',
+    filePath: resolvedLogFilePath,
+    outputs: logOutputs.length > 0 ? logOutputs : ['console', 'file'],
+  });
 
   const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -133,6 +148,7 @@ const createDependencies = (env = {}) => {
     deleteMediaService,
     loginService,
     logoutService,
+    logger,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
     }),

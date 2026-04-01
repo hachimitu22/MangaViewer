@@ -1,4 +1,5 @@
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 
 const { shouldApplyDevelopmentSession } = require('./developmentSession');
@@ -50,7 +51,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use((req, _res, next) => {
+  app.use((req, res, next) => {
     req.context = req.context ?? {};
     attachSessionHelpers(req);
 
@@ -62,6 +63,35 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
       req.session.session_token = cookies.session_token;
     } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
       req.session.session_token = env.devSessionToken;
+    }
+
+    const logger = req.app?.locals?.dependencies?.logger;
+    const startedAt = Date.now();
+    const requestId = req.header('x-request-id') || crypto.randomUUID();
+    req.context.requestId = requestId;
+
+    if (typeof res.setHeader === 'function') {
+      res.setHeader('x-request-id', requestId);
+    }
+    logger?.debug('http.request.started', {
+      request_id: requestId,
+      method: req.method,
+      path: req.originalUrl,
+      user_id: req.context?.userId || 'anonymous',
+    });
+
+    if (typeof res.on === 'function') {
+      res.on('finish', () => {
+        const durationMs = Date.now() - startedAt;
+        logger?.info('http.request.completed', {
+          request_id: requestId,
+          method: req.method,
+          path: req.originalUrl,
+          status: res.statusCode,
+          duration_ms: durationMs,
+          user_id: req.context?.userId || 'anonymous',
+        });
+      });
     }
 
     next();
