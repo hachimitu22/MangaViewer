@@ -75,7 +75,9 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     req.context = req.context ?? {};
     req.context.requestId = requestId;
 
-    res.setHeader('x-request-id', requestId);
+    if (typeof res.setHeader === 'function') {
+      res.setHeader('x-request-id', requestId);
+    }
     logger?.debug('http.request.started', {
       request_id: requestId,
       method: req.method,
@@ -83,17 +85,19 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
       user_id: req.context?.userId || 'anonymous',
     });
 
-    res.on('finish', () => {
-      const durationMs = Date.now() - startedAt;
-      logger?.info('http.request.completed', {
-        request_id: requestId,
-        method: req.method,
-        path: req.originalUrl,
-        status: res.statusCode,
-        duration_ms: durationMs,
-        user_id: req.context?.userId || 'anonymous',
+    if (typeof res.on === 'function') {
+      res.on('finish', () => {
+        const durationMs = Date.now() - startedAt;
+        logger?.info('http.request.completed', {
+          request_id: requestId,
+          method: req.method,
+          path: req.originalUrl,
+          status: res.statusCode,
+          duration_ms: durationMs,
+          user_id: req.context?.userId || 'anonymous',
+        });
       });
-    });
+    }
 
     next();
   });
