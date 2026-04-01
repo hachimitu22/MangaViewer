@@ -58,11 +58,12 @@ const ensureDirectory = targetPath => {
 const createDependencies = (env = {}) => {
   ensureParentDirectory(env.databaseStoragePath);
   ensureDirectory(env.contentRootDirectory);
-  ensureParentDirectory(env.logFilePath);
+  const resolvedLogFilePath = env.logFilePath || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log');
+  ensureParentDirectory(resolvedLogFilePath);
 
   const logger = new AppLogger({
     level: env.logLevel || 'INFO',
-    filePath: env.logFilePath,
+    filePath: resolvedLogFilePath,
   });
 
   const sequelize = new Sequelize({

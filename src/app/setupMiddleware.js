@@ -72,6 +72,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     const logger = req.app?.locals?.dependencies?.logger;
     const startedAt = Date.now();
     const requestId = req.header('x-request-id') || crypto.randomUUID();
+    req.context = req.context ?? {};
     req.context.requestId = requestId;
 
     res.setHeader('x-request-id', requestId);
