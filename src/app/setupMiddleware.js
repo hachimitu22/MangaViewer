@@ -51,7 +51,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use((req, _res, next) => {
+  app.use((req, res, next) => {
     req.context = req.context ?? {};
     attachSessionHelpers(req);
 
@@ -65,14 +65,9 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
       req.session.session_token = env.devSessionToken;
     }
 
-    next();
-  });
-
-  app.use((req, res, next) => {
     const logger = req.app?.locals?.dependencies?.logger;
     const startedAt = Date.now();
     const requestId = req.header('x-request-id') || crypto.randomUUID();
-    req.context = req.context ?? {};
     req.context.requestId = requestId;
 
     if (typeof res.setHeader === 'function') {
