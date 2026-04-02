@@ -58,6 +58,7 @@ class LoginPostController {
       logger?.error('auth.login.error', {
         request_id: requestId,
         message: error?.message,
+        error,
       });
       return this.#fail(res);
     }

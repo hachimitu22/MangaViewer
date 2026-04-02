@@ -31,6 +31,15 @@ const sanitize = (value, key = '') => {
     return value.map(entry => sanitize(entry));
   }
 
+  if (value instanceof Error) {
+    return {
+      name: value.name,
+      message: value.message,
+      stack: value.stack,
+      ...(value.cause ? { cause: sanitize(value.cause, 'cause') } : {}),
+    };
+  }
+
   if (!value || typeof value !== 'object') {
     return SENSITIVE_KEY_PATTERNS.some(pattern => pattern.test(key))
       ? '[REDACTED]'

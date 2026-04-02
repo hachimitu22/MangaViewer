@@ -14,6 +14,7 @@ class MediaPatchController {
   }
 
   async execute(req, res) {
+    const logger = req.app?.locals?.dependencies?.logger;
     try {
       const mediaId = req?.params?.mediaId;
       const title = req?.body?.title;
@@ -41,6 +42,12 @@ class MediaPatchController {
         code: 0,
       });
     } catch (error) {
+      logger?.error('media.update.error', {
+        request_id: req.context?.requestId,
+        target_id: req?.params?.mediaId,
+        message: error?.message,
+        error,
+      });
       return this.#fail(res);
     }
   }

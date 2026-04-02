@@ -35,6 +35,7 @@ class LogoutPostController {
       logger?.error('auth.logout.error', {
         request_id: requestId,
         message: error?.message,
+        error,
       });
       return this.#fail(res);
     }

@@ -10,6 +10,7 @@ class ContentSaveMiddleware {
   }
 
   async execute(req, res, next) {
+    const logger = req.app?.locals?.dependencies?.logger;
     try {
       await this.#executeUpload(req, res);
 
@@ -24,6 +25,11 @@ class ContentSaveMiddleware {
 
       return undefined;
     } catch (error) {
+      logger?.error('content.upload.error', {
+        request_id: req?.context?.requestId,
+        message: error?.message,
+        error,
+      });
       return this.#fail(res);
     }
   }

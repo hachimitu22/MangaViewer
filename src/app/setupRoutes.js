@@ -102,6 +102,7 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
       path: req.originalUrl,
       user_id: req.context?.userId || 'anonymous',
       message: error?.message,
+      error,
     });
     res.status(500).json({
       message: 'Internal Server Error',

@@ -30,6 +30,7 @@ const setRouterScreenQueueGet = ({ router, authResolver, getQueueService }) => {
   router.get('/screen/queue', ...[
     auth.execute.bind(auth),
     async (req, res, next) => {
+      const logger = req.app?.locals?.dependencies?.logger;
       try {
         const queuePage = Math.max(Number.parseInt(req.query.queuePage ?? '1', 10) || 1, 1);
         const sort = typeof req.query.sort === 'string' && SORT_TYPES_BY_QUERY[req.query.sort]
@@ -65,6 +66,12 @@ const setRouterScreenQueueGet = ({ router, authResolver, getQueueService }) => {
           ],
         });
       } catch (error) {
+        logger?.error('screen.queue.error', {
+          request_id: req.context?.requestId,
+          user_id: req.context?.userId || 'anonymous',
+          message: error?.message,
+          error,
+        });
         next(error);
       }
     },
