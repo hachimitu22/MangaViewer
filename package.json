@@ -16,7 +16,10 @@
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s",
     "dev:entry": "cross-env FIXED_LOGIN_USER_ID=admin FIXED_LOGIN_USERNAME=admin FIXED_LOGIN_PASSWORD=admin DEV_SESSION_TOKEN=dev-token DEV_SESSION_USER_ID=admin-dev DEV_SESSION_TTL_MS=86400000 DEV_SESSION_PATHS=/screen/entry,/api/media nodemon ./src/server.js --watch ./src",
     "seed:user": "node ./scripts/seed-fixed-user.js",
-    "start:seeded": "npm run seed:user && npm run start"
+    "start:seeded": "npm run seed:user && npm run start",
+    "db:user:add": "node ./scripts/db-user-add.js",
+    "db:user:list": "node ./scripts/db-user-list.js",
+    "db:user:delete": "node ./scripts/db-user-delete.js"
   },
   "author": "",
   "license": "MIT",
