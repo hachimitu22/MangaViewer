@@ -39,6 +39,35 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
   - `seed:user` を実行してから通常起動する。
   - 初期セットアップや手動確認用。
 
+## Docker運用（PostgreSQL）
+
+### 構成
+- `docker-compose.yml`
+  - `app`: Node.js アプリケーション
+  - `db`: PostgreSQL 16
+- `Dockerfile`
+  - 本番実行向け（`NODE_ENV=production`）
+  - 依存は `npm ci --omit=dev` で導入
+
+### 起動方法
+1. プロジェクトルートで以下を実行する
+   - `docker compose up --build -d`
+2. アプリケーションにアクセスする
+   - `http://localhost:3000`
+
+### 停止方法
+- `docker compose down`
+
+### 注意事項
+- Docker構成では DB を PostgreSQL として起動するため、アプリ側は `DATABASE_DIALECT=postgres` で起動する。
+- DB接続は `DATABASE_URL` もしくは `DATABASE_HOST` / `DATABASE_PORT` / `DATABASE_NAME` / `DATABASE_USERNAME` / `DATABASE_PASSWORD` で指定可能。
+- `seed:user` は production 環境では禁止のため、Dockerの `app` コンテナ起動時には実行しない。
+
+### GitHub Actionsでの確認
+- `.github/workflows/docker-compose-ci.yml` で Docker Compose の起動確認を自動実行する。
+- CI では `docker compose up --build -d` 後に `http://localhost:3000/screen/login` へ疎通し、HTTP 200 を確認する。
+- 失敗時は `app` / `db` のログを出力する。
+
 ### 利用可能環境と禁止事項
 - `seed:user` / `start:seeded` は **production環境での実行禁止**。
 - seed実行時は、冒頭で production ガードが動作し、

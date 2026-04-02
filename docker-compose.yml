@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mangaviewer-app
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      DATABASE_DIALECT: postgres
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_NAME: mangaviewer
+      DATABASE_USERNAME: mangaviewer
+      DATABASE_PASSWORD: mangaviewer
+      CONTENT_ROOT_DIRECTORY: /app/var/contents
+      LOG_FILE_PATH: /app/var/logs/mangaviewer.log
+      FIXED_LOGIN_USER_ID: admin
+      FIXED_LOGIN_USERNAME: admin
+      FIXED_LOGIN_PASSWORD: admin
+    ports:
+      - "3000:3000"
+    volumes:
+      - app_contents:/app/var/contents
+      - app_logs:/app/var/logs
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: mangaviewer-db
+    environment:
+      POSTGRES_DB: mangaviewer
+      POSTGRES_USER: mangaviewer
+      POSTGRES_PASSWORD: mangaviewer
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mangaviewer -d mangaviewer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+  app_contents:
+  app_logs:

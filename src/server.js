@@ -10,6 +10,13 @@ const parseSessionPaths = value => (value || '')
 
 const createEnv = source => ({
   port: Number.parseInt(source.PORT, 10) || 3000,
+  databaseDialect: source.DATABASE_DIALECT || 'sqlite',
+  databaseUrl: source.DATABASE_URL || '',
+  databaseHost: source.DATABASE_HOST || '',
+  databasePort: Number.parseInt(source.DATABASE_PORT, 10) || 5432,
+  databaseName: source.DATABASE_NAME || '',
+  databaseUsername: source.DATABASE_USERNAME || '',
+  databasePassword: source.DATABASE_PASSWORD || '',
   databaseStoragePath: source.DATABASE_STORAGE_PATH
     || path.join(process.cwd(), 'var', 'data', 'mangaviewer.sqlite'),
   contentRootDirectory: source.CONTENT_ROOT_DIRECTORY

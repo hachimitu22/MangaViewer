@@ -60,8 +60,37 @@ const parseLogOutputs = value => String(value || '')
   .map(entry => entry.trim())
   .filter(entry => entry.length > 0);
 
+const createSequelize = env => {
+  if (env.databaseDialect === 'postgres') {
+    if (env.databaseUrl) {
+      return new Sequelize(env.databaseUrl, {
+        dialect: 'postgres',
+        logging: false,
+      });
+    }
+
+    return new Sequelize({
+      dialect: 'postgres',
+      host: env.databaseHost || 'db',
+      port: env.databasePort || 5432,
+      database: env.databaseName || 'mangaviewer',
+      username: env.databaseUsername || 'mangaviewer',
+      password: env.databasePassword || 'mangaviewer',
+      logging: false,
+    });
+  }
+
+  return new Sequelize({
+    dialect: 'sqlite',
+    storage: env.databaseStoragePath,
+    logging: false,
+  });
+};
+
 const createDependencies = (env = {}) => {
-  ensureParentDirectory(env.databaseStoragePath);
+  if (env.databaseDialect !== 'postgres') {
+    ensureParentDirectory(env.databaseStoragePath);
+  }
   ensureDirectory(env.contentRootDirectory);
   const resolvedLogFilePath = env.logFilePath || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log');
   ensureParentDirectory(resolvedLogFilePath);
@@ -73,11 +102,7 @@ const createDependencies = (env = {}) => {
     outputs: logOutputs.length > 0 ? logOutputs : ['console', 'file'],
   });
 
-  const sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: env.databaseStoragePath,
-    logging: false,
-  });
+  const sequelize = createSequelize(env);
 
   const unitOfWork = new SequelizeUnitOfWork({ sequelize });
   const mediaRepository = new SequelizeMediaRepository({
