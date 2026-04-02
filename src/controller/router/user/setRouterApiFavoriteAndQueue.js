@@ -31,6 +31,7 @@ const setRouterApiFavoriteAndQueue = ({
         user_id: getUserId(req),
         target_id: req.params.mediaId,
         message: error?.message,
+        error,
       });
       next(error);
     }
@@ -52,6 +53,7 @@ const setRouterApiFavoriteAndQueue = ({
         user_id: getUserId(req),
         target_id: req.params.mediaId,
         message: error?.message,
+        error,
       });
       next(error);
     }
@@ -73,6 +75,7 @@ const setRouterApiFavoriteAndQueue = ({
         user_id: getUserId(req),
         target_id: req.params.mediaId,
         message: error?.message,
+        error,
       });
       next(error);
     }
@@ -94,6 +97,7 @@ const setRouterApiFavoriteAndQueue = ({
         user_id: getUserId(req),
         target_id: req.params.mediaId,
         message: error?.message,
+        error,
       });
       next(error);
     }

@@ -97,6 +97,7 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
   router.get('/screen/summary', ...[
     auth.execute.bind(auth),
     async (req, res, next) => {
+      const logger = req.app?.locals?.dependencies?.logger;
       try {
         const range = normalizeSearchRange({
           summaryPage: req.query.summaryPage,
@@ -145,6 +146,12 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
           ],
         });
       } catch (error) {
+        logger?.error('screen.summary.error', {
+          request_id: req.context?.requestId,
+          user_id: req.context?.userId || 'anonymous',
+          message: error?.message,
+          error,
+        });
         next(error);
       }
     },

@@ -7,6 +7,7 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
   router.get('/screen/edit/:mediaId', ...[
     auth.execute.bind(auth),
     async (req, res, next) => {
+      const logger = req.app?.locals?.dependencies?.logger;
       try {
         const result = await getMediaDetailService.execute(new Input({
           mediaId: req.params.mediaId,
@@ -23,6 +24,13 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
           },
         });
       } catch (error) {
+        logger?.error('screen.edit.error', {
+          request_id: req.context?.requestId,
+          user_id: req.context?.userId || 'anonymous',
+          target_id: req.params?.mediaId,
+          message: error?.message,
+          error,
+        });
         next(error);
       }
     },

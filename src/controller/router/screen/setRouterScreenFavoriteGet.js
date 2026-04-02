@@ -29,6 +29,7 @@ const setRouterScreenFavoriteGet = ({ router, authResolver, getFavoriteSummaries
   router.get('/screen/favorite', ...[
     auth.execute.bind(auth),
     async (req, res, next) => {
+      const logger = req.app?.locals?.dependencies?.logger;
       try {
         const sort = typeof req.query.sort === 'string' && Object.values(SORT_TYPES).includes(req.query.sort)
           ? req.query.sort
@@ -57,6 +58,12 @@ const setRouterScreenFavoriteGet = ({ router, authResolver, getFavoriteSummaries
           sortOptions: SORT_OPTIONS,
         });
       } catch (error) {
+        logger?.error('screen.favorite.error', {
+          request_id: req.context?.requestId,
+          user_id: req.context?.userId || 'anonymous',
+          message: error?.message,
+          error,
+        });
         next(error);
       }
     },

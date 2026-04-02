@@ -14,6 +14,7 @@ class MediaPostController {
   }
 
   async execute(req, res) {
+    const logger = req.app?.locals?.dependencies?.logger;
     try {
       const title = req?.body?.title;
       const tags = req?.body?.tags;
@@ -39,6 +40,11 @@ class MediaPostController {
         mediaId: output.mediaId,
       });
     } catch (error) {
+      logger?.error('media.register.error', {
+        request_id: req.context?.requestId,
+        message: error?.message,
+        error,
+      });
       return this.#fail(res);
     }
   }
