@@ -22,6 +22,8 @@ const createViewerSeedMedia = ({ mediaId, title, contentIds }) => new Media(
   [new Category('カテゴリ')],
 );
 
+const toExpectedPublicPath = contentId => `/contents/${contentId}`;
+
 test.describe('large e2e: viewer ナビゲーション', () => {
   const seedMediaId = 'media-seed-viewer-navigation-1';
   const seedTitle = 'ビューアー遷移確認用タイトル';
@@ -93,7 +95,7 @@ test.describe('large e2e: viewer ナビゲーション', () => {
       alt: element.getAttribute('alt'),
     }));
 
-    expect(imageState.src).toBe(expectedContentId);
+    expect(imageState.src).toBe(toExpectedPublicPath(expectedContentId));
     expect(imageState.alt).toBe(`${mediaId} の ${mediaPage} ページ`);
   };
 
