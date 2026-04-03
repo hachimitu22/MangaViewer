@@ -16,7 +16,7 @@ describe('views/partials/topNavigator', () => {
     expect(html).toContain('あとで見る');
     expect(html).toContain('メディア登録');
     expect(html).toContain('id="common-nav-logout"');
-    expect(html).toContain("href=\"/screen/summary\" aria-current='page'");
+    expect(html).toContain('href="/screen/summary" aria-current=&#39;page&#39;');
   });
 
   test('一般ユーザーではメディア登録リンクを含まない', async () => {
@@ -27,7 +27,7 @@ describe('views/partials/topNavigator', () => {
 
     expect(html).toContain('メディア一覧');
     expect(html).toContain('お気に入り');
-    expect(html).toContain("href=\"/screen/favorite\" aria-current='page'");
+    expect(html).toContain('href="/screen/favorite" aria-current=&#39;page&#39;');
     expect(html).not.toContain('メディア登録');
   });
 });
