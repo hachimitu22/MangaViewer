@@ -49,7 +49,10 @@ describe('medium: ScreenDetailGetController', () => {
       view: 'screen/detail',
       locals: {
         pageTitle: '作品タイトル の詳細',
-        mediaDetail,
+        mediaDetail: {
+          ...mediaDetail,
+          contents: [{ id: 'content-001', thumbnail: '/contents/content-001', position: 1 }],
+        },
         currentPath: '/screen/detail',
         currentUserId: null,
       },
