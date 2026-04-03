@@ -39,11 +39,12 @@ class ElementStub {
 }
 
 const extractInlineScript = html => {
-  const match = html.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
-  if (!match) {
+  const matches = [...html.matchAll(/<script>\s*([\s\S]*?)\s*<\/script>/g)];
+  if (matches.length === 0) {
     throw new Error('inline script not found');
   }
-  return match[1];
+
+  return matches[matches.length - 1][1];
 };
 
 const createDocumentStub = () => {
