@@ -115,6 +115,26 @@ describe('setRouterScreenViewerGet (middle)', () => {
     expect(response.bodyText).toContain('media-001:2:/contents/page-2.jpg:/screen/viewer/media-001/1:/screen/viewer/media-001/3');
   });
 
+  test('contentId がID形式の場合は public パスに変換して描画する', async () => {
+    const app = createApp({
+      serviceResult: new FoundResult({
+        contentId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        previousContentId: null,
+        nextContentId: null,
+      }),
+    });
+
+    const response = await requestApp({
+      app,
+      method: 'GET',
+      targetPath: '/screen/viewer/media-001/1',
+      headers: { 'x-session-token': 'valid-token' },
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.bodyText).toContain('media-001:1:/contents/aa/aa/aa/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:prev-none:next-none');
+  });
+
   test('先頭ページでは前ページ導線なしで HTML を返す', async () => {
     const app = createApp({
       serviceResult: new FoundResult({

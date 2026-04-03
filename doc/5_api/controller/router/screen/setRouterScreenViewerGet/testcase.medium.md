@@ -31,6 +31,7 @@
   - 認証処理が `session_token` で呼ばれる。
   - ビューアー取得処理が `mediaId` / `mediaPage` を使って実行される。
   - `screen/viewer` が `content` / `previousPage` / `nextPage` を含む表示データで描画される。
+  - `content.id` は `/contents/...` の公開パスとして描画モデルへ渡される。
 
 ---
 

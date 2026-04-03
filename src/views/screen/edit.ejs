@@ -142,9 +142,6 @@
 
         const selectedTags = initialTags.map(tag => ({ ...tag }));
         const resolveContentId = content => {
-          if (typeof content === 'string') {
-            return content;
-          }
           if (content && typeof content === 'object') {
             if (typeof content.id === 'string') {
               return content.id;
@@ -153,9 +150,21 @@
               return content.value;
             }
           }
+          if (typeof content === 'string') {
+            return content;
+          }
           return String(content ?? '');
         };
-        const mediaFiles = initialContents.map(content => ({ id: resolveContentId(content) }));
+        const resolveContentUrl = content => {
+          if (content && typeof content === 'object' && typeof content.url === 'string') {
+            return content.url;
+          }
+          return resolveContentId(content);
+        };
+        const mediaFiles = initialContents.map(content => ({
+          id: resolveContentId(content),
+          url: resolveContentUrl(content),
+        }));
 
         const updateTagOptions = () => {
           const category = categoryInput.value.trim();
@@ -172,6 +181,9 @@
           }
           if (entry.file && entry.file.type.startsWith('video/')) {
             return '<div class="thumb">動画</div>';
+          }
+          if (typeof entry.url === 'string' && entry.url.length > 0) {
+            return `<img class="thumb" src="${entry.url}" alt="既存コンテンツ">`;
           }
           return '<div class="thumb">既存</div>';
         };

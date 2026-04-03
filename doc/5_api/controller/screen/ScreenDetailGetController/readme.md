@@ -32,7 +32,7 @@
 - `pageTitle`
   - `${result.mediaDetail.title} の詳細`
 - `mediaDetail`
-  - service から受け取った `result.mediaDetail` をそのまま引き渡す。
+  - service から受け取った `result.mediaDetail` をベースに、`contents[*].thumbnail` を public パスへ正規化して引き渡す。
 
 ## not found / エラー時の振る舞い
 - service 側で not found を例外として通知した場合を含め、controller は例外を一律で捕捉する。

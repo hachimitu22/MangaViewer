@@ -51,14 +51,14 @@
 - `mediaPage`
   - 整数変換後のページ番号。
 - `content`
-  - `id`: `result.contentId`
+  - `id`: `result.contentId` を public パスへ正規化した値（例: `/contents/aa/bb/cc/dd/<contentId>`）
   - `type`: `contentId` の拡張子が `mp4|webm|ogg|mov|m4v` のとき `video`、それ以外は `image`
 - `previousPage`
   - `result.previousContentId === null` のとき `null`
-  - それ以外は `{ mediaId, mediaPage: mediaPage - 1, contentId, href }`
+  - それ以外は `{ mediaId, mediaPage: mediaPage - 1, contentId(public path), href }`
 - `nextPage`
   - `result.nextContentId === null` のとき `null`
-  - それ以外は `{ mediaId, mediaPage: mediaPage + 1, contentId, href }`
+  - それ以外は `{ mediaId, mediaPage: mediaPage + 1, contentId(public path), href }`
 
 ## not found / エラー時の振る舞い
 - service が not found を結果オブジェクトで返した場合は controller が明示的に `301` リダイレクトする。

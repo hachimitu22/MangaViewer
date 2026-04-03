@@ -76,6 +76,21 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
     expect(fs.readFileSync(savedPath, 'utf8')).toBe('new-content');
   });
 
+  test('既存コンテンツに public パスが指定されても contentId として扱える', async () => {
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/media')
+      .field('contents[0][position]', '1')
+      .field('contents[0][url]', '/contents/bb/bb/bb/bb/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      code: 0,
+      contentIds: ['bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'],
+    });
+  });
+
   test('保存先パスが衝突した場合はcontentIdを再生成して保存する', async () => {
     const app = createApp();
     const existingContentId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';

@@ -49,7 +49,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
         mediaOverviews: [{
           mediaId: 'media-001',
           title: 'タイトル1',
-          thumbnail: '',
+          thumbnail: 'content-001',
           tags: [{ category: '作者', label: '山田' }],
           priorityCategories: [],
           isFavorite: false,
@@ -63,7 +63,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
     app.engine('ejs', (filePath, options, callback) => {
       callback(
         null,
-        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.currentConditions.sort}:${options.currentConditions.queuePage}:${options.totalCount}:${options.pagination.items.join(',')}:${options.mediaOverviews[0].isFavorite}:${options.mediaOverviews[0].isQueued}:summary=/screen/summary?summaryPage=1&sort=date_asc&tags=:page=/screen/queue?queuePage=1&sort=${options.currentConditions.sort}:favoriteLabel=${options.mediaOverviews[0].isFavorite ? 'お気に入り解除' : 'お気に入り追加'}:queueLabel=${options.mediaOverviews[0].isQueued ? 'あとで見る解除' : 'あとで見る追加'}:script=.js-favorite-toggle/.js-queue-toggle</body></html>`
+        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.currentConditions.sort}:${options.currentConditions.queuePage}:${options.totalCount}:${options.pagination.items.join(',')}:${options.mediaOverviews[0].thumbnail}:${options.mediaOverviews[0].isFavorite}:${options.mediaOverviews[0].isQueued}:summary=/screen/summary?summaryPage=1&sort=date_asc&tags=:page=/screen/queue?queuePage=1&sort=${options.currentConditions.sort}:favoriteLabel=${options.mediaOverviews[0].isFavorite ? 'お気に入り解除' : 'お気に入り追加'}:queueLabel=${options.mediaOverviews[0].isQueued ? 'あとで見る解除' : 'あとで見る追加'}:script=.js-favorite-toggle/.js-queue-toggle</body></html>`
       );
     });
 
@@ -104,7 +104,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
     expect(response.headers.get('content-type')).toContain('text/html');
     expect(response.bodyText).toContain('<title>あとで見る一覧</title>');
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'queue.ejs'));
-    expect(response.bodyText).toContain(':title_desc:2:41:1,2,3:false:true:');
+    expect(response.bodyText).toContain(':title_desc:2:41:1,2,3:/contents/content-001:false:true:');
     expect(response.bodyText).toContain('summary=/screen/summary?summaryPage=1&sort=date_asc&tags=');
     expect(response.bodyText).toContain('page=/screen/queue?queuePage=1&sort=title_desc');
     expect(response.bodyText).toContain('favoriteLabel=お気に入り追加');
