@@ -131,6 +131,13 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
   test('summary -> detail -> summary 遷移後、logout で保護導線と API 認証が無効化される', async () => {
     await login();
 
+    await expect(page.locator('nav[aria-label="共通ナビゲーター"]')).toBeVisible();
+    await expect(page.locator('a[href="/screen/summary"]')).toContainText('メディア一覧');
+    await expect(page.locator('a[href="/screen/favorite"]')).toContainText('お気に入り');
+    await expect(page.locator('a[href="/screen/queue"]')).toContainText('あとで見る');
+    await expect(page.locator('a[href="/screen/entry"]')).toContainText('メディア登録');
+    await expect(page.locator('#common-nav-logout')).toBeVisible();
+
     await page.waitForSelector(`a[href="/screen/detail/${seedMediaId}"]`);
 
     const toDetailResponsePromise = page.waitForResponse(response => {
@@ -144,6 +151,8 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
     const toDetailResponse = await toDetailResponsePromise;
     expect(toDetailResponse.status()).toBe(200);
     expect(page.url()).toBe(`${baseUrl}/screen/detail/${seedMediaId}`);
+    await expect(page.locator('nav[aria-label="共通ナビゲーター"]')).toBeVisible();
+    await expect(page.locator('#common-nav-logout')).toBeVisible();
 
     const backToSummaryResponsePromise = page.waitForResponse(response => {
       return response.url().startsWith(`${baseUrl}/screen/summary?`) && response.request().method() === 'GET';
@@ -161,17 +170,11 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
       return response.url() === `${baseUrl}/api/logout` && response.request().method() === 'POST';
     });
 
-    await page.evaluate(async () => {
-      await fetch('/api/logout', {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-        },
-      });
-    });
+    await page.click('#common-nav-logout');
 
     const logoutResponse = await logoutResponsePromise;
     expect(logoutResponse.status()).toBe(200);
+    await page.waitForURL(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     const protectedResponse = await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
     expect(protectedResponse.status()).toBe(401);

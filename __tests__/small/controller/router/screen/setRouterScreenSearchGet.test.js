@@ -64,7 +64,7 @@ describe('setRouterScreenSearchGet', () => {
     const [, , renderHandler] = router.get.mock.calls[0];
     const res = createRes();
 
-    renderHandler({}, res);
+    renderHandler({ context: { userId: 'user-001' } }, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.render).toHaveBeenCalledWith('screen/search', {
@@ -78,6 +78,8 @@ describe('setRouterScreenSearchGet', () => {
         ジャンル: ['バトル', '恋愛', '日常'],
         シリーズ: ['第1部', '短編集'],
       },
+      currentPath: '/screen/search',
+      currentUserId: 'user-001',
       sortOptions: [
         { value: 'date_asc', label: '登録の新しい順' },
         { value: 'date_desc', label: '登録の古い順' },

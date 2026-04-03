@@ -22,6 +22,8 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
             ジャンル: ['バトル', '恋愛', '日常'],
             シリーズ: ['第1部', '短編集'],
           },
+          currentPath: '/screen/edit',
+          currentUserId: req.context?.userId || null,
         });
       } catch (error) {
         logger?.error('screen.edit.error', {

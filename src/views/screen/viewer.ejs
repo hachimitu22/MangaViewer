@@ -44,6 +44,7 @@
     </style>
   </head>
   <body>
+    <%- include('../partials/topNavigator', { currentPath, currentUserId }) %>
     <main class="viewer">
       <section class="nav-area <%= nextPage ? '' : 'disabled' %>">
         <% if (nextPage) { %>

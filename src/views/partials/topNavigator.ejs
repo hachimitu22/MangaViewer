@@ -1,0 +1,88 @@
+<%
+  const isAdminUser = currentUserId === 'admin';
+  const isCurrent = path => currentPath === path;
+%>
+<style>
+  .common-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-bottom: 1px solid #d1d5db;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  }
+  .common-nav__inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .common-nav__links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .common-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #1f2937;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .common-nav__link[aria-current='page'] {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+  }
+  .common-nav__logout {
+    border: 0;
+    border-radius: 10px;
+    min-height: 36px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #dc2626;
+    cursor: pointer;
+  }
+</style>
+<nav class="common-nav" aria-label="共通ナビゲーター">
+  <div class="common-nav__inner">
+    <div class="common-nav__links">
+      <a class="common-nav__link" href="/screen/summary" <%= isCurrent('/screen/summary') ? "aria-current='page'" : '' %>>メディア一覧</a>
+      <a class="common-nav__link" href="/screen/favorite" <%= isCurrent('/screen/favorite') ? "aria-current='page'" : '' %>>お気に入り</a>
+      <a class="common-nav__link" href="/screen/queue" <%= isCurrent('/screen/queue') ? "aria-current='page'" : '' %>>あとで見る</a>
+      <% if (isAdminUser) { %>
+        <a class="common-nav__link" href="/screen/entry" <%= isCurrent('/screen/entry') ? "aria-current='page'" : '' %>>メディア登録</a>
+      <% } %>
+    </div>
+    <button id="common-nav-logout" class="common-nav__logout" type="button">ログアウト</button>
+  </div>
+</nav>
+<script>
+  (() => {
+    const logoutButton = document.getElementById('common-nav-logout');
+    if (!logoutButton) return;
+    logoutButton.addEventListener('click', async () => {
+      try {
+        await fetch('/api/logout', {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+        });
+      } finally {
+        window.location.assign('/screen/login');
+      }
+    });
+  })();
+</script>

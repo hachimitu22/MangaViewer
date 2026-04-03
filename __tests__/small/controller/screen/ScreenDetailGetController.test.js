@@ -25,7 +25,7 @@ describe('ScreenDetailGetController', () => {
       execute: jest.fn().mockResolvedValue({ mediaDetail }),
     };
     const controller = new ScreenDetailGetController({ getMediaDetailService });
-    const req = { params: { mediaId: 'media-1' } };
+    const req = { params: { mediaId: 'media-1' }, context: { userId: 'admin' } };
     const res = createRes();
 
     await controller.execute(req, res);
@@ -35,6 +35,8 @@ describe('ScreenDetailGetController', () => {
     expect(res.render).toHaveBeenCalledWith('screen/detail', {
       pageTitle: '作品タイトル の詳細',
       mediaDetail,
+      currentPath: '/screen/detail',
+      currentUserId: 'admin',
     });
   });
 

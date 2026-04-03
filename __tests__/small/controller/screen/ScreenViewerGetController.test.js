@@ -25,7 +25,7 @@ describe('ScreenViewerGetController', () => {
       })),
     };
     const controller = new ScreenViewerGetController({ getMediaContentWithNavigationService });
-    const req = { params: { mediaId: 'media-1', mediaPage: '2' } };
+    const req = { params: { mediaId: 'media-1', mediaPage: '2' }, context: { userId: 'admin' } };
     const res = createRes();
 
     await controller.execute(req, res);
@@ -39,6 +39,8 @@ describe('ScreenViewerGetController', () => {
       pageTitle: 'ビューアー media-1 - 2ページ',
       mediaId: 'media-1',
       mediaPage: 2,
+      currentPath: '/screen/viewer',
+      currentUserId: 'admin',
       content: {
         id: '/contents/page-2.jpg',
         type: 'image',

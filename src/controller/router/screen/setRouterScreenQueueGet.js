@@ -56,6 +56,8 @@ const setRouterScreenQueueGet = ({ router, authResolver, getQueueService }) => {
             sort: result.sort,
             queuePage: pagination.currentPage,
           },
+          currentPath: '/screen/queue',
+          currentUserId: req.context?.userId || null,
           totalCount: result.totalCount,
           pagination,
           sortOptions: [

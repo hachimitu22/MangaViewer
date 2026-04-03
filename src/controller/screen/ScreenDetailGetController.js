@@ -20,6 +20,8 @@ class ScreenDetailGetController {
       return res.status(200).render('screen/detail', {
         pageTitle: `${result.mediaDetail.title} の詳細`,
         mediaDetail: result.mediaDetail,
+        currentPath: '/screen/detail',
+        currentUserId: req.context?.userId || null,
       });
     } catch (_error) {
       return res.redirect(301, '/screen/error');

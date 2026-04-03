@@ -50,6 +50,8 @@ describe('medium: ScreenDetailGetController', () => {
       locals: {
         pageTitle: '作品タイトル の詳細',
         mediaDetail,
+        currentPath: '/screen/detail',
+        currentUserId: null,
       },
     });
   });
@@ -97,6 +99,8 @@ describe('medium: ScreenViewerGetController', () => {
         pageTitle: 'ビューアー media-001 - 2ページ',
         mediaId: 'media-001',
         mediaPage: 2,
+        currentPath: '/screen/viewer',
+        currentUserId: null,
         content: {
           id: '/contents/page-2.jpg',
           type: 'image',

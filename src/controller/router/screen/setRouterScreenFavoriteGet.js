@@ -56,6 +56,8 @@ const setRouterScreenFavoriteGet = ({ router, authResolver, getFavoriteSummaries
           },
           pagination,
           sortOptions: SORT_OPTIONS,
+          currentPath: '/screen/favorite',
+          currentUserId: req.context?.userId || null,
         });
       } catch (error) {
         logger?.error('screen.favorite.error', {

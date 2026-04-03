@@ -8,7 +8,7 @@ const setRouterScreenEntryGet = ({
 
   router.get('/screen/entry', ...[
     auth.execute.bind(auth),
-    (_req, res) => {
+    (req, res) => {
       res.status(200).render('screen/entry', {
         pageTitle: 'メディア登録',
         categoryOptions: ['作者', 'ジャンル', 'シリーズ'],
@@ -17,6 +17,8 @@ const setRouterScreenEntryGet = ({
           ジャンル: ['バトル', '恋愛', '日常'],
           シリーズ: ['第1部', '短編集'],
         },
+        currentPath: '/screen/entry',
+        currentUserId: req.context?.userId || null,
       });
     },
   ]);
