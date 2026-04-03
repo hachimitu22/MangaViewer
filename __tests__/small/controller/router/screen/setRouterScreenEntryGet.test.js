@@ -42,6 +42,8 @@ describe('setRouterScreenEntryGet', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.render).toHaveBeenCalledWith('screen/entry', expect.objectContaining({
       pageTitle: 'メディア登録',
+      currentPath: '/screen/entry',
+      currentUserId: 'u1',
     }));
   });
 });

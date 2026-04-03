@@ -12,7 +12,7 @@ const setRouterScreenSearchGet = ({
 
   router.get('/screen/search', ...[
     auth.execute.bind(auth),
-    (_req, res) => {
+    (req, res) => {
       res.status(200).render('screen/search', {
         pageTitle: 'メディア検索',
         summaryPage: DEFAULT_SUMMARY_PAGE,
@@ -24,6 +24,8 @@ const setRouterScreenSearchGet = ({
           ジャンル: ['バトル', '恋愛', '日常'],
           シリーズ: ['第1部', '短編集'],
         },
+        currentPath: '/screen/search',
+        currentUserId: req.context?.userId || null,
         sortOptions: [
           { value: 'date_asc', label: '登録の新しい順' },
           { value: 'date_desc', label: '登録の古い順' },

@@ -35,6 +35,8 @@ class ScreenViewerGetController {
         pageTitle: `ビューアー ${req.params.mediaId} - ${mediaPage}ページ`,
         mediaId: req.params.mediaId,
         mediaPage,
+        currentPath: '/screen/viewer',
+        currentUserId: req.context?.userId || null,
         content: {
           id: result.contentId,
           type: this.#detectContentType(result.contentId),
