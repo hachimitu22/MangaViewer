@@ -60,6 +60,7 @@
 <nav class="common-nav" aria-label="共通ナビゲーター">
   <div class="common-nav__inner">
     <div class="common-nav__links">
+      <a class="common-nav__link" href="/screen/search" <%= isCurrent('/screen/search') ? "aria-current='page'" : '' %>>検索</a>
       <a class="common-nav__link" href="/screen/summary" <%= isCurrent('/screen/summary') ? "aria-current='page'" : '' %>>メディア一覧</a>
       <a class="common-nav__link" href="/screen/favorite" <%= isCurrent('/screen/favorite') ? "aria-current='page'" : '' %>>お気に入り</a>
       <a class="common-nav__link" href="/screen/queue" <%= isCurrent('/screen/queue') ? "aria-current='page'" : '' %>>あとで見る</a>
