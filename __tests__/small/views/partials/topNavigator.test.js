@@ -12,6 +12,7 @@ describe('views/partials/topNavigator', () => {
 
     expect(html).toContain('aria-label="共通ナビゲーター"');
     expect(html).toContain('メディア一覧');
+    expect(html).toContain('メディア検索');
     expect(html).toContain('お気に入り');
     expect(html).toContain('あとで見る');
     expect(html).toContain('メディア登録');
@@ -26,8 +27,19 @@ describe('views/partials/topNavigator', () => {
     });
 
     expect(html).toContain('メディア一覧');
+    expect(html).toContain('メディア検索');
     expect(html).toContain('お気に入り');
     expect(html).toContain('href="/screen/favorite" aria-current=&#39;page&#39;');
     expect(html).not.toContain('メディア登録');
+  });
+
+  test('currentPath が /screen/search のときメディア検索リンクに aria-current が付く', async () => {
+    const html = await ejs.renderFile(templatePath, {
+      currentPath: '/screen/search',
+      currentUserId: 'user-001',
+    });
+
+    expect(html).toContain('href="/screen/search" aria-current=&#39;page&#39;');
+    expect(html).not.toContain('href="/screen/summary" aria-current=&#39;page&#39;');
   });
 });
