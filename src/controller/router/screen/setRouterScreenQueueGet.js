@@ -4,6 +4,7 @@ const {
   InputSortType,
   DEFAULT_PAGE_SIZE,
 } = require('../../../application/user/query/GetQueueService');
+const { mapMediaOverviewThumbnailToPublicPath } = require('../../screen/publicContentPath');
 
 const SORT_TYPES_BY_QUERY = Object.freeze({
   date_desc: InputSortType.DATE_DESC,
@@ -48,10 +49,12 @@ const setRouterScreenQueueGet = ({ router, authResolver, getQueueService }) => {
           queuePage: result.queuePage,
           pageSize: DEFAULT_PAGE_SIZE,
         });
+        const mediaOverviews = (result.currentPageMediaOverviews ?? result.mediaOverviews)
+          .map(mapMediaOverviewThumbnailToPublicPath);
 
         res.status(200).render('screen/queue', {
           pageTitle: 'あとで見る一覧',
-          mediaOverviews: result.currentPageMediaOverviews ?? result.mediaOverviews,
+          mediaOverviews,
           currentConditions: {
             sort: result.sort,
             queuePage: pagination.currentPage,

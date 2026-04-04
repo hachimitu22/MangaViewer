@@ -4,6 +4,7 @@ const {
   MediaNotFoundResult,
   ContentNotFoundResult,
 } = require('../../application/media/query/GetMediaContentWithNavigationService');
+const { toPublicContentPath } = require('./publicContentPath');
 
 class ScreenViewerGetController {
   #getMediaContentWithNavigationService;
@@ -38,19 +39,19 @@ class ScreenViewerGetController {
         currentPath: '/screen/viewer',
         currentUserId: req.context?.userId || null,
         content: {
-          id: result.contentId,
+          id: toPublicContentPath(result.contentId),
           type: this.#detectContentType(result.contentId),
         },
         previousPage: result.previousContentId === null ? null : {
           mediaId: req.params.mediaId,
           mediaPage: mediaPage - 1,
-          contentId: result.previousContentId,
+          contentId: toPublicContentPath(result.previousContentId),
           href: `/screen/viewer/${req.params.mediaId}/${mediaPage - 1}`,
         },
         nextPage: result.nextContentId === null ? null : {
           mediaId: req.params.mediaId,
           mediaPage: mediaPage + 1,
-          contentId: result.nextContentId,
+          contentId: toPublicContentPath(result.nextContentId),
           href: `/screen/viewer/${req.params.mediaId}/${mediaPage + 1}`,
         },
       });

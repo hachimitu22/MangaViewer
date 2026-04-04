@@ -57,7 +57,7 @@ describe('setRouterScreenEditGet (middle)', () => {
     app.engine('ejs', (filePath, options, callback) => {
       callback(
         null,
-        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.mediaDetail.id}</body></html>`
+        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.mediaDetail.id}:${options.mediaDetail.contents[0].url}</body></html>`
       );
     });
 
@@ -81,7 +81,7 @@ describe('setRouterScreenEditGet (middle)', () => {
           mediaDetail: {
             id: 'media-001',
             title: 'メディア編集',
-            contents: ['content-1'],
+            contents: [{ id: 'content-1' }],
             tags: [{ category: '作者', label: '山田' }],
             priorityCategories: ['作者'],
           },
@@ -111,5 +111,6 @@ describe('setRouterScreenEditGet (middle)', () => {
     expect(response.bodyText).toContain('<title>メディア編集 の編集</title>');
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'edit.ejs'));
     expect(response.bodyText).toContain('media-001');
+    expect(response.bodyText).toContain('/contents/content-1');
   });
 });

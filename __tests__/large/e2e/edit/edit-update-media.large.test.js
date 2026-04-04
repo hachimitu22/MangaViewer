@@ -133,7 +133,7 @@ test.describe('large e2e: edit 画面での既存メディア更新', () => {
     });
     expect(initialMediaTexts).toHaveLength(seedContentIds.length);
     initialMediaTexts.forEach(text => {
-      expect(text).toMatch(/^既存 contentId: /);
+      expect(text).toMatch(/^contentId: /);
     });
 
     await page.click('#title', { clickCount: 3 });

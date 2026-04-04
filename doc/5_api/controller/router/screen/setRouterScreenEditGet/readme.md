@@ -28,6 +28,7 @@
    - `req.session.session_token` を検証し、`req.context.userId` を設定する。
 2. 非同期描画ハンドラー
    - `req.params.mediaId` を使ってメディア詳細を取得する。
+   - 既存コンテンツには `id` に加えて `/contents/...` の公開 `url` を付与する。
    - `pageTitle`、カテゴリ候補、タグ候補を組み立てて `screen/edit` を描画する。
 
 ## エラーハンドリング

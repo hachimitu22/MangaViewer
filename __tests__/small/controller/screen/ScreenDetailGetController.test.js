@@ -34,7 +34,10 @@ describe('ScreenDetailGetController', () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.render).toHaveBeenCalledWith('screen/detail', {
       pageTitle: '作品タイトル の詳細',
-      mediaDetail,
+      mediaDetail: {
+        ...mediaDetail,
+        contents: [{ id: 'content-1', thumbnail: '/contents/content-1', position: 1 }],
+      },
       currentPath: '/screen/detail',
       currentUserId: 'admin',
     });

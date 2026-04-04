@@ -26,6 +26,10 @@ const login = async ({ baseUrl }) => {
 };
 
 test.describe('large e2e: エントリー画面でメディアを新規登録できる', () => {
+  const toExpectedPublicPath = contentId => {
+    return `/contents/${contentId.slice(0, 2)}/${contentId.slice(2, 4)}/${contentId.slice(4, 6)}/${contentId.slice(6, 8)}/${contentId}`;
+  };
+
   let appContext;
 
   test.beforeEach(async ({ page: currentPage }) => {
@@ -127,6 +131,6 @@ test.describe('large e2e: エントリー画面でメディアを新規登録で
     expect(firstContentSnapshot.viewerHref).toBe(`/screen/viewer/${mediaId}/1`);
     expect(firstContentSnapshot.contentMetaText).toContain('ページ: 1');
     expect(firstContentSnapshot.contentId).toMatch(/^[0-9a-f]{32}$/);
-    expect(firstContentSnapshot.thumbnailSrc).toBe(firstContentSnapshot.contentId);
+    expect(firstContentSnapshot.thumbnailSrc).toBe(toExpectedPublicPath(firstContentSnapshot.contentId));
   });
 });

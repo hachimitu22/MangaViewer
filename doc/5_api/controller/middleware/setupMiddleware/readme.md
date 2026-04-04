@@ -25,6 +25,7 @@
 ## ビュー・パーサー設定
 - `views` ディレクトリを `src/views` に設定する。
 - `view engine` を `ejs` に設定する。
+- `env.contentRootDirectory` が指定されている場合、`/contents` 配下に `express.static(env.contentRootDirectory)` を登録する。
 - `express.json()` を登録し、JSON リクエストボディを解釈可能にする。
 - `express.urlencoded({ extended: true })` を登録し、フォーム投稿を解釈可能にする。
 

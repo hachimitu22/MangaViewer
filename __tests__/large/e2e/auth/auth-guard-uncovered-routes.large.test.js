@@ -28,6 +28,8 @@ const expectUnauthorizedJsonResponse = async response => {
   expect(response.status()).toBe(401);
 };
 
+const toExpectedPublicPath = contentId => `/contents/${contentId}`;
+
 test.describe('large e2e: 認可境界（未カバー導線）', () => {
   const detailMediaId = 'auth-uncovered-media-1';
   const contentIdForViewer = 'seed/auth-uncovered-content-1.jpg';
@@ -89,7 +91,7 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
     await page.waitForSelector('.stage img');
 
     const viewerImageSource = await page.$eval('.stage img', element => element.getAttribute('src'));
-    expect(viewerImageSource).toBe(contentIdForViewer);
+    expect(viewerImageSource).toBe(toExpectedPublicPath(contentIdForViewer));
 
     await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle' });
     await page.waitForSelector('form');

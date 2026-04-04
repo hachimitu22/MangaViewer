@@ -112,7 +112,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     app.engine('ejs', (filePath, options, callback) => {
       callback(
         null,
-        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:sort=${options.currentConditions.sort}:page=${options.pagination.currentPage}:titles=${options.mediaOverviews.map(media => media.title).join(',')}:pages=${options.pagination.items.join(',')}:tags=${options.mediaOverviews.flatMap(media => media.tags.map(tag => `/screen/summary?summaryPage=1&sort=${options.currentConditions.sort}&tags=${encodeURIComponent(`${tag.category}:${tag.label}`)}`)).join('|')}</body></html>`,
+        `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:sort=${options.currentConditions.sort}:page=${options.pagination.currentPage}:titles=${options.mediaOverviews.map(media => media.title).join(',')}:thumbnail=${options.mediaOverviews[0].thumbnail}:pages=${options.pagination.items.join(',')}:tags=${options.mediaOverviews.flatMap(media => media.tags.map(tag => `/screen/summary?summaryPage=1&sort=${options.currentConditions.sort}&tags=${encodeURIComponent(`${tag.category}:${tag.label}`)}`)).join('|')}</body></html>`,
       );
     });
 
@@ -147,6 +147,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'favorite.ejs'));
     expect(response.bodyText).toContain('sort=date_asc');
     expect(response.bodyText).toContain('page=1');
+    expect(response.bodyText).toContain('thumbnail=/contents/content-');
   });
 
   test('sort を変更すると指定順で描画される', async () => {

@@ -3,6 +3,7 @@ const {
   Input,
   InputSortType,
 } = require('../../../application/media/query/SearchMediaService');
+const { mapMediaOverviewThumbnailToPublicPath } = require('../../screen/publicContentPath');
 const {
   DEFAULT_SUMMARY_PAGE,
   DEFAULT_START,
@@ -123,6 +124,7 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
           summaryPage: range.summaryPage,
           pageSize: range.size,
         });
+        const mediaOverviews = result.mediaOverviews.map(mapMediaOverviewThumbnailToPublicPath);
 
         res.status(200).render('screen/summary', {
           pageTitle: 'メディア一覧',
@@ -134,7 +136,7 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
             start: range.start,
             size: range.size,
           },
-          mediaOverviews: result.mediaOverviews,
+          mediaOverviews,
           totalCount: result.totalCount,
           pagination,
           currentPath: '/screen/summary',

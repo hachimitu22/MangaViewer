@@ -19,7 +19,7 @@
   - `position` は必須
   - `file` または `url` のどちらか一方が必須
   - `file` と `url` の同時指定は禁止
-- `url` には既存 `contentId` を指定する。
+- `url` には既存 `contentId` もしくは `/contents/...` の公開パスを指定する。
 - `contentId` は `^[0-9a-f]{32}$` に一致する小文字32文字とする。
 
 ## 保存仕様
@@ -31,7 +31,9 @@
 5. `DiskStorage` によりファイル名 `contentId` で保存する。
 
 ### 既存ファイル
-- `url` に指定された `contentId` をそのまま採用する。
+- `url` に指定された値から `contentId` を抽出して採用する。
+  - 32文字16進数のIDそのもの
+  - `/contents/.../<contentId>` 形式の公開パス
 - 実ファイルの存在確認は行わない。
 
 ## 出力仕様

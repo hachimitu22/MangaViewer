@@ -56,7 +56,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.engine('ejs', (filePath, options, callback) => {
-      callback(null, `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.currentConditions.title}:${options.currentConditions.tags.map(tag => `${tag.category}:${tag.label}`).join(',')}:${options.currentConditions.start}:${options.currentConditions.size}:${options.mediaOverviews.map(media => media.title).join(',')}:${options.pagination.currentPage}</body></html>`);
+      callback(null, `<!DOCTYPE html><html lang="ja"><head><title>${options.pageTitle}</title></head><body>${filePath}:${options.currentConditions.title}:${options.currentConditions.tags.map(tag => `${tag.category}:${tag.label}`).join(',')}:${options.currentConditions.start}:${options.currentConditions.size}:${options.mediaOverviews.map(media => media.title).join(',')}:${options.mediaOverviews[0].thumbnail}:${options.pagination.currentPage}</body></html>`);
     });
 
     app.use((req, _res, next) => {
@@ -91,6 +91,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'summary.ejs'));
     expect(response.bodyText).toContain(':太郎:作者:山田:11:5:');
     expect(response.bodyText).toContain('太郎の冒険');
+    expect(response.bodyText).toContain('/contents/content-001');
     expect(response.bodyText).toContain(':1</body>');
     expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       title: '太郎',

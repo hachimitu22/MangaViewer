@@ -48,6 +48,9 @@ const attachSessionHelpers = req => {
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('view engine', 'ejs');
+  if (typeof env.contentRootDirectory === 'string' && env.contentRootDirectory.length > 0) {
+    app.use('/contents', express.static(env.contentRootDirectory));
+  }
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

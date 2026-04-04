@@ -29,6 +29,7 @@
   - 認証処理が `session_token` で呼ばれる。
   - 詳細取得処理が `mediaId` を使って実行される。
   - `screen/detail` が描画される。
+  - `contents[*].thumbnail` は `/contents/...` の公開パスとして描画モデルへ渡される。
 
 ## medium テストで担保する観点
 - `GetMediaDetailService` と実リポジトリを接続し、認証から詳細画面描画までの統合を `__tests__/medium/controller/router/screen/` で担保する。

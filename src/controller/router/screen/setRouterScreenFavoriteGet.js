@@ -5,6 +5,7 @@ const {
   SORT_TYPES,
   PAGE_SIZE,
 } = require('../../../application/user/query/GetFavoriteSummariesService');
+const { mapMediaOverviewThumbnailToPublicPath } = require('../../screen/publicContentPath');
 
 const SORT_OPTIONS = Object.freeze([
   { value: SORT_TYPES.DATE_ASC, label: '追加の新しい順' },
@@ -45,10 +46,11 @@ const setRouterScreenFavoriteGet = ({ router, authResolver, getFavoriteSummaries
           page,
           pageSize: PAGE_SIZE,
         });
+        const mediaOverviews = result.mediaOverviews.map(mapMediaOverviewThumbnailToPublicPath);
 
         res.status(200).render('screen/favorite', {
           pageTitle: 'お気に入り一覧',
-          mediaOverviews: result.mediaOverviews,
+          mediaOverviews,
           totalCount: result.totalCount,
           currentConditions: {
             sort,

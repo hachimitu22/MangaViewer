@@ -151,14 +151,32 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
 
   #readExistingContentId(content) {
     if (typeof content.id === 'string' && content.id.length > 0) {
-      return content.id;
+      return this.#extractContentId(content.id);
     }
 
     if (typeof content.url === 'string' && content.url.length > 0) {
-      return content.url;
+      return this.#extractContentId(content.url);
     }
 
     return null;
+  }
+
+  #extractContentId(rawValue) {
+    if (!(typeof rawValue === 'string' && rawValue.length > 0)) {
+      return null;
+    }
+
+    const normalized = rawValue.trim();
+    if ((/^[0-9a-f]{32}$/).test(normalized)) {
+      return normalized;
+    }
+
+    const matched = normalized.match(/([0-9a-f]{32})(?:\?.*)?$/);
+    if (!matched) {
+      return normalized;
+    }
+
+    return matched[1];
   }
 
   #createUniqueContentId() {

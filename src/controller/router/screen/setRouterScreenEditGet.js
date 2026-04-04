@@ -1,5 +1,6 @@
 const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const { Input } = require('../../../application/media/query/GetMediaDetailService');
+const { toPublicContentPath } = require('../../screen/publicContentPath');
 
 const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService }) => {
   const auth = new SessionAuthMiddleware(authResolver);
@@ -12,10 +13,30 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
         const result = await getMediaDetailService.execute(new Input({
           mediaId: req.params.mediaId,
         }));
+        const mediaDetail = {
+          ...result.mediaDetail,
+          contents: result.mediaDetail.contents.map(content => {
+            if (typeof content === 'string') {
+              return {
+                id: content,
+                url: toPublicContentPath(content),
+              };
+            }
+
+            if (content && typeof content === 'object') {
+              return {
+                ...content,
+                url: toPublicContentPath(content.id),
+              };
+            }
+
+            return content;
+          }),
+        };
 
         res.status(200).render('screen/edit', {
-          pageTitle: `${result.mediaDetail.title} の編集`,
-          mediaDetail: result.mediaDetail,
+          pageTitle: `${mediaDetail.title} の編集`,
+          mediaDetail,
           categoryOptions: ['作者', 'ジャンル', 'シリーズ'],
           tagsByCategory: {
             作者: ['山田', '佐藤', '鈴木'],
