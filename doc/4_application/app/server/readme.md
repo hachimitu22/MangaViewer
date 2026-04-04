@@ -14,7 +14,7 @@
 | --- | --- | --- | --- |
 | `PORT` | `port` | `parseInt(..., 10) || 3000` | HTTP listen ポート |
 | `DATABASE_STORAGE_PATH` | `databaseStoragePath` | `var/data/mangaviewer.sqlite` | SQLite 保存先 |
-| `CONTENT_ROOT_DIRECTORY` | `contentRootDirectory` | `var/contents` | コンテンツ保存先 |
+| `CONTENT_ROOT_DIRECTORY` | `contentRootDirectory` | `public/contents` | コンテンツ保存先 |
 | `DEV_SESSION_TOKEN` | `devSessionToken` | 空文字 | 開発用固定セッショントークン |
 | `DEV_SESSION_USER_ID` | `devSessionUserId` | 空文字 | 開発用固定セッションの利用者ID |
 | `DEV_SESSION_TTL_MS` | `devSessionTtlMs` | `parseInt(..., 10) || 0` | 開発用固定セッションの TTL |

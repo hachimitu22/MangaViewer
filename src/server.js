@@ -20,7 +20,7 @@ const createEnv = source => ({
   databaseStoragePath: source.DATABASE_STORAGE_PATH
     || path.join(process.cwd(), 'var', 'data', 'mangaviewer.sqlite'),
   contentRootDirectory: source.CONTENT_ROOT_DIRECTORY
-    || path.join(process.cwd(), 'var', 'contents'),
+    || path.join(process.cwd(), 'public', 'contents'),
   devSessionToken: source.DEV_SESSION_TOKEN || '',
   devSessionUserId: source.DEV_SESSION_USER_ID || '',
   devSessionTtlMs: Number.parseInt(source.DEV_SESSION_TTL_MS, 10) || 0,
