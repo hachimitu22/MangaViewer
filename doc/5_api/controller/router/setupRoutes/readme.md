@@ -41,7 +41,7 @@
 ## ルート登録責務
 - `express.Router()` を生成する。
 - 画面ルートを登録する。
-  - entry / detail / edit / error / favorite / login / queue / search / summary / viewer
+  - root(/) / entry / detail / edit / error / favorite / login / queue / search / summary / viewer
 - API ルートを登録する。
   - login / logout / media post / media patch / media delete / favorite and queue
 - 各登録時に必要な依存だけを明示的に渡すことで、各 `setRouter...` の入力契約を固定する。

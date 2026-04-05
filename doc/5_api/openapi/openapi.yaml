@@ -6,6 +6,8 @@ servers:
   - url: https://example.com
 paths:
   # ページURL
+  /:
+    $ref: './paths/screen/root.yaml'
   /screen/login:
     $ref: './paths/screen/login.yaml'
   /screen/summary:

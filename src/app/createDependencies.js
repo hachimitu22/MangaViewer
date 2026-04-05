@@ -8,6 +8,7 @@ const setRouterApiMediaPatch = require('../controller/router/media/setRouterApiM
 const setRouterApiMediaDelete = require('../controller/router/media/setRouterApiMediaDelete');
 const setRouterApiLogin = require('../controller/router/user/setRouterApiLogin');
 const setRouterApiLogout = require('../controller/router/user/setRouterApiLogout');
+const setRouterRootGet = require('../controller/router/screen/setRouterRootGet');
 const setRouterScreenEntryGet = require('../controller/router/screen/setRouterScreenEntryGet');
 const setRouterScreenDetailGet = require('../controller/router/screen/setRouterScreenDetailGet');
 const setRouterScreenEditGet = require('../controller/router/screen/setRouterScreenEditGet');
@@ -187,6 +188,7 @@ const createDependencies = (env = {}) => {
       setRouterApiMediaDelete,
       setRouterApiLogin,
       setRouterApiLogout,
+      setRouterRootGet,
       setRouterScreenEntryGet,
       setRouterScreenDetailGet,
       setRouterScreenEditGet,
