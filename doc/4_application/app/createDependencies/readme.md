@@ -54,6 +54,7 @@
 
 ### ルートセッターの集約
 - 画面系・API 系のルート定義関数を `dependencies.routeSetters` に束ねる。
+- 画面系には `setRouterRootGet`（`GET /` の遷移制御）を含める。
 - `setupRoutes` はここで集約されたルートセッターのみを参照し、各モジュールの import を重複しない。
 
 ## 起動時ディレクトリ準備
