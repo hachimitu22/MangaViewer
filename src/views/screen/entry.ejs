@@ -307,6 +307,10 @@
               },
               body: payload,
             });
+            if (response.status === 401) {
+              window.location.assign('/screen/error');
+              return;
+            }
             const result = await response.json();
             if (!response.ok) {
               throw new Error(result.message || 'メディア登録に失敗しました。');

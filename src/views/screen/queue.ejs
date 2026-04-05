@@ -117,6 +117,10 @@
           statusElement.textContent = '通信中です...';
           try {
             const response = await fetch(path, { method, headers: { Accept: 'application/json' } });
+            if (response.status === 401) {
+              window.location.assign('/screen/error');
+              return false;
+            }
             if (!response.ok) {
               statusElement.textContent = `${failureMessage} (${response.status})`;
               return false;

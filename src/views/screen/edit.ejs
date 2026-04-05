@@ -342,6 +342,10 @@
               method: 'PATCH',
               body: payload,
             });
+            if (response.status === 401) {
+              window.location.assign('/screen/error');
+              return;
+            }
             const result = await response.json();
             if (!response.ok || result.code !== 0) {
               throw new Error(result.message || 'メディア更新に失敗しました。');
@@ -367,6 +371,10 @@
             const response = await fetch(`/api/media/${mediaId}`, {
               method: 'DELETE',
             });
+            if (response.status === 401) {
+              window.location.assign('/screen/error');
+              return;
+            }
             const result = await response.json();
             if (!response.ok || result.code !== 0) {
               throw new Error(result.message || 'メディア削除に失敗しました。');
