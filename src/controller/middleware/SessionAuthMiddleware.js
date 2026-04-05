@@ -13,12 +13,12 @@ class SessionAuthMiddleware {
     try {
       const token = req?.session?.session_token;
       if (!this.#isValidTokenFormat(token)) {
-        return this.#unauthorized(req, res);
+        return this.#unauthorized(res);
       }
 
       const userId = await this.#authAdapter.execute(token);
       if (!this.#isNonEmptyString(userId)) {
-        return this.#unauthorized(req, res);
+        return this.#unauthorized(res);
       }
 
       if (!req.context || typeof req.context !== 'object') {
@@ -28,7 +28,7 @@ class SessionAuthMiddleware {
       req.context.userId = userId;
       return next();
     } catch (_error) {
-      return this.#unauthorized(req, res);
+      return this.#unauthorized(res);
     }
   }
 
@@ -40,16 +40,10 @@ class SessionAuthMiddleware {
     return typeof value === 'string' && value.length > 0;
   }
 
-  #unauthorized(req, res) {
-    const path = typeof req?.originalUrl === 'string' ? req.originalUrl : '';
-    if (path.startsWith('/api/')) {
-      return res.status(401).json({
-        message: '認証に失敗しました',
-        redirectTo: '/screen/error',
-      });
-    }
-
-    return res.redirect('/screen/error');
+  #unauthorized(res) {
+    return res.status(401).json({
+      message: '認証に失敗しました',
+    });
   }
 }
 
