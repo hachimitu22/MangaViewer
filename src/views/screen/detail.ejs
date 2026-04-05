@@ -165,6 +165,10 @@
                 Accept: 'application/json',
               },
             });
+            if (response.status === 401) {
+              window.location.assign('/screen/error');
+              return;
+            }
 
             if (!response.ok) {
               status.textContent = `${successMessage}に失敗しました (${response.status})`;
