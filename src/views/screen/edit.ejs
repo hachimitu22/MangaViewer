@@ -166,67 +166,145 @@
           url: resolveContentUrl(content),
         }));
 
+        const clearElement = element => {
+          element.textContent = '';
+        };
+
+        const isSafeImageUrl = url => {
+          if (typeof url !== 'string' || url.length === 0) {
+            return false;
+          }
+
+          if (/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(url)) {
+            return /^https?:/i.test(url);
+          }
+
+          return true;
+        };
+
         const updateTagOptions = () => {
           const category = categoryInput.value.trim();
           const candidates = Array.isArray(tagsByCategory[category]) ? tagsByCategory[category] : [];
-          tagOptions.innerHTML = candidates
-            .map(label => `<option value="${label}"></option>`)
-            .join('');
+          clearElement(tagOptions);
+          candidates.forEach(label => {
+            const option = document.createElement('option');
+            option.setAttribute('value', label);
+            tagOptions.appendChild(option);
+          });
+        };
+
+        const createTextThumbnail = label => {
+          const thumbnail = document.createElement('div');
+          thumbnail.className = 'thumb';
+          thumbnail.textContent = label;
+          return thumbnail;
+        };
+
+        const createImageThumbnail = (url, alt) => {
+          if (!isSafeImageUrl(url)) {
+            return createTextThumbnail('画像');
+          }
+          const image = document.createElement('img');
+          image.className = 'thumb';
+          image.setAttribute('alt', alt);
+          image.src = url;
+          return image;
         };
 
         const createThumbnail = entry => {
           if (entry.file && entry.file.type.startsWith('image/')) {
-            const url = URL.createObjectURL(entry.file);
-            return `<img class="thumb" src="${url}" alt="${entry.file.name}">`;
+            return createTextThumbnail('画像');
           }
           if (entry.file && entry.file.type.startsWith('video/')) {
-            return '<div class="thumb">動画</div>';
+            return createTextThumbnail('動画');
           }
           if (typeof entry.url === 'string' && entry.url.length > 0) {
-            return `<img class="thumb" src="${entry.url}" alt="既存コンテンツ">`;
+            return createImageThumbnail(entry.url, '既存コンテンツ');
           }
-          return '<div class="thumb">既存</div>';
+          return createTextThumbnail('既存');
         };
 
         const renderTags = () => {
-          tagList.innerHTML = '';
+          clearElement(tagList);
           selectedTags.forEach((tag, index) => {
             const item = document.createElement('div');
             item.className = 'tag-item';
-            item.innerHTML = `
-              <div class="tag-item-header">
-                <div>
-                  <div class="tag-category">${tag.category}</div>
-                  <div class="tag-label">${tag.label}</div>
-                </div>
-                <button class="button danger" type="button" data-remove-tag="${index}">削除</button>
-              </div>
-            `;
+
+            const header = document.createElement('div');
+            header.className = 'tag-item-header';
+            const textWrap = document.createElement('div');
+            const category = document.createElement('div');
+            category.className = 'tag-category';
+            category.textContent = tag.category;
+            const label = document.createElement('div');
+            label.className = 'tag-label';
+            label.textContent = tag.label;
+            textWrap.appendChild(category);
+            textWrap.appendChild(label);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'button danger';
+            removeButton.setAttribute('type', 'button');
+            removeButton.dataset.removeTag = String(index);
+            removeButton.textContent = '削除';
+
+            header.appendChild(textWrap);
+            header.appendChild(removeButton);
+            item.appendChild(header);
             tagList.appendChild(item);
           });
         };
 
         const renderFiles = () => {
-          mediaList.innerHTML = '';
+          clearElement(mediaList);
           mediaEmpty.hidden = mediaFiles.length > 0;
           mediaFiles.forEach((entry, index) => {
             const item = document.createElement('div');
             item.className = 'media-item';
             const name = entry.file ? entry.file.name : `contentId: ${entry.id}`;
-            item.innerHTML = `
-              <div class="media-item-header">
-                <strong>ページ ${index + 1}</strong>
-                <div class="media-actions">
-                  ${index > 0 ? `<button class="button secondary" type="button" data-move-up="${index}">上へ</button>` : ''}
-                  ${index < mediaFiles.length - 1 ? `<button class="button secondary" type="button" data-move-down="${index}">下へ</button>` : ''}
-                  <button class="button danger" type="button" data-remove-file="${index}">削除</button>
-                </div>
-              </div>
-              <div class="media-item-body">
-                ${createThumbnail(entry)}
-                <div>${name}</div>
-              </div>
-            `;
+
+            const header = document.createElement('div');
+            header.className = 'media-item-header';
+            const page = document.createElement('strong');
+            page.textContent = `ページ ${index + 1}`;
+            const actions = document.createElement('div');
+            actions.className = 'media-actions';
+
+            if (index > 0) {
+              const moveUpButton = document.createElement('button');
+              moveUpButton.className = 'button secondary';
+              moveUpButton.setAttribute('type', 'button');
+              moveUpButton.dataset.moveUp = String(index);
+              moveUpButton.textContent = '上へ';
+              actions.appendChild(moveUpButton);
+            }
+            if (index < mediaFiles.length - 1) {
+              const moveDownButton = document.createElement('button');
+              moveDownButton.className = 'button secondary';
+              moveDownButton.setAttribute('type', 'button');
+              moveDownButton.dataset.moveDown = String(index);
+              moveDownButton.textContent = '下へ';
+              actions.appendChild(moveDownButton);
+            }
+            const removeButton = document.createElement('button');
+            removeButton.className = 'button danger';
+            removeButton.setAttribute('type', 'button');
+            removeButton.dataset.removeFile = String(index);
+            removeButton.textContent = '削除';
+            actions.appendChild(removeButton);
+
+            header.appendChild(page);
+            header.appendChild(actions);
+
+            const body = document.createElement('div');
+            body.className = 'media-item-body';
+            body.appendChild(createThumbnail(entry));
+            const nameNode = document.createElement('div');
+            nameNode.textContent = name;
+            body.appendChild(nameNode);
+
+            item.appendChild(header);
+            item.appendChild(body);
             mediaList.appendChild(item);
           });
         };
