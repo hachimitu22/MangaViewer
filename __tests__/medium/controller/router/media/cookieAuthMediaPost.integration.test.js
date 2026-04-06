@@ -24,6 +24,12 @@ class FixedMediaIdValueGenerator {
 }
 
 describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
+  const createJpegBuffer = () => Buffer.from([
+    0xff, 0xd8, 0xff, 0xdb,
+    0x00, 0x43, 0x00, 0x08,
+    0x06, 0x06, 0x07, 0x06,
+  ]);
+
   let sequelize;
   let unitOfWork;
   let mediaRepository;

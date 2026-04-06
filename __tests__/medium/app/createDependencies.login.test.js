@@ -55,4 +55,46 @@ describe('createDependencies login wiring', () => {
 
     await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('user-001');
   });
+
+  test('production で認証設定が不足している場合は初期化失敗する', () => {
+    expect(() => createDependencies({
+      nodeEnv: 'production',
+      databaseStoragePath: path.join(databaseRoot, 'production.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'production-contents'),
+      loginUsername: 'admin',
+      loginPassword: '',
+      loginUserId: '',
+    })).toThrow('本番環境ではログイン認証設定が必須です');
+  });
+
+  test('non-production で認証設定が不足していてもデフォルト資格情報でログインできる', async () => {
+    if (dependencies) {
+      await dependencies.close();
+      dependencies = undefined;
+    }
+
+    dependencies = createDependencies({
+      nodeEnv: 'development',
+      databaseStoragePath: path.join(databaseRoot, 'development.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'development-contents'),
+      loginUsername: '',
+      loginPassword: '',
+      loginUserId: '',
+      loginSessionTtlMs: 60_000,
+    });
+    await dependencies.ready;
+
+    const session = {
+      regenerate: jest.fn((callback) => callback()),
+    };
+
+    const result = await dependencies.loginService.execute(new Query({
+      username: 'admin',
+      password: 'admin',
+      session,
+    }));
+
+    expect(result).toBeInstanceOf(LoginSucceededResult);
+    await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('admin');
+  });
 });

@@ -62,6 +62,41 @@ const parseLogOutputs = value => String(value || '')
   .map(entry => entry.trim())
   .filter(entry => entry.length > 0);
 
+const isConfiguredValue = value => String(value || '').trim().length > 0;
+
+const isProductionEnv = env => String(env.nodeEnv || '').toLowerCase() === 'production';
+
+const resolveLoginAuthConfig = env => {
+  const rawConfig = {
+    username: env.loginUsername,
+    password: env.loginPassword,
+    userId: env.loginUserId,
+  };
+  const missingKeys = Object.entries(rawConfig)
+    .filter(([, value]) => !isConfiguredValue(value))
+    .map(([key]) => key);
+
+  if (isProductionEnv(env) && missingKeys.length > 0) {
+    throw new Error([
+      '本番環境ではログイン認証設定が必須です',
+      `missing=${missingKeys.join(',')}`,
+    ].join(': '));
+  }
+
+  const defaults = {
+    username: 'admin',
+    password: 'admin',
+    userId: 'admin',
+  };
+
+  return {
+    username: isConfiguredValue(rawConfig.username) ? rawConfig.username : defaults.username,
+    password: isConfiguredValue(rawConfig.password) ? rawConfig.password : defaults.password,
+    userId: isConfiguredValue(rawConfig.userId) ? rawConfig.userId : defaults.userId,
+    isUsingDefaultCredentials: missingKeys.length > 0,
+  };
+};
+
 const createSequelize = env => {
   if (env.databaseDialect === 'postgres') {
     if (env.databaseUrl) {
@@ -129,10 +164,11 @@ const createDependencies = (env = {}) => {
   const removeQueueService = new RemoveQueueService({ userRepository, unitOfWork });
   const sessionStateRegistrar = new SessionStateRegistrar({ sessionStateStore });
   const sessionTerminator = new SessionTerminator({ sessionStateStore });
+  const loginAuthConfig = resolveLoginAuthConfig(env);
   const loginAuthenticator = new StaticLoginAuthenticator({
-    username: env.loginUsername || 'admin',
-    password: env.loginPassword || 'admin',
-    userId: env.loginUserId || 'admin',
+    username: loginAuthConfig.username,
+    password: loginAuthConfig.password,
+    userId: loginAuthConfig.userId,
   });
   const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
   const deleteMediaService = new DeleteMediaService({ mediaRepository, unitOfWork });
@@ -216,3 +252,4 @@ const createDependencies = (env = {}) => {
 };
 
 module.exports = createDependencies;
+module.exports.resolveLoginAuthConfig = resolveLoginAuthConfig;

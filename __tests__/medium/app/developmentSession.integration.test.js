@@ -106,4 +106,42 @@ describe('developmentSession wiring', () => {
     expect(errorSpy).not.toHaveBeenCalled();
     expect(exitSpy).not.toHaveBeenCalled();
   });
+
+  test('server.js 相当の初期化では非本番かつデフォルト資格情報使用時に警告ログを出力する', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit should not be called');
+    });
+    const listenMock = jest.fn((port, callback) => {
+      callback();
+      return { on: jest.fn() };
+    });
+
+    process.env.NODE_ENV = 'development';
+    process.env.PORT = '3457';
+    process.env.FIXED_LOGIN_USERNAME = '';
+    process.env.FIXED_LOGIN_PASSWORD = '';
+    process.env.FIXED_LOGIN_USER_ID = '';
+    process.env.LOGIN_USERNAME = '';
+    process.env.LOGIN_PASSWORD = '';
+    process.env.LOGIN_USER_ID = '';
+
+    jest.doMock('../../../src/app', () => jest.fn(() => ({
+      locals: {
+        ready: Promise.resolve(),
+      },
+      listen: listenMock,
+    })));
+
+    require('../../../src/server');
+    await Promise.resolve();
+
+    expect(listenMock).toHaveBeenCalledWith(3457, expect.any(Function));
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('非本番向けデフォルト資格情報'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(exitSpy).not.toHaveBeenCalled();
+  });
 });

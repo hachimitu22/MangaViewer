@@ -1,6 +1,7 @@
 const path = require('path');
 
 const createApp = require('./app');
+const { resolveLoginAuthConfig } = require('./app/createDependencies');
 const { hasDevelopmentSession } = require('./app/developmentSession');
 
 const parseSessionPaths = value => (value || '')
@@ -38,6 +39,10 @@ const createEnv = source => ({
 
 const startServer = async () => {
   const env = createEnv(process.env);
+  const loginAuthConfig = resolveLoginAuthConfig(env);
+  if (String(env.nodeEnv || '').toLowerCase() !== 'production' && loginAuthConfig.isUsingDefaultCredentials) {
+    console.warn('ログイン認証情報が未設定のため、非本番向けデフォルト資格情報 (admin/admin) を使用します');
+  }
   const app = createApp(env);
 
   try {
