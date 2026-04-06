@@ -108,6 +108,8 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     expect(loginResponse.body).toEqual({ code: 0 });
     expect(loginResponse.headers['set-cookie']).toBeDefined();
 
+    const validJpegHeader = Buffer.from([0xff, 0xd8, 0xff, 0xdb]);
+
     const response = await request(app)
       .post('/api/media')
       .set('Cookie', loginResponse.headers['set-cookie'])
@@ -115,10 +117,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', createJpegBuffer(), {
-        filename: 'first.jpg',
-        contentType: 'image/jpeg',
-      });
+      .attach('contents[0][file]', validJpegHeader, { filename: 'first.jpg', contentType: 'image/jpeg' });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
