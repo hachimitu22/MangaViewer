@@ -1,8 +1,8 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 module.exports = {
   testDir: './__tests__/large/e2e',
-  fullyParallel: false,
-  workers: 1,
+  fullyParallel: true,
+  workers: process.env.CI ? '50%' : undefined,
   timeout: 60_000,
   use: {
     headless: true,
