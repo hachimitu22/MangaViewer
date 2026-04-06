@@ -144,28 +144,48 @@
 
         const selectedTags = [];
 
+        const clearElement = element => {
+          element.textContent = '';
+        };
+
         const updateTagOptions = () => {
           const category = categoryInput.value.trim();
           const candidates = Array.isArray(tagsByCategory[category]) ? tagsByCategory[category] : [];
-          tagOptions.innerHTML = candidates
-            .map(label => `<option value="${label}"></option>`)
-            .join('');
+          clearElement(tagOptions);
+          candidates.forEach(label => {
+            const option = document.createElement('option');
+            option.setAttribute('value', label);
+            tagOptions.appendChild(option);
+          });
         };
 
         const renderTags = () => {
-          tagList.innerHTML = '';
+          clearElement(tagList);
           selectedTags.forEach((tag, index) => {
             const item = document.createElement('div');
             item.className = 'tag-item';
-            item.innerHTML = `
-              <div class="tag-item-header">
-                <div>
-                  <div class="tag-category">${tag.category}</div>
-                  <div class="tag-label">${tag.label}</div>
-                </div>
-                <button class="button danger" type="button" data-remove-tag="${index}">削除</button>
-              </div>
-            `;
+
+            const header = document.createElement('div');
+            header.className = 'tag-item-header';
+            const textWrap = document.createElement('div');
+            const category = document.createElement('div');
+            category.className = 'tag-category';
+            category.textContent = tag.category;
+            const label = document.createElement('div');
+            label.className = 'tag-label';
+            label.textContent = tag.label;
+            textWrap.appendChild(category);
+            textWrap.appendChild(label);
+
+            const removeButton = document.createElement('button');
+            removeButton.className = 'button danger';
+            removeButton.setAttribute('type', 'button');
+            removeButton.dataset.removeTag = String(index);
+            removeButton.textContent = '削除';
+
+            header.appendChild(textWrap);
+            header.appendChild(removeButton);
+            item.appendChild(header);
             tagList.appendChild(item);
           });
         };

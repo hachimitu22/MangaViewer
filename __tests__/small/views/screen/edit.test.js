@@ -9,10 +9,11 @@ class ElementStub {
     this.id = id;
     this.value = value;
     this.innerHTML = '';
-    this.textContent = '';
+    this._textContent = '';
     this.className = '';
     this.hidden = false;
     this.dataset = {};
+    this.attributes = new Map();
     this.files = [];
     this.listeners = new Map();
     this.children = [];
@@ -26,8 +27,23 @@ class ElementStub {
     this.listeners.set(type, listener);
   }
 
+  set textContent(value) {
+    this._textContent = String(value ?? '');
+    if (this._textContent === '') {
+      this.children = [];
+    }
+  }
+
+  get textContent() {
+    return this._textContent;
+  }
+
   appendChild(child) {
     this.children.push(child);
+  }
+
+  setAttribute(name, value) {
+    this.attributes.set(name, String(value));
   }
 
   click() {
