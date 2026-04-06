@@ -124,12 +124,13 @@ test.describe('large e2e: 詳細画面から favorite/queue の追加と解除�
       method: 'POST',
     });
 
-    await page.click('button[type="submit"]');
+    await Promise.all([
+      page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
+      page.click('button[type="submit"]'),
+    ]);
 
     const loginResponse = await loginResponsePromise;
     expect(loginResponse.status()).toBe(200);
-
-    await page.waitForNavigation({ waitUntil: 'networkidle' });
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 
     await page.goto(`${baseUrl}/screen/detail/${seedMediaId}`, { waitUntil: 'networkidle' });
