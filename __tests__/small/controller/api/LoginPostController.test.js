@@ -18,8 +18,16 @@ describe('LoginPostController', () => {
     return res;
   };
 
-  const execute = async ({ body, session }) => {
-    const req = { body, session };
+  const execute = async ({ body, session, env = {} }) => {
+    const req = {
+      body,
+      session,
+      app: {
+        locals: {
+          env,
+        },
+      },
+    };
     const res = createRes();
 
     await controller.execute(req, res);
@@ -50,6 +58,9 @@ describe('LoginPostController', () => {
     expect(res.cookie).toHaveBeenCalledWith('session_token', 'token-1', {
       httpOnly: true,
       path: '/',
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 86_400_000,
     });
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 0 });
@@ -93,5 +104,25 @@ describe('LoginPostController', () => {
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
+  });
+
+  it('本番環境では secure=true / sameSite=strict / maxAge=セッションTTL を設定する', async () => {
+    const session = { regenerate: jest.fn() };
+    const { res } = await execute({
+      body: { username: 'admin', password: 'secret' },
+      session,
+      env: {
+        nodeEnv: 'production',
+        loginSessionTtlMs: 120_000,
+      },
+    });
+
+    expect(res.cookie).toHaveBeenCalledWith('session_token', 'token-1', {
+      httpOnly: true,
+      path: '/',
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 120_000,
+    });
   });
 });

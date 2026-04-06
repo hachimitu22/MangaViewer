@@ -22,6 +22,7 @@ const createApp = () => {
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
       devSessionPaths: ['/protected'],
+      allowLegacySessionTokenHeader: 'true',
     },
     dependencies: {},
   });
@@ -41,19 +42,18 @@ const createApp = () => {
 describe('setupMiddleware と SessionAuthMiddleware の接続 (medium)', () => {
   test.each([
     {
-      title: 'x-session-token を最優先で採用する',
+      title: 'session_token Cookie を優先して採用する',
       headers: {
-        'x-session-token': 'header-token',
         cookie: 'session_token=cookie-token',
       },
-      expected: 'header-token',
+      expected: 'cookie-token',
     },
     {
-      title: 'x-session-token が無い場合は session_token Cookie を採用する',
+      title: 'Cookie が無い場合は feature flag で x-session-token を採用できる',
       headers: {
-        cookie: 'theme=dark; session_token=cookie-token',
+        'x-session-token': 'header-token',
       },
-      expected: 'cookie-token',
+      expected: 'header-token',
     },
     {
       title: 'ヘッダ/Cookie が無い場合は DevelopmentSession を採用する',

@@ -30,6 +30,8 @@ const parseCookieHeader = cookieHeader => {
     }, {});
 };
 
+const isEnabled = value => String(value || '').toLowerCase() === 'true';
+
 const attachSessionHelpers = req => {
   req.session = req.session ?? {};
   req.session.req = req;
@@ -46,6 +48,11 @@ const attachSessionHelpers = req => {
 };
 
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
+  app.locals = app.locals ?? {};
+  if (typeof app.locals.env === 'undefined') {
+    app.locals.env = env;
+  }
+
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('view engine', 'ejs');
   if (typeof env.contentRootDirectory === 'string' && env.contentRootDirectory.length > 0) {
@@ -60,10 +67,12 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
 
     const sessionToken = req.header('x-session-token');
     const cookies = parseCookieHeader(req.header('cookie'));
-    if (typeof sessionToken === 'string' && sessionToken.length > 0) {
-      req.session.session_token = sessionToken;
-    } else if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
+    const allowLegacySessionHeader = isEnabled(env.allowLegacySessionTokenHeader);
+
+    if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
       req.session.session_token = cookies.session_token;
+    } else if (allowLegacySessionHeader && typeof sessionToken === 'string' && sessionToken.length > 0) {
+      req.session.session_token = sessionToken;
     } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
       req.session.session_token = env.devSessionToken;
     }
