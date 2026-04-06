@@ -27,8 +27,8 @@ const setRouterScreenSearchGet = ({
         currentPath: '/screen/search',
         currentUserId: req.context?.userId || null,
         sortOptions: [
-          { value: 'date_asc', label: '登録の新しい順' },
-          { value: 'date_desc', label: '登録の古い順' },
+          { value: 'date_desc', label: '登録の新しい順' },
+          { value: 'date_asc', label: '登録の古い順' },
           { value: 'title_asc', label: 'タイトル名の昇順' },
           { value: 'title_desc', label: 'タイトル名の降順' },
           { value: 'random', label: 'ランダム' },
