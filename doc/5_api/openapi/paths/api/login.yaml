@@ -1,6 +1,7 @@
 # /api/login
 post:
   summary: ログイン処理
+  description: ログイン成功時に session_token Cookie を発行する。
   requestBody:
     required: true
     content:
@@ -22,7 +23,7 @@ post:
       description: ログイン成否、セッション発行
       headers:
         Set-Cookie:
-          description: セッショントークン (`session_token` Cookie)
+          description: session_token Cookie
           schema:
             type: string
       content:

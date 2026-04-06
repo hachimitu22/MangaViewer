@@ -59,7 +59,7 @@ components:
             type: string
             example: /error
     UnauthorizedApi:
-      description: セッションIDが無効、または未送信
+      description: session_token Cookie が無効、または未送信
       content:
         application/json:
           schema:
