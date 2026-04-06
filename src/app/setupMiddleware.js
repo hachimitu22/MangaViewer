@@ -30,8 +30,6 @@ const parseCookieHeader = cookieHeader => {
     }, {});
 };
 
-const isEnabled = value => String(value || '').toLowerCase() === 'true';
-
 const attachSessionHelpers = req => {
   req.session = req.session ?? {};
   req.session.req = req;
@@ -65,19 +63,24 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     req.context = req.context ?? {};
     attachSessionHelpers(req);
 
-    const sessionToken = req.header('x-session-token');
     const cookies = parseCookieHeader(req.header('cookie'));
-    const allowLegacySessionHeader = isEnabled(env.allowLegacySessionTokenHeader);
+    const legacySessionToken = req.header('x-session-token');
 
     if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
       req.session.session_token = cookies.session_token;
-    } else if (allowLegacySessionHeader && typeof sessionToken === 'string' && sessionToken.length > 0) {
-      req.session.session_token = sessionToken;
     } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
       req.session.session_token = env.devSessionToken;
     }
 
     const logger = req.app?.locals?.dependencies?.logger;
+
+    if (typeof legacySessionToken === 'string' && legacySessionToken.length > 0) {
+      logger?.warn('auth.legacy_session_token_header.detected', {
+        count: 1,
+        source_ip: req.ip || req.socket?.remoteAddress || null,
+        user_agent: req.header('user-agent') || '',
+      });
+    }
     const startedAt = Date.now();
     const requestId = req.header('x-request-id') || crypto.randomUUID();
     req.context.requestId = requestId;

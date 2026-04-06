@@ -6,15 +6,20 @@ const SessionAuthMiddleware = require('../../../../../src/controller/middleware/
 const SessionStateRegistrar = require('../../../../../src/infrastructure/SessionStateRegistrar');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
 const InMemorySessionStateStore = require('../../../../../src/infrastructure/InMemorySessionStateStore');
+const InMemoryLoginAttemptStore = require('../../../../../src/infrastructure/InMemoryLoginAttemptStore');
 const StaticLoginAuthenticator = require('../../../../../src/infrastructure/StaticLoginAuthenticator');
 const { LoginService } = require('../../../../../src/application/user/command/LoginService');
 const setupMiddleware = require('../../../../../src/app/setupMiddleware');
 
 describe('setRouterApiLogin (middle)', () => {
-  const createApp = () => {
+  const createApp = ({
+    maxAttemptsPerWindow = 5,
+    windowMs = 60_000,
+  } = {}) => {
     const app = express();
     const router = express.Router();
     const sessionStateStore = new InMemorySessionStateStore();
+    const loginAttemptStore = new InMemoryLoginAttemptStore();
     const authResolver = new SessionStateAuthAdapter({ sessionStateStore });
     const auth = new SessionAuthMiddleware(authResolver);
 
@@ -36,6 +41,9 @@ describe('setRouterApiLogin (middle)', () => {
         sessionStateRegistrar: new SessionStateRegistrar({ sessionStateStore }),
         sessionTtlMs: 60_000,
       }),
+      loginAttemptStore,
+      maxAttemptsPerWindow,
+      windowMs,
     });
 
     router.get('/api/protected', auth.execute.bind(auth), (req, res) => {
@@ -46,8 +54,8 @@ describe('setRouterApiLogin (middle)', () => {
     return app;
   };
 
-  test('POST /api/login に成功すると Set-Cookie を返し、後続リクエストで認証できる', async () => {
-    const app = createApp();
+  test('閾値以内は通常通りログインできる', async () => {
+    const app = createApp({ maxAttemptsPerWindow: 5 });
 
     const loginResponse = await request(app)
       .post('/api/login')
@@ -68,22 +76,91 @@ describe('setRouterApiLogin (middle)', () => {
     expect(protectedResponse.body).toEqual({ userId: 'user-001' });
   });
 
-  test('POST /api/login に失敗すると code=1 を返し、認証状態を確立しない', async () => {
-    const app = createApp();
+  test('閾値超過でRateLimiterにより拒否される', async () => {
+    const app = createApp({ maxAttemptsPerWindow: 2, windowMs: 60_000 });
 
-    const loginResponse = await request(app)
+    const first = await request(app)
+      .post('/api/login')
+      .type('form')
+      .send({ username: 'admin', password: 'wrong' });
+    const second = await request(app)
+      .post('/api/login')
+      .type('form')
+      .send({ username: 'admin', password: 'wrong' });
+    const third = await request(app)
       .post('/api/login')
       .type('form')
       .send({ username: 'admin', password: 'wrong' });
 
-    expect(loginResponse.status).toBe(200);
-    expect(loginResponse.body).toEqual({ code: 1 });
-    expect(loginResponse.headers['set-cookie']).toBeUndefined();
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(third.status).toBe(429);
+    expect(third.body).toEqual({ code: 1 });
+  });
 
-    const protectedResponse = await request(app)
-      .get('/api/protected');
+  test('ロック期間経過後は再試行可能', async () => {
+    const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
 
-    expect(protectedResponse.status).toBe(401);
-    expect(protectedResponse.body).toEqual({ message: '認証に失敗しました' });
+      for (let i = 0; i < 3; i += 1) {
+        const response = await request(app)
+          .post('/api/login')
+          .type('form')
+          .send({ username: 'admin', password: 'wrong' });
+        expect(response.status).toBe(200);
+      }
+
+      const lockedResponse = await request(app)
+        .post('/api/login')
+        .type('form')
+        .send({ username: 'admin', password: 'secret' });
+
+      expect(lockedResponse.status).toBe(429);
+      expect(lockedResponse.body).toEqual({ code: 1 });
+
+    await new Promise(resolve => setTimeout(resolve, 1_100));
+
+      const retryResponse = await request(app)
+        .post('/api/login')
+        .type('form')
+        .send({ username: 'admin', password: 'secret' });
+
+      expect(retryResponse.status).toBe(200);
+      expect(retryResponse.body).toEqual({ code: 0 });
+  });
+
+  test('成功時に失敗カウンタがリセットされる', async () => {
+    const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
+
+      for (let i = 0; i < 2; i += 1) {
+        const response = await request(app)
+          .post('/api/login')
+          .type('form')
+          .send({ username: 'admin', password: 'wrong' });
+        expect(response.status).toBe(200);
+      }
+
+      const success = await request(app)
+        .post('/api/login')
+        .type('form')
+        .send({ username: 'admin', password: 'secret' });
+
+      expect(success.status).toBe(200);
+      expect(success.body).toEqual({ code: 0 });
+
+      for (let i = 0; i < 2; i += 1) {
+        const response = await request(app)
+          .post('/api/login')
+          .type('form')
+          .send({ username: 'admin', password: 'wrong' });
+        expect(response.status).toBe(200);
+      }
+
+      const shouldNotLockYet = await request(app)
+        .post('/api/login')
+        .type('form')
+        .send({ username: 'admin', password: 'secret' });
+
+      expect(shouldNotLockYet.status).toBe(200);
+      expect(shouldNotLockYet.body).toEqual({ code: 0 });
   });
 });

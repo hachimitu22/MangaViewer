@@ -10,6 +10,7 @@ const setRouterApiLogin = require('../../../../../src/controller/router/user/set
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
 const SessionStateRegistrar = require('../../../../../src/infrastructure/SessionStateRegistrar');
 const InMemorySessionStateStore = require('../../../../../src/infrastructure/InMemorySessionStateStore');
+const InMemoryLoginAttemptStore = require('../../../../../src/infrastructure/InMemoryLoginAttemptStore');
 const StaticLoginAuthenticator = require('../../../../../src/infrastructure/StaticLoginAuthenticator');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
@@ -48,13 +49,9 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     const app = express();
     const router = express.Router();
     const sessionStateStore = new InMemorySessionStateStore();
+    const loginAttemptStore = new InMemoryLoginAttemptStore();
 
-    setupMiddleware(app, {
-      env: {
-        allowLegacySessionTokenHeader: 'false',
-      },
-      dependencies: {},
-    });
+    setupMiddleware(app, { env: {}, dependencies: {} });
 
     setRouterApiLogin({
       router,
@@ -67,6 +64,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
         sessionStateRegistrar: new SessionStateRegistrar({ sessionStateStore }),
         sessionTtlMs: 60_000,
       }),
+      loginAttemptStore,
     });
 
     const authResolver = {
@@ -90,7 +88,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     };
   };
 
-  test('ログイン後は Cookie のみで /api/media に成功し、x-session-token なしでも認証できる', async () => {
+  test('ログイン後は Cookie のみで /api/media に成功し、ヘッダ不要で認証できる', async () => {
     const { app, authResolver } = createApp();
 
     const loginResponse = await request(app)
@@ -102,6 +100,8 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     expect(loginResponse.body).toEqual({ code: 0 });
     expect(loginResponse.headers['set-cookie']).toBeDefined();
 
+    const validJpegHeader = Buffer.from([0xff, 0xd8, 0xff, 0xdb]);
+
     const response = await request(app)
       .post('/api/media')
       .set('Cookie', loginResponse.headers['set-cookie'])
@@ -109,7 +109,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg');
+      .attach('contents[0][file]', validJpegHeader, { filename: 'first.jpg', contentType: 'image/jpeg' });
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({

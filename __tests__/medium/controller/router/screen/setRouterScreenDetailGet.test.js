@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenDetailGet = require('../../../../../src/controller/router/screen/setRouterScreenDetailGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -81,7 +82,7 @@ describe('setRouterScreenDetailGet (middle)', () => {
     app.set('view engine', 'ejs');
 
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -102,7 +103,7 @@ describe('setRouterScreenDetailGet (middle)', () => {
     const response = await requestApp({
       app: createApp(),
       targetPath: '/screen/detail/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(200);

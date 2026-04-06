@@ -21,6 +21,7 @@ const setRouterScreenSummaryGet = require('../controller/router/screen/setRouter
 const setRouterScreenViewerGet = require('../controller/router/screen/setRouterScreenViewerGet');
 const setRouterApiFavoriteAndQueue = require('../controller/router/user/setRouterApiFavoriteAndQueue');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
+const InMemoryLoginAttemptStore = require('../infrastructure/InMemoryLoginAttemptStore');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
 const SequelizeMediaQueryRepository = require('../infrastructure/SequelizeMediaQueryRepository');
@@ -111,6 +112,7 @@ const createDependencies = (env = {}) => {
     unitOfWorkContext: unitOfWork,
   });
   const sessionStateStore = new InMemorySessionStateStore();
+  const loginAttemptStore = new InMemoryLoginAttemptStore();
   const mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
   const userRepository = new SequelizeUserRepository({
     sequelize,
@@ -167,6 +169,7 @@ const createDependencies = (env = {}) => {
     addQueueService,
     removeQueueService,
     sessionStateStore,
+    loginAttemptStore,
     sessionStateRegistrar,
     sessionTerminator,
     loginAuthenticator,

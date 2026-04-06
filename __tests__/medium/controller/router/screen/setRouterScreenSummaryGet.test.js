@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenSummaryGet = require('../../../../../src/controller/router/screen/setRouterScreenSummaryGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -60,7 +61,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     });
 
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -82,7 +83,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     const response = await requestApp({
       app,
       targetPath: '/screen/summary?summaryPage=1&start=11&size=5&title=%E5%A4%AA%E9%83%8E&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&tags=%E4%B8%8D%E6%AD%A3&sort=title_desc',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(200);

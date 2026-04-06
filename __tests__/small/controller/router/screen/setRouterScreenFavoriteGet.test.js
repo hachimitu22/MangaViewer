@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenFavoriteGet = require('../../../../../src/controller/router/screen/setRouterScreenFavoriteGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -34,7 +35,7 @@ describe('setRouterScreenFavoriteGet', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -52,7 +53,7 @@ describe('setRouterScreenFavoriteGet', () => {
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
     const response = await fetch(`http://127.0.0.1:${port}/screen/favorite?sort=title_desc&page=2`, {
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
     const bodyText = await response.text();
     await new Promise(resolve => server.close(resolve));
@@ -80,7 +81,7 @@ describe('setRouterScreenFavoriteGet', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -98,7 +99,7 @@ describe('setRouterScreenFavoriteGet', () => {
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
     await fetch(`http://127.0.0.1:${port}/screen/favorite?sort=invalid&page=0`, {
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
     await new Promise(resolve => server.close(resolve));
 

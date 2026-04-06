@@ -56,6 +56,7 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
   dependencies.routeSetters.setRouterApiLogin({
     router,
     loginService: dependencies.loginService,
+    loginAttemptStore: dependencies.loginAttemptStore,
   });
   dependencies.routeSetters.setRouterApiLogout({
     router,

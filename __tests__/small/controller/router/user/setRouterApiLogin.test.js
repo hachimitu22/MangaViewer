@@ -11,33 +11,50 @@ describe('setRouterApiLogin', () => {
     return res;
   };
 
-  it('POST /api/login にログインコントローラーを登録できる', async () => {
+  const createLoginAttemptStore = () => ({
+    consumeRateLimit: jest.fn()
+      .mockReturnValueOnce({ count: 1, resetAtMs: Date.now() + 60_000 })
+      .mockReturnValueOnce({ count: 1, resetAtMs: Date.now() + 60_000 }),
+    getTemporaryLockState: jest.fn().mockReturnValue({ isLocked: false, failureCount: 0, lockUntilMs: 0 }),
+    recordAuthenticationFailure: jest.fn(),
+    clearAuthenticationFailures: jest.fn(),
+  });
+
+  it('POST /api/login にRateLimiterとログインコントローラーを登録できる', async () => {
     const router = { post: jest.fn() };
     const loginService = {
       execute: jest.fn().mockResolvedValue({ code: 0, sessionToken: 'token-1', constructor: { name: 'LoginSucceededResult' } }),
     };
+    const loginAttemptStore = createLoginAttemptStore();
 
-    setRouterApiLogin({ router, loginService });
+    setRouterApiLogin({ router, loginService, loginAttemptStore });
 
     expect(router.post).toHaveBeenCalledTimes(1);
-    const [path, handler] = router.post.mock.calls[0];
+    const [path, rateLimiter, handler] = router.post.mock.calls[0];
     expect(path).toBe('/api/login');
+    expect(typeof rateLimiter).toBe('function');
     expect(typeof handler).toBe('function');
 
     const req = {
+      ip: '127.0.0.1',
       body: { username: 'admin', password: 'secret' },
       session: { regenerate: jest.fn() },
     };
     const res = createRes();
 
-    await handler(req, res);
+    await rateLimiter(req, res, async () => {
+      await handler(req, res);
+    });
 
     expect(loginService.execute).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
   it('loginServiceが不正な場合は初期化時に例外となる', () => {
-    expect(() => setRouterApiLogin({ router: { post: jest.fn() }, loginService: {} }))
-      .toThrow('loginService.execute must be a function');
+    expect(() => setRouterApiLogin({
+      router: { post: jest.fn() },
+      loginService: {},
+      loginAttemptStore: createLoginAttemptStore(),
+    })).toThrow('loginService.execute must be a function');
   });
 });
