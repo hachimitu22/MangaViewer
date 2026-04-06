@@ -29,9 +29,9 @@ const extractMediaIdValue = mediaId => {
 const buildSortOrder = (sortType) => {
   switch (sortType) {
     case SortType.DATE_ASC:
-      return [['createdAtProxy', 'ASC'], ['media_id', 'ASC']];
+      return [['created_at', 'ASC'], ['media_id', 'ASC']];
     case SortType.DATE_DESC:
-      return [['createdAtProxy', 'DESC'], ['media_id', 'ASC']];
+      return [['created_at', 'DESC'], ['media_id', 'ASC']];
     case SortType.TITLE_ASC:
       return [['title', 'ASC'], ['media_id', 'ASC']];
     case SortType.TITLE_DESC:
@@ -235,10 +235,7 @@ module.exports = class SequelizeMediaQueryRepository extends IMediaQueryReposito
     const order = buildSortOrder(condition.sortType);
     const query = {
       where: { media_id: mediaIds },
-      attributes: [
-        'media_id',
-        [this.sequelize.literal('rowid'), 'createdAtProxy'],
-      ],
+      attributes: ['media_id'],
       offset: condition.start - 1,
       limit: condition.size,
     };
