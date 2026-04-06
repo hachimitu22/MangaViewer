@@ -19,7 +19,12 @@ class ScreenViewerGetController {
 
   async execute(req, res) {
     try {
-      const mediaPage = Number.parseInt(req.params.mediaPage, 10);
+      const mediaPageParam = String(req.params.mediaPage);
+      if (!/^[1-9][0-9]*$/.test(mediaPageParam)) {
+        return res.redirect(301, '/screen/error');
+      }
+
+      const mediaPage = Number(mediaPageParam);
       const result = await this.#getMediaContentWithNavigationService.execute(new Input({
         mediaId: req.params.mediaId,
         contentPosition: mediaPage,
