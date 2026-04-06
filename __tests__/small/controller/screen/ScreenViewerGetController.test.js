@@ -98,6 +98,19 @@ describe('ScreenViewerGetController', () => {
     expect(res.redirect).toHaveBeenCalledWith(301, '/screen/error');
   });
 
+  test.each(['1abc', '01'])('mediaPage が不正値(%s)なら service 呼び出し前にエラー画面へ 301 リダイレクトする', async (invalidMediaPage) => {
+    const getMediaContentWithNavigationService = {
+      execute: jest.fn(),
+    };
+    const controller = new ScreenViewerGetController({ getMediaContentWithNavigationService });
+    const res = createRes();
+
+    await controller.execute({ params: { mediaId: 'media-1', mediaPage: invalidMediaPage } }, res);
+
+    expect(getMediaContentWithNavigationService.execute).not.toHaveBeenCalled();
+    expect(res.redirect).toHaveBeenCalledWith(301, '/screen/error');
+  });
+
   test('想定外の戻り値や service 例外時はエラー画面へ 301 リダイレクトする', async () => {
     const unexpectedService = {
       execute: jest.fn().mockResolvedValue({ kind: 'unexpected' }),
