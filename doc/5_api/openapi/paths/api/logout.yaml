@@ -1,6 +1,7 @@
 # /api/logout
 post:
   summary: ログアウト処理
+  description: session_token Cookie による認証済みセッションを破棄する。
   security:
     - cookieAuth: []
   responses:
