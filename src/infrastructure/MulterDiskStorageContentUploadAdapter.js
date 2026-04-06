@@ -345,25 +345,27 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
     }
 
     if (hasFile) {
-      if (!(/^[0-9a-f]{32}$/).test(uploadedFile.generatedContentId ?? '')) {
+      const normalizedGeneratedContentId = (uploadedFile.generatedContentId ?? '').toLowerCase();
+      if (!(/^[0-9a-f]{32}$/).test(normalizedGeneratedContentId)) {
         throw new Error('generated contentId is invalid');
       }
 
       return {
         index,
         position,
-        contentId: uploadedFile.generatedContentId,
+        contentId: normalizedGeneratedContentId,
       };
     }
 
-    if (!(/^[0-9a-f]{32}$/).test(contentId)) {
+    const normalizedContentId = contentId.toLowerCase();
+    if (!(/^[0-9a-f]{32}$/).test(normalizedContentId)) {
       throw new Error('contentId is invalid');
     }
 
     return {
       index,
       position,
-      contentId,
+      contentId: normalizedContentId,
     };
   }
 
@@ -385,16 +387,16 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
     }
 
     const normalized = rawValue.trim();
-    if ((/^[0-9a-f]{32}$/).test(normalized)) {
-      return normalized;
+    if ((/^[0-9a-f]{32}$/i).test(normalized)) {
+      return normalized.toLowerCase();
     }
 
-    const matched = normalized.match(/([0-9a-f]{32})(?:\?.*)?$/);
+    const matched = normalized.match(/([0-9a-f]{32})(?:\?.*)?$/i);
     if (!matched) {
       return normalized;
     }
 
-    return matched[1];
+    return matched[1].toLowerCase();
   }
 
   #createUniqueContentId() {
