@@ -9,7 +9,7 @@ describe('fixedUserPasswordHasher', () => {
   test('新方式ハッシュを生成して検証できる', () => {
     const passwordHash = hashPassword('secret', { bcryptCost: 4 });
 
-    expect(passwordHash).toEqual(expect.stringMatching(new RegExp(`^${BCRYPT_PBKDF_PREFIX}`)));
+    expect(passwordHash.startsWith(BCRYPT_PBKDF_PREFIX)).toBe(true);
 
     expect(verifyPassword({
       password: 'secret',

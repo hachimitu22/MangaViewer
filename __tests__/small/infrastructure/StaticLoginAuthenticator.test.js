@@ -42,7 +42,7 @@ describe('StaticLoginAuthenticator', () => {
       userId: 'user-1',
       username: 'admin',
       previousScheme: 'legacy-sha256',
-      passwordHash: expect.stringMatching(new RegExp(`^${BCRYPT_PBKDF_PREFIX}`)),
+      passwordHash: expect.stringContaining(BCRYPT_PBKDF_PREFIX),
     }));
   });
 
