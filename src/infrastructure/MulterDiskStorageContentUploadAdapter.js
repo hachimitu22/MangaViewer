@@ -198,7 +198,7 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
       }
 
       try {
-        await fs.promises.rm(currentDirectory, { recursive: false });
+        await fs.promises.rmdir(currentDirectory);
       } catch (error) {
         if (error?.code === 'ENOENT') {
           currentDirectory = path.dirname(currentDirectory);
