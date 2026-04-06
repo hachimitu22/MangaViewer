@@ -52,12 +52,13 @@ const login = async ({ page, baseUrl }) => {
     return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
   });
 
-  await page.click('button[type="submit"]');
+  await Promise.all([
+    page.waitForURL(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' }),
+    page.click('button[type="submit"]'),
+  ]);
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
-
-  await page.waitForNavigation({ waitUntil: 'networkidle' });
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 const readDetailLinks = async (currentPage) => currentPage.evaluate(() => {

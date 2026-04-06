@@ -67,6 +67,38 @@ describe('createDependencies login wiring', () => {
     })).toThrow('本番環境ではログイン認証設定が必須です');
   });
 
+
+  test('passwordHash 指定時は平文パスワード未設定でもログインできる', async () => {
+    if (dependencies) {
+      await dependencies.close();
+      dependencies = undefined;
+    }
+
+    const { sha256Hex } = require('../../../src/infrastructure/auth/passwordHasher');
+    dependencies = createDependencies({
+      nodeEnv: 'production',
+      databaseStoragePath: path.join(databaseRoot, 'hashed.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'hashed-contents'),
+      loginUsername: 'admin',
+      loginPasswordHash: sha256Hex('secret'),
+      loginUserId: 'user-001',
+      loginSessionTtlMs: 60_000,
+    });
+    await dependencies.ready;
+
+    const session = {
+      regenerate: jest.fn((callback) => callback()),
+    };
+
+    const result = await dependencies.loginService.execute(new Query({
+      username: 'admin',
+      password: 'secret',
+      session,
+    }));
+
+    expect(result).toBeInstanceOf(LoginSucceededResult);
+  });
+
   test('non-production で認証設定が不足していてもデフォルト資格情報でログインできる', async () => {
     if (dependencies) {
       await dependencies.close();

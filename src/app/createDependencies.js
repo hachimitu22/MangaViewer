@@ -66,15 +66,28 @@ const isConfiguredValue = value => String(value || '').trim().length > 0;
 
 const isProductionEnv = env => String(env.nodeEnv || '').toLowerCase() === 'production';
 
+
+const resolveLoginHashOptions = env => ({
+  memoryCost: env.loginHashMemoryCost,
+  iterations: env.loginHashIterations,
+  parallelism: env.loginHashParallelism,
+  timeCost: env.loginHashTimeCost,
+});
+
 const resolveLoginAuthConfig = env => {
   const rawConfig = {
     username: env.loginUsername,
     password: env.loginPassword,
+    passwordHash: env.loginPasswordHash,
     userId: env.loginUserId,
   };
-  const missingKeys = Object.entries(rawConfig)
-    .filter(([, value]) => !isConfiguredValue(value))
-    .map(([key]) => key);
+  const missingKeys = [
+    !isConfiguredValue(rawConfig.username) ? 'username' : null,
+    !isConfiguredValue(rawConfig.userId) ? 'userId' : null,
+    !isConfiguredValue(rawConfig.password) && !isConfiguredValue(rawConfig.passwordHash)
+      ? 'password/passwordHash'
+      : null,
+  ].filter(Boolean);
 
   if (isProductionEnv(env) && missingKeys.length > 0) {
     throw new Error([
@@ -86,12 +99,14 @@ const resolveLoginAuthConfig = env => {
   const defaults = {
     username: 'admin',
     password: 'admin',
+    passwordHash: '',
     userId: 'admin',
   };
 
   return {
     username: isConfiguredValue(rawConfig.username) ? rawConfig.username : defaults.username,
     password: isConfiguredValue(rawConfig.password) ? rawConfig.password : defaults.password,
+    passwordHash: isConfiguredValue(rawConfig.passwordHash) ? rawConfig.passwordHash : defaults.passwordHash,
     userId: isConfiguredValue(rawConfig.userId) ? rawConfig.userId : defaults.userId,
     isUsingDefaultCredentials: missingKeys.length > 0,
   };
@@ -168,7 +183,15 @@ const createDependencies = (env = {}) => {
   const loginAuthenticator = new StaticLoginAuthenticator({
     username: loginAuthConfig.username,
     password: loginAuthConfig.password,
+    passwordHash: loginAuthConfig.passwordHash,
     userId: loginAuthConfig.userId,
+    hashOptions: resolveLoginHashOptions(env),
+    onPasswordHashUpgrade: async ({ username, userId }) => {
+      logger.warn('旧SHA-256ハッシュでの認証に成功したため再ハッシュが必要です。固定ユーザー認証の保存先更新を実装してください。', {
+        username,
+        userId,
+      });
+    },
   });
   const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
   const deleteMediaService = new DeleteMediaService({ mediaRepository, unitOfWork });
