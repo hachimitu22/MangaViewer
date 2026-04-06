@@ -302,9 +302,7 @@
           try {
             const response = await fetch('/api/media', {
               method: 'POST',
-              headers: {
-                'x-session-token': window.localStorage.getItem('session_token') || '',
-              },
+              credentials: 'same-origin',
               body: payload,
             });
             if (response.status === 401) {

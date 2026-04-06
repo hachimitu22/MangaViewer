@@ -37,9 +37,13 @@ class LoginPostController {
       }));
 
       if (result instanceof LoginSucceededResult) {
+        const cookiePolicy = this.#resolveSessionCookiePolicy(req);
         res.cookie('session_token', result.sessionToken, {
           httpOnly: true,
           path: '/',
+          secure: cookiePolicy.secure,
+          sameSite: cookiePolicy.sameSite,
+          maxAge: cookiePolicy.maxAge,
         });
 
         logger?.info('auth.login.success', {
@@ -66,6 +70,24 @@ class LoginPostController {
 
   #isValidCredential(value) {
     return typeof value === 'string' && value.length > 0;
+  }
+
+  #resolveSessionCookiePolicy(req) {
+    const env = req?.app?.locals?.env ?? {};
+    const nodeEnv = String(env.nodeEnv || process.env.NODE_ENV || '').toLowerCase();
+    const isProduction = nodeEnv === 'production';
+    const sessionTtlMs = Number.isFinite(env.loginSessionTtlMs) && env.loginSessionTtlMs > 0
+      ? env.loginSessionTtlMs
+      : 86_400_000;
+
+    return {
+      // ローカル開発(http)では false、本番(https)では true を強制する。
+      secure: isProduction,
+      // 本番は厳しめに strict、非本番は開発しやすさを考慮して lax。
+      sameSite: isProduction ? 'strict' : 'lax',
+      // セッション有効期限と Cookie 期限を一致させる。
+      maxAge: sessionTtlMs,
+    };
   }
 
   #fail(res) {

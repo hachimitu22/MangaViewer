@@ -55,7 +55,7 @@ describe('setRouterApiLogin (middle)', () => {
     expect(loginResponse.status).toBe(200);
     expect(loginResponse.body).toEqual({ code: 0 });
     expect(loginResponse.headers['set-cookie']).toEqual(
-      expect.arrayContaining([expect.stringMatching(/^session_token=[^;]+; Path=\/; HttpOnly/)]),
+      expect.arrayContaining([expect.stringMatching(/^session_token=[^;]+; Max-Age=60; Path=\/; Expires=[^;]+; HttpOnly; SameSite=Lax/)]),
     );
 
     const protectedResponse = await request(app)

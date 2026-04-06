@@ -28,32 +28,35 @@ const createHarness = ({ env = {} } = {}) => {
 describe('setupMiddleware (small)', () => {
   test.each([
     {
-      title: 'x-session-token が存在する場合は最優先で採用する',
+      title: 'session_token Cookie が存在する場合は採用する',
       headers: {
-        'x-session-token': 'header-token',
         cookie: 'session_token=cookie-token',
-      },
-      expected: 'header-token',
-    },
-    {
-      title: 'x-session-token が無い場合は session_token Cookie を採用する',
-      headers: {
-        cookie: 'theme=dark; session_token=cookie-token',
       },
       expected: 'cookie-token',
     },
     {
-      title: 'x-session-token と session_token Cookie が無い場合は開発用固定セッションを採用する',
+      title: 'Cookie が無く feature flag が有効なら x-session-token を採用する',
+      headers: {
+        'x-session-token': 'header-token',
+      },
+      env: {
+        allowLegacySessionTokenHeader: 'true',
+      },
+      expected: 'header-token',
+    },
+    {
+      title: 'Cookie と x-session-token が無い場合は開発用固定セッションを採用する',
       headers: {},
       expected: 'dev-token',
     },
-  ])('セッショントークン解決優先順位: $title', ({ headers, expected }) => {
+  ])('セッショントークン解決優先順位: $title', ({ headers, expected, env: overrideEnv = {} }) => {
     const { middleware } = createHarness({
       env: {
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
         devSessionPaths: ['/screen/entry'],
+        ...overrideEnv,
       },
     });
 
@@ -64,6 +67,29 @@ describe('setupMiddleware (small)', () => {
 
     expect(req.session.session_token).toBe(expected);
     expect(next).toHaveBeenCalledTimes(1);
+  });
+
+  test('feature flag 無効時は x-session-token を無視する', () => {
+    const { middleware } = createHarness({
+      env: {
+        devSessionToken: 'dev-token',
+        devSessionUserId: 'admin-dev',
+        devSessionTtlMs: 60_000,
+        devSessionPaths: ['/screen/entry'],
+        allowLegacySessionTokenHeader: 'false',
+      },
+    });
+
+    const req = createReq({
+      headers: {
+        'x-session-token': 'legacy-token',
+      },
+      path: '/screen/entry',
+    });
+
+    middleware(req, {}, jest.fn());
+
+    expect(req.session.session_token).toBe('dev-token');
   });
 
   test('Cookie 解析: Cookieヘッダの不正要素は無視し、session_token が無い場合は開発用固定セッションへフォールバックする', () => {
