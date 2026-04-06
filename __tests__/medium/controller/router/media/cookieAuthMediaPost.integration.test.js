@@ -16,6 +16,13 @@ const SequelizeUnitOfWork = require('../../../../../src/infrastructure/Sequelize
 const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
 const { LoginService } = require('../../../../../src/application/user/command/LoginService');
 
+const createMinimalJpegBuffer = () => Buffer.from([
+  0xff, 0xd8, 0xff, 0xdb,
+  0x00, 0x43, 0x00, 0x08,
+  0x06, 0x06, 0x07, 0x06,
+  0x05, 0x08, 0x07, 0x07,
+]);
+
 class FixedMediaIdValueGenerator {
   generate() {
     return 'abcdefabcdefabcdefabcdefabcdefab';
@@ -109,7 +116,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from('a'), 'first.jpg');
+      .attach('contents[0][file]', createMinimalJpegBuffer(), 'first.jpg');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({

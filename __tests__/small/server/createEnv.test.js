@@ -1,4 +1,4 @@
-const { createEnv } = require('../../../src/server');
+const { createEnv } = require('../../../src/app/createEnv');
 
 describe('server.createEnv', () => {
   test('ハッシュ関連パラメータが未指定の場合に安全なデフォルトを設定する', () => {
