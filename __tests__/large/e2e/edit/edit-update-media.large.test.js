@@ -30,12 +30,13 @@ const login = async ({ page, baseUrl }) => {
     return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
   });
 
+  const summaryPagePromise = page.waitForURL(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
   await page.click('button[type="submit"]');
 
   const loginResponse = await loginResponsePromise;
   expect(loginResponse.status()).toBe(200);
 
-  await page.waitForNavigation({ waitUntil: 'networkidle' });
+  await summaryPagePromise;
   expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 };
 
