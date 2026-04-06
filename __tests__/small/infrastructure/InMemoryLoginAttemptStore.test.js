@@ -1,4 +1,4 @@
-const InMemoryLoginAttemptStore = require('../../../../src/infrastructure/InMemoryLoginAttemptStore');
+const InMemoryLoginAttemptStore = require('../../../src/infrastructure/InMemoryLoginAttemptStore');
 
 describe('InMemoryLoginAttemptStore', () => {
   test('レート制限カウンタはウィンドウ内で加算される', () => {
