@@ -4,6 +4,12 @@ const createApp = require('./app');
 const { resolveLoginAuthConfig } = require('./app/createDependencies');
 const { hasDevelopmentSession } = require('./app/developmentSession');
 
+
+const parsePositiveInt = (value, fallback) => {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
 const parseSessionPaths = value => (value || '')
   .split(',')
   .map(entry => entry.trim())
@@ -29,8 +35,13 @@ const createEnv = source => ({
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
   loginUsername: source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '',
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
+  loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
   loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',
   loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
+  loginHashMemoryCost: parsePositiveInt(source.LOGIN_HASH_MEMORY_COST, 65_536),
+  loginHashIterations: parsePositiveInt(source.LOGIN_HASH_ITERATIONS, 16_384),
+  loginHashParallelism: parsePositiveInt(source.LOGIN_HASH_PARALLELISM, 1),
+  loginHashTimeCost: parsePositiveInt(source.LOGIN_HASH_TIME_COST, 8),
   logFilePath: source.LOG_FILE_PATH || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log'),
   logLevel: source.LOG_LEVEL || 'INFO',
   logOutputs: source.LOG_OUTPUTS

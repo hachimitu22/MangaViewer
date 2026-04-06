@@ -1,11 +1,24 @@
-const { hashPassword } = require('./auth/fixedUserPasswordHasher');
+const {
+  hashPassword,
+  verifyPassword,
+  detectHashScheme,
+} = require('./auth/passwordHasher');
 
 class StaticLoginAuthenticator {
   #username;
   #passwordHash;
   #userId;
+  #hashOptions;
+  #onPasswordHashUpgrade;
 
-  constructor({ username, password, passwordHash, userId } = {}) {
+  constructor({
+    username,
+    password,
+    passwordHash,
+    userId,
+    hashOptions,
+    onPasswordHashUpgrade,
+  } = {}) {
     if (!this.#isNonEmptyString(username)) {
       throw new Error('username must be a non-empty string');
     }
@@ -18,9 +31,15 @@ class StaticLoginAuthenticator {
       throw new Error('userId must be a non-empty string');
     }
 
+    if (onPasswordHashUpgrade !== undefined && typeof onPasswordHashUpgrade !== 'function') {
+      throw new Error('onPasswordHashUpgrade must be a function');
+    }
+
     this.#username = username;
-    this.#passwordHash = this.#isNonEmptyString(passwordHash) ? passwordHash : hashPassword(password);
+    this.#hashOptions = hashOptions;
+    this.#passwordHash = this.#isNonEmptyString(passwordHash) ? passwordHash : hashPassword(password, this.#hashOptions);
     this.#userId = userId;
+    this.#onPasswordHashUpgrade = onPasswordHashUpgrade;
   }
 
   async execute({ username, password } = {}) {
@@ -28,11 +47,30 @@ class StaticLoginAuthenticator {
       return null;
     }
 
-    if (hashPassword(password) === this.#passwordHash) {
-      return this.#userId;
+    if (!verifyPassword(password, this.#passwordHash)) {
+      return null;
     }
 
-    return null;
+    if (detectHashScheme(this.#passwordHash) === 'sha256') {
+      const upgradedHash = hashPassword(password, this.#hashOptions);
+      await this.#notifyPasswordHashUpgrade(upgradedHash);
+      this.#passwordHash = upgradedHash;
+    }
+
+    return this.#userId;
+  }
+
+  async #notifyPasswordHashUpgrade(nextPasswordHash) {
+    if (typeof this.#onPasswordHashUpgrade !== 'function') {
+      return;
+    }
+
+    await this.#onPasswordHashUpgrade({
+      username: this.#username,
+      userId: this.#userId,
+      passwordHash: nextPasswordHash,
+      reason: 'legacy-sha256-migrated',
+    });
   }
 
   #isNonEmptyString(value) {
