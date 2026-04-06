@@ -55,7 +55,7 @@ test.describe('large e2e: エントリー画面でメディアを新規登録で
     const tagLabel = '長編';
 
     const uploadFilePath = path.join(tempRootDirectory, 'entry-upload-1.jpg');
-    await fs.writeFile(uploadFilePath, 'dummy-image-bytes', { encoding: 'utf8' });
+    await fs.writeFile(uploadFilePath, Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00, 0x43]));
 
     await login({ baseUrl });
 

@@ -162,7 +162,7 @@ test.describe('large e2e: edit 画面での既存メディア更新', () => {
       `${replacementDirectory}/replacement-3.jpg`,
     ];
     await Promise.all(replacementFiles.map((filePath, index) => {
-      return fs.writeFile(filePath, `replacement-${index + 1}`, { encoding: 'utf8' });
+      return fs.writeFile(filePath, Buffer.from([0xff, 0xd8, 0xff, 0xdb, index]));
     }));
     await page.setInputFiles('#file-input', replacementFiles);
     await expect(page.locator('#media-list .media-item')).toHaveCount(3);
