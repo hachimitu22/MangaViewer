@@ -19,7 +19,9 @@ describe('setRouterApiLogin (middle)', () => {
     const auth = new SessionAuthMiddleware(authResolver);
 
     setupMiddleware(app, {
-      env: {},
+      env: {
+        loginSessionTtlMs: 60_000,
+      },
       dependencies: {},
     });
 
