@@ -98,10 +98,10 @@ const sortMediaOverviews = ({ sort, queueMediaIds, mediaOverviewMap, favoriteMed
     );
   };
 
-  if (sort === INPUT_SORT_TYPES.DATE_ASC) {
+  if (sort === INPUT_SORT_TYPES.DATE_DESC) {
     return [...queueMediaIds].map(toDisplayOverview);
   }
-  if (sort === INPUT_SORT_TYPES.DATE_DESC) {
+  if (sort === INPUT_SORT_TYPES.DATE_ASC) {
     return [...queueMediaIds].reverse().map(toDisplayOverview);
   }
 

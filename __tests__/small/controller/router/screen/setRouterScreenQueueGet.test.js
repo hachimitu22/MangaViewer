@@ -78,6 +78,8 @@ describe('setRouterScreenQueueGet', () => {
     expect(bodyText).toContain('お気に入り解除');
     expect(bodyText).toContain('あとで見る解除');
     expect(bodyText).toContain('/screen/queue?queuePage=1&amp;sort=title_asc');
+    expect(bodyText).toContain('追加日時の新しい順');
+    expect(bodyText).toContain('追加日時の古い順');
     expect(getQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({
       userId: 'user-001',
       sort: 'title_asc',
