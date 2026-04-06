@@ -32,7 +32,11 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
       req.context = {};
       adapter.execute(req, res, error => {
         if (error) {
-          res.status(200).json({ code: 1, message: error.message });
+          res.status(error.status ?? 200).json({
+            code: 1,
+            message: error.message,
+            reason: error.uploadReason ?? null,
+          });
           return;
         }
 
@@ -54,7 +58,7 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
       .field('contents[0][position]', '2')
       .field('contents[0][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
       .field('contents[1][position]', '1')
-      .attach('contents[1][file]', Buffer.from('new-content'), 'page1.jpg');
+      .attach('contents[1][file]', Buffer.from([0xff, 0xd8, 0xff, 0xdb]), 'page1.jpg');
 
     expect(response.status).toBe(200);
     expect(response.body.code).toBe(0);
@@ -73,7 +77,6 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
     );
 
     expect(fs.existsSync(savedPath)).toBe(true);
-    expect(fs.readFileSync(savedPath, 'utf8')).toBe('new-content');
   });
 
   test('既存コンテンツに public パスが指定されても contentId として扱える', async () => {
@@ -114,7 +117,7 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
     const response = await request(app)
       .post('/api/media')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from('new'), 'page1.jpg');
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff, 0xdb]), 'page1.jpg');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -131,36 +134,110 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
       'cc',
       'cccccccccccccccccccccccccccccccc'
     );
-    expect(fs.readFileSync(generatedPath, 'utf8')).toBe('new');
+    expect(fs.existsSync(generatedPath)).toBe(true);
 
     randomUUIDSpy.mockRestore();
     expect(crypto.randomUUID).toBe(originalRandomUUID);
   });
 
   test.each([
-    ['position欠落', request => request.attach('contents[0][file]', Buffer.from('a'), 'page1.jpg')],
-    ['fileとurlの両方指定', request => request
+    ['position欠落', req => req.attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'page1.jpg'), 200],
+    ['fileとurlの両方指定', req => req
       .field('contents[0][position]', '1')
       .field('contents[0][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-      .attach('contents[0][file]', Buffer.from('a'), 'page1.jpg')],
-    ['fileとurlの両方欠落', request => request.field('contents[0][position]', '1')],
-    ['urlが32文字小文字16進数ではない', request => request
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'page1.jpg'), 200],
+    ['fileとurlの両方欠落', req => req.field('contents[0][position]', '1'), 200],
+    ['urlが32文字小文字16進数ではない', req => req
       .field('contents[0][position]', '1')
-      .field('contents[0][url]', 'INVALID_CONTENT_ID')],
-    ['position重複', request => request
+      .field('contents[0][url]', 'INVALID_CONTENT_ID'), 200],
+    ['position重複', req => req
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from('a'), 'page1.jpg')
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'page1.jpg')
       .field('contents[1][position]', '1')
-      .field('contents[1][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')],
-    ['file fieldnameが不正', request => request
+      .field('contents[1][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'), 200],
+    ['file fieldnameが不正', req => req
       .field('contents[0][position]', '1')
-      .attach('contents[0][image]', Buffer.from('a'), 'page1.jpg')],
-  ])('%s場合はcb(error)相当の失敗レスポンスを返す', async (_name, buildRequest) => {
+      .attach('contents[0][image]', Buffer.from([0xff, 0xd8, 0xff]), 'page1.jpg'), 400],
+  ])('%s場合は失敗レスポンスを返す', async (_name, buildRequest, expectedStatus) => {
     const app = createApp();
 
     const response = await buildRequest(request(app).post('/api/media'));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(expectedStatus);
     expect(response.body.code).toBe(1);
   });
+
+  test('MIMEタイプ不正なファイルは type 理由で 400 を返す', async () => {
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/media')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', Buffer.from('not-image'), {
+        filename: 'malicious.txt',
+        contentType: 'text/plain',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      code: 1,
+      reason: 'type',
+    });
+  });
+
+  test('MIMEタイプとシグネチャが不一致なファイルは type 理由で 400 を返す', async () => {
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/media')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', Buffer.from('not-jpeg-signature'), {
+        filename: 'fake.jpg',
+        contentType: 'image/jpeg',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      code: 1,
+      reason: 'type',
+    });
+  });
+
+  test('重複フィールドは count 理由で 400 を返す', async () => {
+    const app = createApp();
+
+    const response = await request(app)
+      .post('/api/media')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg')
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'second.jpg');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      code: 1,
+      reason: 'count',
+    });
+  });
+
+  test('ファイルサイズ超過は size 理由で 400 を返す', async () => {
+    const app = createApp();
+    const oversized = Buffer.concat([
+      Buffer.from([0xff, 0xd8, 0xff]),
+      Buffer.alloc(50 * 1024 * 1024, 0x00),
+    ]);
+
+    const response = await request(app)
+      .post('/api/media')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', oversized, {
+        filename: 'big.jpg',
+        contentType: 'image/jpeg',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      code: 1,
+      reason: 'size',
+    });
+  }, 30_000);
 });

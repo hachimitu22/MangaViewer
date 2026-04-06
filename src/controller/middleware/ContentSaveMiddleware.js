@@ -25,12 +25,15 @@ class ContentSaveMiddleware {
 
       return undefined;
     } catch (error) {
+      const uploadReason = this.#resolveUploadReason(error);
       logger?.error('content.upload.error', {
         request_id: req?.context?.requestId,
         message: error?.message,
+        reason: uploadReason,
+        code: error?.code,
         error,
       });
-      return this.#fail(res);
+      return this.#fail(res, error);
     }
   }
 
@@ -47,10 +50,35 @@ class ContentSaveMiddleware {
     });
   }
 
-  #fail(res) {
-    return res.status(200).json({
+  #fail(res, error = null) {
+    return res.status(this.#resolveHttpStatus(error)).json({
       code: 1,
     });
+  }
+
+  #resolveHttpStatus(error) {
+    const status = Number(error?.status);
+    if (Number.isInteger(status) && status >= 400 && status < 500) {
+      return status;
+    }
+
+    return 200;
+  }
+
+  #resolveUploadReason(error) {
+    if (typeof error?.uploadReason === 'string' && error.uploadReason.length > 0) {
+      return error.uploadReason;
+    }
+
+    if (error?.code === 'LIMIT_FILE_SIZE') {
+      return 'size';
+    }
+
+    if (error?.code?.startsWith('LIMIT_')) {
+      return 'count';
+    }
+
+    return 'unknown';
   }
 
   #validateContentIds(contentIds) {

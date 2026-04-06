@@ -6,6 +6,70 @@ const multer = require('multer');
 
 const IContentUploadAdapter = require('../controller/middleware/adapter/IContentUploadAdapter');
 
+const MAX_FILES = 100;
+const MAX_FIELDS = 500;
+const MAX_PARTS = 600;
+const MAX_FILE_SIZE = 50 * 1024 * 1024;
+const FILE_FIELD_PATTERN = /^contents\[(\d+)\]\[file\]$/;
+const IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+]);
+const VIDEO_MIME_TYPES = new Set([
+  'video/mp4',
+  'video/webm',
+  'video/quicktime',
+]);
+const ALLOWED_MIME_TYPES = new Set([...IMAGE_MIME_TYPES, ...VIDEO_MIME_TYPES]);
+
+const SIGNATURE_VALIDATORS = {
+  'image/jpeg': header => header.length >= 3
+    && header[0] === 0xff
+    && header[1] === 0xd8
+    && header[2] === 0xff,
+  'image/png': header => header.length >= 8
+    && header[0] === 0x89
+    && header[1] === 0x50
+    && header[2] === 0x4e
+    && header[3] === 0x47
+    && header[4] === 0x0d
+    && header[5] === 0x0a
+    && header[6] === 0x1a
+    && header[7] === 0x0a,
+  'image/gif': header => header.length >= 6
+    && String.fromCharCode(...header.subarray(0, 6)).match(/^GIF8[79]a$/) !== null,
+  'image/webp': header => header.length >= 12
+    && String.fromCharCode(...header.subarray(0, 4)) === 'RIFF'
+    && String.fromCharCode(...header.subarray(8, 12)) === 'WEBP',
+  'video/mp4': header => header.length >= 12
+    && String.fromCharCode(...header.subarray(4, 8)) === 'ftyp',
+  'video/webm': header => header.length >= 4
+    && header[0] === 0x1a
+    && header[1] === 0x45
+    && header[2] === 0xdf
+    && header[3] === 0xa3,
+  'video/quicktime': header => header.length >= 12
+    && String.fromCharCode(...header.subarray(4, 8)) === 'ftyp'
+    && String.fromCharCode(...header.subarray(8, 12)) === 'qt  ',
+};
+
+const createUploadError = ({ message, status = 400, reason, code }) => {
+  const error = new Error(message);
+  error.status = status;
+  error.uploadReason = reason;
+  if (code) {
+    error.code = code;
+  }
+  return error;
+};
+
+const createAllowedFields = () => Array.from({ length: MAX_FILES }, (_, index) => ({
+  name: `contents[${index}][file]`,
+  maxCount: 1,
+}));
+
 module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUploadAdapter {
   #rootDirectory;
 
@@ -41,17 +105,45 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
           cb(null, file.generatedContentId);
         },
       }),
-    }).any();
+      limits: {
+        fileSize: MAX_FILE_SIZE,
+        files: MAX_FILES,
+        fields: MAX_FIELDS,
+        parts: MAX_PARTS,
+      },
+      fileFilter: (_req, file, cb) => {
+        if (!FILE_FIELD_PATTERN.test(file.fieldname ?? '')) {
+          cb(createUploadError({
+            message: 'invalid file fieldname',
+            reason: 'count',
+            code: 'LIMIT_UNEXPECTED_FILE',
+          }));
+          return;
+        }
+
+        if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+          cb(createUploadError({
+            message: 'invalid mime type',
+            reason: 'type',
+            code: 'LIMIT_UNEXPECTED_FILE',
+          }));
+          return;
+        }
+
+        cb(null, true);
+      },
+    }).fields(createAllowedFields());
   }
 
   execute(req, res, cb) {
     this.#upload(req, res, error => {
       if (error) {
-        cb(error);
+        cb(this.#normalizeUploadError(error));
         return;
       }
 
       try {
+        this.#validateFileSignatures(req?.files ?? {});
         req.context = req.context ?? {};
         req.context.contentIds = this.#createContentIds(req);
         cb();
@@ -61,13 +153,72 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
     });
   }
 
+  #normalizeUploadError(error) {
+    if (error?.uploadReason) {
+      return error;
+    }
+
+    if (error instanceof multer.MulterError) {
+      if (error.code === 'LIMIT_FILE_SIZE') {
+        return createUploadError({ message: 'file size limit exceeded', reason: 'size', code: error.code });
+      }
+
+      if (error.code === 'LIMIT_FILE_COUNT' || error.code === 'LIMIT_FIELD_COUNT' || error.code === 'LIMIT_PART_COUNT') {
+        return createUploadError({ message: 'upload count limit exceeded', reason: 'count', code: error.code });
+      }
+
+      if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+        return createUploadError({ message: 'unexpected file field', reason: 'count', code: error.code });
+      }
+
+      return createUploadError({ message: error.message, reason: 'count', code: error.code });
+    }
+
+    return error;
+  }
+
+  #validateFileSignatures(filesByField) {
+    const files = Object.values(filesByField).flat();
+
+    for (const file of files) {
+      if (!file?.path || !file?.mimetype) {
+        continue;
+      }
+
+      const validator = SIGNATURE_VALIDATORS[file.mimetype];
+      if (!validator) {
+        continue;
+      }
+
+      const header = this.#readFileHeader(file.path, 16);
+      if (!validator(header)) {
+        throw createUploadError({
+          message: 'invalid file signature',
+          reason: 'type',
+          code: 'INVALID_FILE_SIGNATURE',
+        });
+      }
+    }
+  }
+
+  #readFileHeader(filePath, length) {
+    const fd = fs.openSync(filePath, 'r');
+    try {
+      const buffer = Buffer.alloc(length);
+      const bytesRead = fs.readSync(fd, buffer, 0, length, 0);
+      return buffer.subarray(0, bytesRead);
+    } finally {
+      fs.closeSync(fd);
+    }
+  }
+
   #createContentIds(req) {
     const requestContents = req?.body?.contents;
     if (!requestContents || typeof requestContents !== 'object') {
       throw new Error('contents are required');
     }
 
-    const uploadedFilesByIndex = this.#createUploadedFilesByIndex(req?.files ?? []);
+    const uploadedFilesByIndex = this.#createUploadedFilesByIndex(req?.files ?? {});
     const contents = Object.entries(requestContents).map(([index, content]) => this.#createContent({
       index,
       content,
@@ -88,11 +239,11 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
       .map(content => content.contentId);
   }
 
-  #createUploadedFilesByIndex(files) {
+  #createUploadedFilesByIndex(filesByField) {
     const uploadedFilesByIndex = new Map();
 
-    for (const file of files) {
-      const matched = file?.fieldname?.match(/^contents\[(\d+)\]\[file\]$/);
+    for (const file of Object.values(filesByField).flat()) {
+      const matched = file?.fieldname?.match(FILE_FIELD_PATTERN);
       if (!matched) {
         throw new Error('invalid file fieldname');
       }
