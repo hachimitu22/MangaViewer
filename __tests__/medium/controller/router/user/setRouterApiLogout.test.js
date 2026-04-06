@@ -7,6 +7,7 @@ const SessionAuthMiddleware = require('../../../../../src/controller/middleware/
 const SessionStateRegistrar = require('../../../../../src/infrastructure/SessionStateRegistrar');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
 const InMemorySessionStateStore = require('../../../../../src/infrastructure/InMemorySessionStateStore');
+const InMemoryLoginAttemptStore = require('../../../../../src/infrastructure/InMemoryLoginAttemptStore');
 const SessionTerminator = require('../../../../../src/infrastructure/SessionTerminator');
 const StaticLoginAuthenticator = require('../../../../../src/infrastructure/StaticLoginAuthenticator');
 const { LoginService } = require('../../../../../src/application/user/command/LoginService');
@@ -18,6 +19,7 @@ describe('setRouterApiLogout (middle)', () => {
     const app = express();
     const router = express.Router();
     const sessionStateStore = new InMemorySessionStateStore();
+    const loginAttemptStore = new InMemoryLoginAttemptStore();
     const authResolver = new SessionStateAuthAdapter({ sessionStateStore });
     const auth = new SessionAuthMiddleware(authResolver);
 
@@ -37,6 +39,7 @@ describe('setRouterApiLogout (middle)', () => {
         sessionStateRegistrar: new SessionStateRegistrar({ sessionStateStore }),
         sessionTtlMs: 60_000,
       }),
+      loginAttemptStore,
     });
 
     setRouterApiLogout({

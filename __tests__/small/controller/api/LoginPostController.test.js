@@ -6,6 +6,7 @@ const {
 
 describe('LoginPostController', () => {
   let loginService;
+  let loginAttemptStore;
   let controller;
 
   const createRes = () => {
@@ -39,10 +40,15 @@ describe('LoginPostController', () => {
     loginService = {
       execute: jest.fn().mockResolvedValue(new LoginSucceededResult({ sessionToken: 'token-1' })),
     };
-    controller = new LoginPostController({ loginService });
+    loginAttemptStore = {
+      getTemporaryLockState: jest.fn().mockReturnValue({ isLocked: false, failureCount: 0, lockUntilMs: 0 }),
+      recordAuthenticationFailure: jest.fn().mockReturnValue({ failureCount: 1, lockUntilMs: 0, isLocked: false }),
+      clearAuthenticationFailures: jest.fn(),
+    };
+    controller = new LoginPostController({ loginService, loginAttemptStore });
   });
 
-  it('ログイン成功時はcookie付きでcode=0を返す', async () => {
+  it('ログイン成功時はcookie付きでcode=0を返し失敗カウンタを解除する', async () => {
     const session = { regenerate: jest.fn() };
     const { res } = await execute({
       body: { username: 'admin', password: 'secret' },
@@ -55,6 +61,7 @@ describe('LoginPostController', () => {
       password: 'secret',
       session,
     });
+    expect(loginAttemptStore.clearAuthenticationFailures).toHaveBeenCalledWith({ key: 'admin' });
     expect(res.cookie).toHaveBeenCalledWith('session_token', 'token-1', {
       httpOnly: true,
       path: '/',
@@ -66,7 +73,7 @@ describe('LoginPostController', () => {
     expect(res.json).toHaveBeenCalledWith({ code: 0 });
   });
 
-  it('ログイン失敗時はcookieを発行せずcode=1を返す', async () => {
+  it('ログイン失敗時は失敗カウンタを更新しcookieを発行せずcode=1を返す', async () => {
     loginService.execute.mockResolvedValue(new LoginFailedResult());
 
     const { res } = await execute({
@@ -74,8 +81,27 @@ describe('LoginPostController', () => {
       session: { regenerate: jest.fn() },
     });
 
+    expect(loginAttemptStore.recordAuthenticationFailure).toHaveBeenCalledWith({ key: 'admin' });
+    expect(loginAttemptStore.clearAuthenticationFailures).not.toHaveBeenCalled();
     expect(res.cookie).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ code: 1 });
+  });
+
+  it('一時ロック中は429で拒否する', async () => {
+    loginAttemptStore.getTemporaryLockState.mockReturnValue({
+      isLocked: true,
+      failureCount: 4,
+      lockUntilMs: Date.now() + 10_000,
+    });
+
+    const { res } = await execute({
+      body: { username: 'admin', password: 'secret' },
+      session: { regenerate: jest.fn() },
+    });
+
+    expect(loginService.execute).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(429);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
   });
 

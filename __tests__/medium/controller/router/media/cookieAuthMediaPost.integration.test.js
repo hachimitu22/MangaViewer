@@ -10,6 +10,7 @@ const setRouterApiLogin = require('../../../../../src/controller/router/user/set
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
 const SessionStateRegistrar = require('../../../../../src/infrastructure/SessionStateRegistrar');
 const InMemorySessionStateStore = require('../../../../../src/infrastructure/InMemorySessionStateStore');
+const InMemoryLoginAttemptStore = require('../../../../../src/infrastructure/InMemoryLoginAttemptStore');
 const StaticLoginAuthenticator = require('../../../../../src/infrastructure/StaticLoginAuthenticator');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
@@ -48,6 +49,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     const app = express();
     const router = express.Router();
     const sessionStateStore = new InMemorySessionStateStore();
+    const loginAttemptStore = new InMemoryLoginAttemptStore();
 
     setupMiddleware(app, {
       env: {
@@ -67,6 +69,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
         sessionStateRegistrar: new SessionStateRegistrar({ sessionStateStore }),
         sessionTtlMs: 60_000,
       }),
+      loginAttemptStore,
     });
 
     const authResolver = {
