@@ -29,9 +29,9 @@ const extractMediaIdValue = mediaId => {
 const buildSortOrder = (sortType) => {
   switch (sortType) {
     case SortType.DATE_ASC:
-      return [['createdAtProxy', 'DESC'], ['media_id', 'ASC']];
-    case SortType.DATE_DESC:
       return [['createdAtProxy', 'ASC'], ['media_id', 'ASC']];
+    case SortType.DATE_DESC:
+      return [['createdAtProxy', 'DESC'], ['media_id', 'ASC']];
     case SortType.TITLE_ASC:
       return [['title', 'ASC'], ['media_id', 'ASC']];
     case SortType.TITLE_DESC:
