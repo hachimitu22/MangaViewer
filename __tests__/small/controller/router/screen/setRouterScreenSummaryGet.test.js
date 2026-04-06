@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenSummaryGet = require('../../../../../src/controller/router/screen/setRouterScreenSummaryGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -26,7 +27,7 @@ describe('setRouterScreenSummaryGet', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -61,7 +62,7 @@ describe('setRouterScreenSummaryGet', () => {
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
     const response = await fetch(`http://127.0.0.1:${port}/screen/summary?summaryPage=2&start=41&size=5&title=太郎&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0&sort=title_desc`, {
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
     const bodyText = await response.text();
     await new Promise(resolve => server.close(resolve));
@@ -87,7 +88,7 @@ describe('setRouterScreenSummaryGet', () => {
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
     const response = await fetch(`http://127.0.0.1:${port}/screen/summary?summaryPage=3&size=10`, {
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
     await response.text();
     await new Promise(resolve => server.close(resolve));

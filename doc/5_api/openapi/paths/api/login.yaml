@@ -22,7 +22,7 @@ post:
       description: ログイン成否、セッション発行
       headers:
         Set-Cookie:
-          description: セッショントークン
+          description: セッショントークン (`session_token` Cookie)
           schema:
             type: string
       content:

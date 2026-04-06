@@ -4,6 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaPatch = require('../../../../../src/controller/router/media/setRouterApiMediaPatch');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -69,7 +70,7 @@ describe('setRouterApiMediaPatch (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -92,7 +93,7 @@ describe('setRouterApiMediaPatch (middle)', () => {
 
     const response = await request(app)
       .patch(`/api/media/${mediaId}`)
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .field('title', 'after title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '新作者')
@@ -133,7 +134,7 @@ describe('setRouterApiMediaPatch (middle)', () => {
 
     const response = await request(app)
       .patch(`/api/media/${mediaId}`)
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .field('title', '')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '新作者')

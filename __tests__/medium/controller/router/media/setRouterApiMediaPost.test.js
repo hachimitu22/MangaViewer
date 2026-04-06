@@ -4,6 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -56,7 +57,7 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: req.header('x-session-token'),
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
       next();
@@ -84,7 +85,7 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     const response = await request(app)
       .post('/api/media')
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
@@ -132,7 +133,7 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     const response = await request(app)
       .post('/api/media')
-      .set('x-session-token', 'invalid-token')
+      .set('cookie', 'session_token=invalid-token')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')

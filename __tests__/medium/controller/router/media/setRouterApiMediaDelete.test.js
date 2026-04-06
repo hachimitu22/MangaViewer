@@ -1,6 +1,7 @@
 const express = require('express');
 const request = require('supertest');
 const { Sequelize } = require('sequelize');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaDelete = require('../../../../../src/controller/router/media/setRouterApiMediaDelete');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -60,7 +61,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -82,7 +83,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     const response = await request(app)
       .delete(`/api/media/${mediaId}`)
-      .set('x-session-token', 'valid-token');
+      .set('cookie', 'session_token=valid-token');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ code: 0 });
@@ -96,7 +97,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     const response = await request(app)
       .delete('/api/media/ffffffffffffffffffffffffffffffff')
-      .set('x-session-token', 'valid-token');
+      .set('cookie', 'session_token=valid-token');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ code: 1 });
@@ -107,7 +108,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     const response = await request(app)
       .delete(`/api/media/${mediaId}`)
-      .set('x-session-token', 'invalid-token');
+      .set('cookie', 'session_token=invalid-token');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({

@@ -3,7 +3,7 @@
 ## 概要
 - `src/app/setupMiddleware.js` は、Express アプリケーション全体へ共通適用するミドルウェアを登録する。
 - ビュー設定、JSON / form-urlencoded パーサー、簡易 `req.session` ヘルパー生成、セッショントークンの入力正規化を担当する。
-- `SessionAuthMiddleware` が参照する `req.session.session_token` を、ヘッダ・Cookie・開発用固定セッションの優先順位に従って補完する。
+- `SessionAuthMiddleware` が参照する `req.session.session_token` を、Cookie と開発用固定セッションの優先順位に従って補完する。
 
 ## 対象実装
 - 実装: `src/app/setupMiddleware.js`
@@ -39,16 +39,15 @@
 ## セッショントークン解決優先順位
 `req.session.session_token` は次の優先順位で 1 つだけ採用する。
 
-1. `x-session-token` リクエストヘッダ
-2. `Cookie` ヘッダ内の `session_token` Cookie
-3. 開発用固定セッション (`DevelopmentSession`)
+1. `Cookie` ヘッダ内の `session_token` Cookie
+2. 開発用固定セッション (`DevelopmentSession`)
 
 ### 優先順位詳細
-- `x-session-token` が非空文字列なら、その値を最優先で採用する。
-- ヘッダが無く、`session_token` Cookie が非空文字列なら、その値を採用する。
-- ヘッダ・Cookie のいずれも無い場合に限り、`shouldApplyDevelopmentSession({ env, requestPath: req.path })` を評価する。
+- `session_token` Cookie が非空文字列なら、その値を採用する。
+- Cookie が無い場合に限り、`shouldApplyDevelopmentSession({ env, requestPath: req.path })` を評価する。
 - `shouldApplyDevelopmentSession(...)` が `true` のときのみ `env.devSessionToken` を補完する。
-- したがって、開発用固定セッションは明示指定された通常セッションを上書きしない。
+- したがって、開発用固定セッションは Cookie で明示指定された通常セッションを上書きしない。
+- 互換期間中は `x-session-token` を検知した場合のみ監査ログ (`auth.legacy_session_token_header.detected`) を出力する。ログには件数・送信元IP・User-Agentのみを含み、トークン値は記録しない。
 
 ## Cookie 解析
 - `parseCookieHeader(cookieHeader)` は `Cookie` ヘッダを `;` 区切りで分解し、`key=value` 形式だけを採用する。

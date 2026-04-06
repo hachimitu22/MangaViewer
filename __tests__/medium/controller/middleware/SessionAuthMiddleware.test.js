@@ -1,5 +1,6 @@
 const express = require('express');
 const request = require('supertest');
+const { extractSessionTokenFromCookie } = require('../../../helpers/extractSessionTokenFromCookie');
 
 const SessionAuthMiddleware = require('../../../../src/controller/middleware/SessionAuthMiddleware');
 
@@ -9,7 +10,7 @@ const createApp = ({ authAdapter, withSession = true, presetContext } = {}) => {
 
   app.use((req, _res, next) => {
     if (withSession) {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
     }
     if (presetContext !== undefined) {
       req.context = presetContext;
@@ -37,7 +38,7 @@ describe('SessionAuthMiddleware (middle)', () => {
 
     const response = await request(app)
       .get('/protected')
-      .set('x-session-token', 'valid-token');
+      .set('cookie', 'session_token=valid-token');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -56,7 +57,7 @@ describe('SessionAuthMiddleware (middle)', () => {
 
     const response = await request(app)
       .get('/protected')
-      .set('x-session-token', 'valid-token');
+      .set('cookie', 'session_token=valid-token');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: '認証に失敗しました' });
@@ -73,7 +74,7 @@ describe('SessionAuthMiddleware (middle)', () => {
 
     const response = await request(app)
       .get('/protected')
-      .set('x-session-token', 'valid-token');
+      .set('cookie', 'session_token=valid-token');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: '認証に失敗しました' });

@@ -49,12 +49,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     const router = express.Router();
     const sessionStateStore = new InMemorySessionStateStore();
 
-    setupMiddleware(app, {
-      env: {
-        allowLegacySessionTokenHeader: 'false',
-      },
-      dependencies: {},
-    });
+    setupMiddleware(app, { env: {}, dependencies: {} });
 
     setRouterApiLogin({
       router,
@@ -90,7 +85,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     };
   };
 
-  test('ログイン後は Cookie のみで /api/media に成功し、x-session-token なしでも認証できる', async () => {
+  test('ログイン後は Cookie のみで /api/media に成功し、ヘッダ不要で認証できる', async () => {
     const { app, authResolver } = createApp();
 
     const loginResponse = await request(app)

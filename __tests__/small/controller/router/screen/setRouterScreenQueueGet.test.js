@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenQueueGet = require('../../../../../src/controller/router/screen/setRouterScreenQueueGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -46,7 +47,7 @@ describe('setRouterScreenQueueGet', () => {
     app.set('views', path.join(process.cwd(), 'src', 'views'));
     app.set('view engine', 'ejs');
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -64,7 +65,7 @@ describe('setRouterScreenQueueGet', () => {
     await new Promise(resolve => server.once('listening', resolve));
     const { port } = server.address();
     const response = await fetch(`http://127.0.0.1:${port}/screen/queue?sort=title_asc&queuePage=2`, {
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
     const bodyText = await response.text();
     await new Promise(resolve => server.close(resolve));

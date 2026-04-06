@@ -3,9 +3,28 @@ const setupMiddleware = require('../../../src/app/setupMiddleware');
 const createReq = ({
   headers = {},
   path = '/screen/entry',
+  ip = '127.0.0.1',
 } = {}) => ({
   path,
+  ip,
+  socket: { remoteAddress: ip },
   header: name => headers[name.toLowerCase()],
+  app: {
+    locals: {
+      dependencies: {
+        logger: {
+          debug: jest.fn(),
+          info: jest.fn(),
+          warn: jest.fn(),
+        },
+      },
+    },
+  },
+});
+
+const createRes = () => ({
+  setHeader: jest.fn(),
+  on: jest.fn(),
 });
 
 const createHarness = ({ env = {} } = {}) => {
@@ -35,61 +54,59 @@ describe('setupMiddleware (small)', () => {
       expected: 'cookie-token',
     },
     {
-      title: 'Cookie が無く feature flag が有効なら x-session-token を採用する',
-      headers: {
-        'x-session-token': 'header-token',
-      },
-      env: {
-        allowLegacySessionTokenHeader: 'true',
-      },
-      expected: 'header-token',
-    },
-    {
-      title: 'Cookie と x-session-token が無い場合は開発用固定セッションを採用する',
+      title: 'Cookie が無い場合は開発用固定セッションを採用する',
       headers: {},
       expected: 'dev-token',
     },
-  ])('セッショントークン解決優先順位: $title', ({ headers, expected, env: overrideEnv = {} }) => {
+  ])('セッショントークン解決優先順位: $title', ({ headers, expected }) => {
     const { middleware } = createHarness({
       env: {
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
         devSessionPaths: ['/screen/entry'],
-        ...overrideEnv,
       },
     });
 
     const req = createReq({ headers, path: '/screen/entry' });
     const next = jest.fn();
 
-    middleware(req, {}, next);
+    middleware(req, createRes(), next);
 
     expect(req.session.session_token).toBe(expected);
     expect(next).toHaveBeenCalledTimes(1);
   });
 
-  test('feature flag 無効時は x-session-token を無視する', () => {
+  test('x-session-token はセッションへ反映せず監査ログのみ記録する', () => {
     const { middleware } = createHarness({
       env: {
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
         devSessionPaths: ['/screen/entry'],
-        allowLegacySessionTokenHeader: 'false',
       },
     });
 
     const req = createReq({
       headers: {
         'x-session-token': 'legacy-token',
+        'user-agent': 'jest-agent/1.0',
       },
       path: '/screen/entry',
+      ip: '10.0.0.1',
     });
 
-    middleware(req, {}, jest.fn());
+    middleware(req, createRes(), jest.fn());
 
     expect(req.session.session_token).toBe('dev-token');
+    expect(req.app.locals.dependencies.logger.warn).toHaveBeenCalledWith(
+      'auth.legacy_session_token_header.detected',
+      {
+        count: 1,
+        source_ip: '10.0.0.1',
+        user_agent: 'jest-agent/1.0',
+      },
+    );
   });
 
   test('Cookie 解析: Cookieヘッダの不正要素は無視し、session_token が無い場合は開発用固定セッションへフォールバックする', () => {
@@ -109,7 +126,7 @@ describe('setupMiddleware (small)', () => {
       path: '/screen/entry',
     });
 
-    middleware(req, {}, jest.fn());
+    middleware(req, createRes(), jest.fn());
 
     expect(req.session.session_token).toBe('dev-token');
   });
@@ -118,7 +135,7 @@ describe('setupMiddleware (small)', () => {
     const { middleware } = createHarness();
     const req = createReq();
 
-    middleware(req, {}, jest.fn());
+    middleware(req, createRes(), jest.fn());
     req.session.custom = 'kept';
 
     const regenerateCallback = jest.fn();
