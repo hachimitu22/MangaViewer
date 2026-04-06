@@ -48,6 +48,11 @@ const attachSessionHelpers = req => {
 };
 
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
+  app.locals = app.locals ?? {};
+  if (typeof app.locals.env === 'undefined') {
+    app.locals.env = env;
+  }
+
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('view engine', 'ejs');
   if (typeof env.contentRootDirectory === 'string' && env.contentRootDirectory.length > 0) {

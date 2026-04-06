@@ -140,4 +140,19 @@ describe('setupMiddleware (small)', () => {
     expect(typeof req.session.regenerate).toBe('function');
     expect(typeof req.session.destroy).toBe('function');
   });
+
+  test('app.locals.env が未設定の場合は setupMiddleware に渡した env を公開する', () => {
+    const app = {
+      locals: {},
+      set: jest.fn(),
+      use: jest.fn(),
+    };
+    const env = {
+      loginSessionTtlMs: 60_000,
+    };
+
+    setupMiddleware(app, { env, dependencies: {} });
+
+    expect(app.locals.env).toBe(env);
+  });
 });
