@@ -1,11 +1,20 @@
-const { hashPassword } = require('./auth/fixedUserPasswordHasher');
+const { hashPassword, verifyPassword } = require('./auth/fixedUserPasswordHasher');
 
 class StaticLoginAuthenticator {
   #username;
   #passwordHash;
   #userId;
+  #passwordHashUpdater;
+  #passwordHashOptions;
 
-  constructor({ username, password, passwordHash, userId } = {}) {
+  constructor({
+    username,
+    password,
+    passwordHash,
+    userId,
+    passwordHashUpdater,
+    passwordHashOptions,
+  } = {}) {
     if (!this.#isNonEmptyString(username)) {
       throw new Error('username must be a non-empty string');
     }
@@ -18,9 +27,17 @@ class StaticLoginAuthenticator {
       throw new Error('userId must be a non-empty string');
     }
 
+    if (passwordHashUpdater !== undefined && typeof passwordHashUpdater !== 'function') {
+      throw new Error('passwordHashUpdater must be a function');
+    }
+
     this.#username = username;
-    this.#passwordHash = this.#isNonEmptyString(passwordHash) ? passwordHash : hashPassword(password);
+    this.#passwordHash = this.#isNonEmptyString(passwordHash)
+      ? passwordHash
+      : hashPassword(password, passwordHashOptions);
     this.#userId = userId;
+    this.#passwordHashUpdater = passwordHashUpdater;
+    this.#passwordHashOptions = passwordHashOptions;
   }
 
   async execute({ username, password } = {}) {
@@ -28,11 +45,26 @@ class StaticLoginAuthenticator {
       return null;
     }
 
-    if (hashPassword(password) === this.#passwordHash) {
-      return this.#userId;
+    const verifyResult = verifyPassword({ password, passwordHash: this.#passwordHash });
+    if (!verifyResult.verified) {
+      return null;
     }
 
-    return null;
+    if (verifyResult.needsRehash) {
+      const upgradedPasswordHash = hashPassword(password, this.#passwordHashOptions);
+      this.#passwordHash = upgradedPasswordHash;
+
+      if (this.#passwordHashUpdater) {
+        await this.#passwordHashUpdater({
+          userId: this.#userId,
+          username: this.#username,
+          passwordHash: upgradedPasswordHash,
+          previousScheme: verifyResult.scheme,
+        });
+      }
+    }
+
+    return this.#userId;
   }
 
   #isNonEmptyString(value) {

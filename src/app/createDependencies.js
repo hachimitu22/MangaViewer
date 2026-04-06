@@ -130,7 +130,16 @@ const createDependencies = (env = {}) => {
   const loginAuthenticator = new StaticLoginAuthenticator({
     username: env.loginUsername || 'admin',
     password: env.loginPassword || 'admin',
+    passwordHash: env.loginPasswordHash || '',
     userId: env.loginUserId || 'admin',
+    passwordHashOptions: {
+      algorithm: env.loginPasswordHashAlgorithm || 'bcrypt',
+      memoryCost: env.loginPasswordHashMemoryCost || 65_536,
+      iterations: env.loginPasswordHashIterations || 3,
+      parallelism: env.loginPasswordHashParallelism || 1,
+      timeCost: env.loginPasswordHashTimeCost || 3,
+      bcryptCost: env.loginPasswordHashBcryptCost || 12,
+    },
   });
   const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
   const deleteMediaService = new DeleteMediaService({ mediaRepository, unitOfWork });
