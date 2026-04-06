@@ -99,7 +99,7 @@ describe('setRouterApiMediaPatch (middle)', () => {
       .field('tags[1][category]', '雑誌')
       .field('tags[1][label]', 'ジャンプ')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from('new-image'), 'new.jpg')
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff, 0xdb]), 'new.jpg')
       .field('contents[1][position]', '2')
       .field('contents[1][id]', existingContent2)
       .field('contents[2][position]', '3')

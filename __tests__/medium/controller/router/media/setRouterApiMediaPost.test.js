@@ -95,7 +95,7 @@ describe('setRouterApiMediaPost (middle)', () => {
       .field('contents[0][position]', '2')
       .field('contents[0][url]', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
       .field('contents[1][position]', '1')
-      .attach('contents[1][file]', Buffer.from('a'), 'first.jpg');
+      .attach('contents[1][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({
@@ -137,7 +137,7 @@ describe('setRouterApiMediaPost (middle)', () => {
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
       .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from('a'), 'first.jpg');
+      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({
