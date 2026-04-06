@@ -63,8 +63,10 @@ const compareByTitle = (direction) => (a, b) => {
 const sortMediaOverviews = ({ mediaOverviews, sort }) => {
   switch (sort) {
     case SORT_TYPES.DATE_ASC:
+      // findByUserId が「新しい追加順（DESC）」で favorites を返す前提のため、古い順は反転する。
       return [...mediaOverviews].reverse();
     case SORT_TYPES.DATE_DESC:
+      // findByUserId の返却順（新しい順）をそのまま利用する。
       return [...mediaOverviews];
     case SORT_TYPES.TITLE_ASC:
       return [...mediaOverviews].sort(compareByTitle('asc'));
