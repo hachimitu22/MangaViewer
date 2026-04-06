@@ -99,9 +99,7 @@ describe('setRouterApiLogin (middle)', () => {
   });
 
   test('ロック期間経過後は再試行可能', async () => {
-    jest.useFakeTimers();
-    try {
-      const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
+    const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
 
       for (let i = 0; i < 3; i += 1) {
         const response = await request(app)
@@ -119,7 +117,7 @@ describe('setRouterApiLogin (middle)', () => {
       expect(lockedResponse.status).toBe(429);
       expect(lockedResponse.body).toEqual({ code: 1 });
 
-      jest.advanceTimersByTime(1_100);
+    await new Promise(resolve => setTimeout(resolve, 1_100));
 
       const retryResponse = await request(app)
         .post('/api/login')
@@ -128,15 +126,10 @@ describe('setRouterApiLogin (middle)', () => {
 
       expect(retryResponse.status).toBe(200);
       expect(retryResponse.body).toEqual({ code: 0 });
-    } finally {
-      jest.useRealTimers();
-    }
   });
 
   test('成功時に失敗カウンタがリセットされる', async () => {
-    jest.useFakeTimers();
-    try {
-      const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
+    const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
 
       for (let i = 0; i < 2; i += 1) {
         const response = await request(app)
@@ -169,8 +162,5 @@ describe('setRouterApiLogin (middle)', () => {
 
       expect(shouldNotLockYet.status).toBe(200);
       expect(shouldNotLockYet.body).toEqual({ code: 0 });
-    } finally {
-      jest.useRealTimers();
-    }
   });
 });
