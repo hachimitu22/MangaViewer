@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenQueueGet = require('../../../../../src/controller/router/screen/setRouterScreenQueueGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -69,7 +70,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: req.header('x-session-token'),
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
       next();
@@ -96,7 +97,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
       app,
       targetPath: '/screen/queue?sort=title_desc&queuePage=2',
       headers: {
-        'x-session-token': 'valid-token',
+        cookie: 'session_token=valid-token',
       },
     });
 

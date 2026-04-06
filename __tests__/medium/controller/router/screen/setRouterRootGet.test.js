@@ -1,4 +1,5 @@
 const express = require('express');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterRootGet = require('../../../../../src/controller/router/screen/setRouterRootGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -53,7 +54,7 @@ describe('setRouterRootGet (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: req.header('x-session-token'),
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
       };
       next();
     });
@@ -93,7 +94,7 @@ describe('setRouterRootGet (middle)', () => {
       method: 'GET',
       targetPath: '/',
       headers: {
-        'x-session-token': 'valid-token',
+        cookie: 'session_token=valid-token',
       },
     });
 

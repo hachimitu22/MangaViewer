@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const { Sequelize } = require('sequelize');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenFavoriteGet = require('../../../../../src/controller/router/screen/setRouterScreenFavoriteGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -117,7 +118,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     });
 
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -138,7 +139,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     const response = await requestApp({
       app: createApp(),
       targetPath: '/screen/favorite',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(200);
@@ -154,7 +155,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     const response = await requestApp({
       app: createApp(),
       targetPath: '/screen/favorite?sort=title_asc&page=1',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.bodyText).toContain('titles=あいうえお,かきくけこ,さしすせそ');
@@ -183,7 +184,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     const response = await requestApp({
       app: createApp(),
       targetPath: '/screen/favorite?sort=date_desc&page=2',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.bodyText).toContain('page=2');
@@ -194,7 +195,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     const response = await requestApp({
       app: createApp(),
       targetPath: '/screen/favorite?sort=title_desc&page=1',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.bodyText).toContain('/screen/summary?summaryPage=1&sort=title_desc&tags=');

@@ -8,7 +8,7 @@ const createApp = () => {
   const app = express();
   const authAdapter = {
     execute: jest.fn(async token => {
-      if (token === 'header-token' || token === 'cookie-token' || token === 'dev-token') {
+      if (token === 'cookie-token' || token === 'dev-token') {
         return `user:${token}`;
       }
       return null;
@@ -22,7 +22,6 @@ const createApp = () => {
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
       devSessionPaths: ['/protected'],
-      allowLegacySessionTokenHeader: 'true',
     },
     dependencies: {},
   });
@@ -42,21 +41,14 @@ const createApp = () => {
 describe('setupMiddleware と SessionAuthMiddleware の接続 (medium)', () => {
   test.each([
     {
-      title: 'session_token Cookie を優先して採用する',
+      title: 'session_token Cookie を採用する',
       headers: {
         cookie: 'session_token=cookie-token',
       },
       expected: 'cookie-token',
     },
     {
-      title: 'Cookie が無い場合は feature flag で x-session-token を採用できる',
-      headers: {
-        'x-session-token': 'header-token',
-      },
-      expected: 'header-token',
-    },
-    {
-      title: 'ヘッダ/Cookie が無い場合は DevelopmentSession を採用する',
+      title: 'Cookie が無い場合は DevelopmentSession を採用する',
       headers: {},
       expected: 'dev-token',
     },

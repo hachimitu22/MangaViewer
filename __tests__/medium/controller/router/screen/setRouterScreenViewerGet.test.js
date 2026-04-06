@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenViewerGet = require('../../../../../src/controller/router/screen/setRouterScreenViewerGet');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -69,7 +70,7 @@ describe('setRouterScreenViewerGet (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: req.header('x-session-token'),
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
       next();
@@ -104,7 +105,7 @@ describe('setRouterScreenViewerGet (middle)', () => {
       app,
       method: 'GET',
       targetPath: '/screen/viewer/media-001/2',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(200);
@@ -128,7 +129,7 @@ describe('setRouterScreenViewerGet (middle)', () => {
       app,
       method: 'GET',
       targetPath: '/screen/viewer/media-001/1',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(200);
@@ -148,7 +149,7 @@ describe('setRouterScreenViewerGet (middle)', () => {
       app,
       method: 'GET',
       targetPath: '/screen/viewer/media-001/1',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(200);
@@ -165,7 +166,7 @@ describe('setRouterScreenViewerGet (middle)', () => {
       app,
       method: 'GET',
       targetPath: '/screen/viewer/media-404/99',
-      headers: { 'x-session-token': 'valid-token' },
+      headers: { cookie: 'session_token=valid-token' },
     });
 
     expect(response.status).toBe(301);

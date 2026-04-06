@@ -1,6 +1,7 @@
 const express = require('express');
 const request = require('supertest');
 const { Sequelize } = require('sequelize');
+const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiFavoriteAndQueue = require('../../../../../src/controller/router/user/setRouterApiFavoriteAndQueue');
 const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
@@ -71,7 +72,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = { session_token: req.header('x-session-token') };
+      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
       req.context = {};
       next();
     });
@@ -96,12 +97,12 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     await request(app)
       .put('/api/favorite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .expect(200, { code: 0 });
 
     await request(app)
       .put('/api/queue/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .expect(200, { code: 0 });
 
     let favoriteResult = await mediaQueryRepository.findOverviewsByMediaIds(['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']);
@@ -115,12 +116,12 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     await request(app)
       .delete('/api/favorite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .expect(200, { code: 0 });
 
     await request(app)
       .delete('/api/queue/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-      .set('x-session-token', 'valid-token')
+      .set('cookie', 'session_token=valid-token')
       .expect(200, { code: 0 });
 
     const userAfterDelete = await userRepository.findByUserId(new UserId('user001'));
@@ -133,7 +134,7 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     await request(app)
       .put('/api/favorite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      .set('x-session-token', 'invalid-token')
+      .set('cookie', 'session_token=invalid-token')
       .expect(401, { message: '認証に失敗しました' });
 
     const user = await userRepository.findByUserId(new UserId('user001'));
