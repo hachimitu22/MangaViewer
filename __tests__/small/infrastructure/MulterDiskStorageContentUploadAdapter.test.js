@@ -47,4 +47,38 @@ describe('MulterDiskStorageContentUploadAdapter', () => {
 
     fs.rmSync(rootDirectory, { recursive: true, force: true });
   });
+
+  test('大文字を含む contentId でも成功し、小文字に正規化される', async () => {
+    const rootDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'content-upload-adapter-small-'));
+    const app = express();
+    const adapter = new MulterDiskStorageContentUploadAdapter({ rootDirectory });
+
+    app.post('/api/media', (req, res) => {
+      req.context = {};
+      adapter.execute(req, res, error => {
+        if (error) {
+          res.status(error.status ?? 200).json({ code: 1 });
+          return;
+        }
+
+        res.status(200).json({
+          code: 0,
+          contentIds: req.context.contentIds,
+        });
+      });
+    });
+
+    const response = await request(app)
+      .post('/api/media')
+      .field('contents[0][position]', '1')
+      .field('contents[0][url]', '/contents/AA/BB/CC/DD/AABBCCDDEEFF00112233445566778899');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      code: 0,
+      contentIds: ['aabbccddeeff00112233445566778899'],
+    });
+
+    fs.rmSync(rootDirectory, { recursive: true, force: true });
+  });
 });
