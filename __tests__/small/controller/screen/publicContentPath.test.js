@@ -6,6 +6,11 @@ describe('toPublicContentPath', () => {
       .toBe('/contents/aa/aa/aa/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
   });
 
+  test('32文字16進数IDが大文字でも小文字に正規化して公開パスへ変換する', () => {
+    expect(toPublicContentPath('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'))
+      .toBe('/contents/aa/aa/aa/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+  });
+
   test('既に /contents 配下のパスはそのまま返す', () => {
     expect(toPublicContentPath('/contents/a/b/c.jpg')).toBe('/contents/a/b/c.jpg');
   });

@@ -30,8 +30,9 @@ const toPublicContentPath = contentId => {
     return normalized;
   }
 
-  if ((/^[0-9a-f]{32}$/).test(normalized)) {
-    return `/contents/${buildShardedPath(normalized)}`;
+  if ((/^[0-9a-f]{32}$/i).test(normalized)) {
+    const canonicalContentId = normalized.toLowerCase();
+    return `/contents/${buildShardedPath(canonicalContentId)}`;
   }
 
   return `/contents/${normalized.replace(/^\/+/, '')}`;
