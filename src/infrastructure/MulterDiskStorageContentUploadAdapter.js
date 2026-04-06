@@ -75,7 +75,9 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
 
   #upload;
 
-  constructor({ rootDirectory }) {
+  #logger;
+
+  constructor({ rootDirectory, logger = console }) {
     super();
 
     if (!(typeof rootDirectory === 'string' && rootDirectory.length > 0)) {
@@ -83,6 +85,7 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
     }
 
     this.#rootDirectory = rootDirectory;
+    this.#logger = (typeof logger?.warn === 'function') ? logger : console;
     this.#upload = multer({
       storage: multer.diskStorage({
         destination: (_req, file, cb) => {
@@ -142,15 +145,79 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
         return;
       }
 
+      const uploadedFilePaths = this.#collectUploadedFilePaths(req?.files ?? {});
       try {
         this.#validateFileSignatures(req?.files ?? {});
         req.context = req.context ?? {};
         req.context.contentIds = this.#createContentIds(req);
         cb();
       } catch (processingError) {
-        cb(processingError);
+        this.#cleanupUploadedFiles(uploadedFilePaths)
+          .finally(() => cb(processingError));
       }
     });
+  }
+
+  #collectUploadedFilePaths(filesByField) {
+    return Object.values(filesByField)
+      .flat()
+      .map(file => file?.path)
+      .filter(filePath => typeof filePath === 'string' && filePath.length > 0);
+  }
+
+  async #cleanupUploadedFiles(filePaths) {
+    for (const filePath of new Set(filePaths)) {
+      await this.#cleanupUploadedFile(filePath);
+    }
+  }
+
+  async #cleanupUploadedFile(filePath) {
+    try {
+      await fs.promises.unlink(filePath);
+    } catch (error) {
+      if (error?.code !== 'ENOENT') {
+        this.#logger.warn('failed to remove uploaded file', {
+          filePath,
+          error,
+        });
+        return;
+      }
+    }
+
+    await this.#cleanupEmptyDirectories(path.dirname(filePath));
+  }
+
+  async #cleanupEmptyDirectories(startDirectory) {
+    const rootDirectory = path.resolve(this.#rootDirectory);
+    let currentDirectory = path.resolve(startDirectory);
+
+    while (currentDirectory !== rootDirectory) {
+      const relativePath = path.relative(rootDirectory, currentDirectory);
+      if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+        break;
+      }
+
+      try {
+        await fs.promises.rm(currentDirectory, { recursive: false });
+      } catch (error) {
+        if (error?.code === 'ENOENT') {
+          currentDirectory = path.dirname(currentDirectory);
+          continue;
+        }
+
+        if (error?.code === 'ENOTEMPTY' || error?.code === 'EEXIST') {
+          break;
+        }
+
+        this.#logger.warn('failed to remove empty upload directory', {
+          directory: currentDirectory,
+          error,
+        });
+        break;
+      }
+
+      currentDirectory = path.dirname(currentDirectory);
+    }
   }
 
   #normalizeUploadError(error) {
