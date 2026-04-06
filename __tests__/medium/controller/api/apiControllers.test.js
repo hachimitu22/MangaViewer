@@ -9,6 +9,13 @@ const MediaDeleteController = require('../../../../src/controller/api/MediaDelet
 const { LoginSucceededResult, LoginFailedResult } = require('../../../../src/application/user/command/LoginService');
 const { LogoutSucceededResult, LogoutFailedResult } = require('../../../../src/application/user/command/LogoutService');
 
+
+const createLoginAttemptStore = () => ({
+  getTemporaryLockState: jest.fn(() => ({ isLocked: false, failureCount: 0, lockUntilMs: 0 })),
+  recordAuthenticationFailure: jest.fn(() => ({ failureCount: 1, lockUntilMs: 0, isLocked: false })),
+  clearAuthenticationFailures: jest.fn(),
+});
+
 const createApp = ({ loginService, logoutService, registerMediaService, updateMediaService, deleteMediaService }) => {
   const app = express();
   app.use(express.json());
@@ -18,7 +25,7 @@ const createApp = ({ loginService, logoutService, registerMediaService, updateMe
     next();
   });
 
-  app.post('/login', (req, res) => new LoginPostController({ loginService }).execute(req, res));
+  app.post('/login', (req, res) => new LoginPostController({ loginService, loginAttemptStore: createLoginAttemptStore() }).execute(req, res));
   app.post('/logout', (req, res) => new LogoutPostController({ logoutService }).execute(req, res));
   app.post('/media', (req, res) => new MediaPostController({ registerMediaService }).execute(req, res));
   app.patch('/media/:mediaId', (req, res) => new MediaPatchController({ updateMediaService }).execute(req, res));
