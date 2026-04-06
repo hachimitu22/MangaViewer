@@ -121,9 +121,9 @@ describe('SequelizeMediaQueryRepository', () => {
 
     try {
       await mediaRepository.sync();
-      await mediaRepository.save(createMedia({ mediaId: 'media-001', title: '作品1' }));
-      await mediaRepository.save(createMedia({ mediaId: 'media-002', title: '作品2' }));
-      await mediaRepository.save(createMedia({ mediaId: 'media-003', title: '作品3' }));
+      await mediaRepository.save(createMedia({ mediaId: 'media-001', title: '作品1', contents: ['/contents/works-1.jpg'] }));
+      await mediaRepository.save(createMedia({ mediaId: 'media-002', title: '作品2', contents: ['/contents/works-2.jpg'] }));
+      await mediaRepository.save(createMedia({ mediaId: 'media-003', title: '作品3', contents: ['/contents/works-3.jpg'] }));
 
       const ascResult = await queryRepository.search(new SearchCondition({
         title: '',
