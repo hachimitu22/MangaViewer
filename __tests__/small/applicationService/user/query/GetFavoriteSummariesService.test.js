@@ -45,6 +45,25 @@ describe('GetFavoriteSummariesService', () => {
     }));
   });
 
+  test('sort=date_desc では追加の新しい順を維持して返す', async () => {
+    const userRepository = new MockUserRepository();
+    const mediaQueryRepository = new MockMediaQueryRepository();
+    const user = new User(new UserId('user001'));
+    user.addFavorite(new MediaId('media-001'));
+    user.addFavorite(new MediaId('media-002'));
+
+    userRepository.findByUserId.mockResolvedValue(user);
+    mediaQueryRepository.findOverviewsByMediaIds.mockResolvedValue([
+      createOverview({ mediaId: 'media-001', title: 'タイトル1' }),
+      createOverview({ mediaId: 'media-002', title: 'タイトル2' }),
+    ]);
+
+    const service = new GetFavoriteSummariesService({ userRepository, mediaQueryRepository });
+    const result = await service.execute(new Input({ userId: 'user001', sort: 'date_desc' }));
+
+    expect(result.mediaOverviews.map(media => media.mediaId)).toEqual(['media-001', 'media-002']);
+  });
+
   test('sort=title_asc でタイトル昇順へ並べ替える', async () => {
     const userRepository = new MockUserRepository();
     const mediaQueryRepository = new MockMediaQueryRepository();

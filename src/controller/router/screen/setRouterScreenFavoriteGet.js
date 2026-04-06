@@ -8,8 +8,8 @@ const {
 const { mapMediaOverviewThumbnailToPublicPath } = require('../../screen/publicContentPath');
 
 const SORT_OPTIONS = Object.freeze([
-  { value: SORT_TYPES.DATE_ASC, label: '追加の新しい順' },
-  { value: SORT_TYPES.DATE_DESC, label: '追加の古い順' },
+  { value: SORT_TYPES.DATE_ASC, label: '追加の古い順' },
+  { value: SORT_TYPES.DATE_DESC, label: '追加の新しい順' },
   { value: SORT_TYPES.TITLE_ASC, label: 'タイトル名の昇順' },
   { value: SORT_TYPES.TITLE_DESC, label: 'タイトル名の降順' },
 ]);

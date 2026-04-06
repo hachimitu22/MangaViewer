@@ -16,6 +16,13 @@ class InMemorySessionStateStore {
 }
 
 describe('setRouterScreenFavoriteGet', () => {
+  test('SORT_OPTIONS の日時ラベルは date_asc=古い順 / date_desc=新しい順', () => {
+    expect(setRouterScreenFavoriteGet.SORT_OPTIONS).toEqual(expect.arrayContaining([
+      { value: 'date_asc', label: '追加の古い順' },
+      { value: 'date_desc', label: '追加の新しい順' },
+    ]));
+  });
+
   test('GET /screen/favorite でお気に入り一覧HTMLを返す', async () => {
     const app = express();
     const router = express.Router();
