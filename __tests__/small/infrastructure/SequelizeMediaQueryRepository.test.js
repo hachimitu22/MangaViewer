@@ -113,6 +113,48 @@ describe('SequelizeMediaQueryRepository', () => {
     }
   });
 
+  test('search は DATE_ASC で古い登録順、DATE_DESC で新しい登録順を返す', async () => {
+    const sequelize = new Sequelize('sqlite::memory:', { logging: false });
+    const unitOfWork = new SequelizeUnitOfWork({ sequelize });
+    const mediaRepository = new SequelizeMediaRepository({ sequelize, unitOfWorkContext: unitOfWork });
+    const queryRepository = new SequelizeMediaQueryRepository({ sequelize });
+
+    try {
+      await mediaRepository.sync();
+      await mediaRepository.save(createMedia({ mediaId: 'media-001', title: '作品1' }));
+      await mediaRepository.save(createMedia({ mediaId: 'media-002', title: '作品2' }));
+      await mediaRepository.save(createMedia({ mediaId: 'media-003', title: '作品3' }));
+
+      const ascResult = await queryRepository.search(new SearchCondition({
+        title: '',
+        tags: [],
+        sortType: SortType.DATE_ASC,
+        start: 1,
+        size: 10,
+      }));
+      expect(ascResult.mediaOverviews.map(overview => overview.mediaId)).toEqual([
+        'media-001',
+        'media-002',
+        'media-003',
+      ]);
+
+      const descResult = await queryRepository.search(new SearchCondition({
+        title: '',
+        tags: [],
+        sortType: SortType.DATE_DESC,
+        start: 1,
+        size: 10,
+      }));
+      expect(descResult.mediaOverviews.map(overview => overview.mediaId)).toEqual([
+        'media-003',
+        'media-002',
+        'media-001',
+      ]);
+    } finally {
+      await sequelize.close();
+    }
+  });
+
   test.each([
     ['search', repository => repository.search({})],
     ['findOverviewsByMediaIds に配列以外', repository => repository.findOverviewsByMediaIds('media-001')],
