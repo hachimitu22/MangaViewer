@@ -1,8 +1,8 @@
 # StaticLoginAuthenticator 設計書
 
 ## 概要
-`StaticLoginAuthenticator` は、設定で注入した固定のユーザー名・パスワード・ユーザーIDを用いてログイン可否を判定する簡易認証アダプターです。  
-永続ストアや外部認証基盤へアクセスせず、`execute` 呼び出し時に受け取った資格情報とコンストラクターで保持した固定値を完全一致で比較します。
+`StaticLoginAuthenticator` は、設定で注入した固定のユーザー名・パスワードハッシュ・ユーザーIDを用いてログイン可否を判定する簡易認証アダプターです。  
+永続ストアや外部認証基盤へアクセスせず、`execute` 呼び出し時に受け取った資格情報を KDF（scrypt）で `verify` し、照合します。
 
 ## クラス
 - 配置: `src/infrastructure/StaticLoginAuthenticator.js`
@@ -10,7 +10,7 @@
 
 ## 利用箇所
 - `src/app/createDependencies.js`
-  - `env.loginUsername` / `env.loginPassword` / `env.loginUserId` をもとに `StaticLoginAuthenticator` を生成する
+  - `env.loginUsername` / `env.loginPassword` / `env.loginPasswordHash` / `env.loginUserId` をもとに `StaticLoginAuthenticator` を生成する
   - 生成した `loginAuthenticator` を `LoginService` へ注入する
 - 関連実装: [LoginService](/doc/4_application/user/command/LoginService/readme.md)
 
@@ -28,7 +28,7 @@
 
 ## 責務
 - 固定の認証情報を保持する
-- 入力された `username` / `password` が固定値と一致するかを判定する
+- 入力された `username` / `password` が固定のハッシュ値に一致するかを判定する
 - 一致した場合だけ `userId` を返し、`LoginService` が後続のセッション発行を継続できるようにする
 - 不一致または不足入力の場合は `null` を返し、認証失敗として扱えるようにする
 
@@ -38,7 +38,8 @@
 ```plantuml
 struct Config #pink {
     + username : string
-    + password : string
+    + password : string (or)
+    + passwordHash : string
     + userId : string
 }
 ```
@@ -66,14 +67,14 @@ class Result {
 
 ## 認証成功条件
 - コンストラクターへ渡した `username` が非空文字列である
-- コンストラクターへ渡した `password` が非空文字列である
+- コンストラクターへ渡した `password` または `passwordHash` のどちらかが非空文字列である
 - コンストラクターへ渡した `userId` が非空文字列である
 - `execute({ username, password })` の `username` が保持済みの固定ユーザー名と完全一致する
-- `execute({ username, password })` の `password` が保持済みの固定パスワードと完全一致する
+- `execute({ username, password })` の `password` を KDF で検証し、保持済みの固定ハッシュと一致する
 
 ## 認証失敗条件
 - `execute` に渡した `username` が固定ユーザー名と一致しない
-- `execute` に渡した `password` が固定パスワードと一致しない
+- `execute` に渡した `password` の KDF 検証に失敗する
 - `execute` に `undefined`、不足したオブジェクト、または型不一致の値が渡され、完全一致条件を満たせない
 
 ## 不正入力条件
@@ -102,3 +103,10 @@ else 不一致または不足
   StaticLoginAuthenticator --> LoginService: null
 end
 ```
+
+
+## ハッシュ形式と移行
+- 現行形式: `$scrypt$N=<cost>$r=<block>$p=<parallel>$<salt(base64)>$<derived(base64)>`
+- 旧形式（legacy）: SHA-256 16進64文字列。
+- 旧形式で認証成功した場合は `onPasswordRehashRequired` コールバックへ `upgradedHash` を通知する。
+- 運用手順は [固定ログイン認証ハッシュ移行手順](/doc/7_infrastructure/StaticLoginAuthenticator/運用手順_固定ログイン認証ハッシュ移行.md) を参照。

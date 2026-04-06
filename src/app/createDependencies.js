@@ -89,6 +89,17 @@ const createSequelize = env => {
 };
 
 const createDependencies = (env = {}) => {
+  const isProduction = env.nodeEnv === 'production';
+
+  if (isProduction) {
+    if (typeof env.loginUsername !== 'string' || env.loginUsername.length === 0) {
+      throw new Error('production環境では LOGIN_USERNAME (または FIXED_LOGIN_USERNAME) の設定が必須です。');
+    }
+    if (typeof env.loginPassword !== 'string' || env.loginPassword.length === 0) {
+      throw new Error('production環境では LOGIN_PASSWORD (または FIXED_LOGIN_PASSWORD) の設定が必須です。');
+    }
+  }
+
   if (env.databaseDialect !== 'postgres') {
     ensureParentDirectory(env.databaseStoragePath);
   }
@@ -127,10 +138,24 @@ const createDependencies = (env = {}) => {
   const removeQueueService = new RemoveQueueService({ userRepository, unitOfWork });
   const sessionStateRegistrar = new SessionStateRegistrar({ sessionStateStore });
   const sessionTerminator = new SessionTerminator({ sessionStateStore });
+  const hasLoginUsername = typeof env.loginUsername === 'string' && env.loginUsername.length > 0;
+  const hasLoginPassword = typeof env.loginPassword === 'string' && env.loginPassword.length > 0;
+  const hasLoginPasswordHash = typeof env.loginPasswordHash === 'string' && env.loginPasswordHash.length > 0;
   const loginAuthenticator = new StaticLoginAuthenticator({
-    username: env.loginUsername || 'admin',
-    password: env.loginPassword || 'admin',
-    userId: env.loginUserId || 'admin',
+    username: hasLoginUsername ? env.loginUsername : '__disabled_fixed_login_user__',
+    password: hasLoginPassword ? env.loginPassword : '__disabled_fixed_login_password__',
+    passwordHash: hasLoginPasswordHash
+      ? env.loginPasswordHash
+      : undefined,
+    userId: env.loginUserId || 'disabled-fixed-login-user',
+    onPasswordRehashRequired: ({ userId, username, legacyFormat, upgradedHash }) => {
+      logger.warn('auth.fixed_login.password_rehash_required', {
+        user_id: userId,
+        username,
+        legacy_format: legacyFormat,
+        upgraded_hash: upgradedHash,
+      });
+    },
   });
   const updateMediaService = new UpdateMediaService({ mediaRepository, unitOfWork });
   const deleteMediaService = new DeleteMediaService({ mediaRepository, unitOfWork });

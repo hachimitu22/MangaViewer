@@ -10,6 +10,7 @@ const parseSessionPaths = value => (value || '')
 
 const createEnv = source => ({
   port: Number.parseInt(source.PORT, 10) || 3000,
+  nodeEnv: source.NODE_ENV || 'development',
   databaseDialect: source.DATABASE_DIALECT || 'sqlite',
   databaseUrl: source.DATABASE_URL || '',
   databaseHost: source.DATABASE_HOST || '',
@@ -27,6 +28,7 @@ const createEnv = source => ({
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
   loginUsername: source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '',
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
+  loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
   loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',
   loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
   logFilePath: source.LOG_FILE_PATH || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log'),

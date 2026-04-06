@@ -1,11 +1,15 @@
-const { hashPassword } = require('./auth/fixedUserPasswordHasher');
+const {
+  hashPassword,
+  verifyPassword,
+} = require('./auth/fixedUserPasswordHasher');
 
 class StaticLoginAuthenticator {
   #username;
   #passwordHash;
   #userId;
+  #onPasswordRehashRequired;
 
-  constructor({ username, password, passwordHash, userId } = {}) {
+  constructor({ username, password, passwordHash, userId, onPasswordRehashRequired } = {}) {
     if (!this.#isNonEmptyString(username)) {
       throw new Error('username must be a non-empty string');
     }
@@ -18,9 +22,14 @@ class StaticLoginAuthenticator {
       throw new Error('userId must be a non-empty string');
     }
 
+    if (onPasswordRehashRequired && typeof onPasswordRehashRequired !== 'function') {
+      throw new Error('onPasswordRehashRequired must be a function');
+    }
+
     this.#username = username;
     this.#passwordHash = this.#isNonEmptyString(passwordHash) ? passwordHash : hashPassword(password);
     this.#userId = userId;
+    this.#onPasswordRehashRequired = onPasswordRehashRequired || null;
   }
 
   async execute({ username, password } = {}) {
@@ -28,11 +37,26 @@ class StaticLoginAuthenticator {
       return null;
     }
 
-    if (hashPassword(password) === this.#passwordHash) {
-      return this.#userId;
+    const verification = verifyPassword({
+      password,
+      storedHash: this.#passwordHash,
+    });
+
+    if (!verification.verified) {
+      return null;
     }
 
-    return null;
+    if (verification.needsRehash && this.#onPasswordRehashRequired) {
+      await this.#onPasswordRehashRequired({
+        userId: this.#userId,
+        username: this.#username,
+        legacyFormat: verification.format,
+        legacyHash: this.#passwordHash,
+        upgradedHash: verification.newHash,
+      });
+    }
+
+    return this.#userId;
   }
 
   #isNonEmptyString(value) {
