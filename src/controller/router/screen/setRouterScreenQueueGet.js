@@ -50,7 +50,11 @@ const setRouterScreenQueueGet = ({ router, authResolver, getQueueService }) => {
           pageSize: DEFAULT_PAGE_SIZE,
         });
         const mediaOverviews = (result.currentPageMediaOverviews ?? result.mediaOverviews)
-          .map(mapMediaOverviewThumbnailToPublicPath);
+          .map(mapMediaOverviewThumbnailToPublicPath)
+          .map(media => ({
+            ...media,
+            thumbnailFallbackLabel: 'NO IMAGE',
+          }));
 
         res.status(200).render('screen/queue', {
           pageTitle: 'あとで見る一覧',

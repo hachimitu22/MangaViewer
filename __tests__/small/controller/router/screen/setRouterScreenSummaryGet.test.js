@@ -99,4 +99,32 @@ describe('setRouterScreenSummaryGet', () => {
       size: 10,
     }));
   });
+
+  test('危険なサムネイルURLは無効化して NO IMAGE を表示する', async () => {
+    const { app } = createApp({
+      output: new Output({
+        mediaOverviews: [{
+          mediaId: 'media-001',
+          title: 'タイトル1',
+          thumbnail: 'https://example.com/evil.jpg',
+          tags: [],
+          priorityCategories: [],
+        }],
+        totalCount: 1,
+      }),
+    });
+
+    const server = app.listen(0);
+    await new Promise(resolve => server.once('listening', resolve));
+    const { port } = server.address();
+    const response = await fetch(`http://127.0.0.1:${port}/screen/summary`, {
+      headers: { cookie: 'session_token=valid-token' },
+    });
+    const bodyText = await response.text();
+    await new Promise(resolve => server.close(resolve));
+
+    expect(response.status).toBe(200);
+    expect(bodyText).toContain('NO IMAGE');
+    expect(bodyText).not.toContain('https://example.com/evil.jpg');
+  });
 });

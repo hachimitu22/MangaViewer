@@ -44,6 +44,7 @@ describe('ScreenViewerGetController', () => {
       content: {
         id: '/contents/page-2.jpg',
         type: 'image',
+        hasSource: true,
       },
       previousPage: {
         mediaId: 'media-1',
@@ -77,9 +78,32 @@ describe('ScreenViewerGetController', () => {
       content: {
         id: '/contents/page-10.mp4',
         type: 'video',
+        hasSource: true,
       },
       previousPage: null,
       nextPage: null,
+    }));
+  });
+
+  test('contentId が外部URLの場合は空のソースとして描画モデルを返す', async () => {
+    const getMediaContentWithNavigationService = {
+      execute: jest.fn().mockResolvedValue(new FoundResult({
+        contentId: 'https://example.com/page-1.jpg',
+        previousContentId: null,
+        nextContentId: null,
+      })),
+    };
+    const controller = new ScreenViewerGetController({ getMediaContentWithNavigationService });
+    const res = createRes();
+
+    await controller.execute({ params: { mediaId: 'media-1', mediaPage: '1' } }, res);
+
+    expect(res.render).toHaveBeenCalledWith('screen/viewer', expect.objectContaining({
+      content: {
+        id: '',
+        type: 'image',
+        hasSource: false,
+      },
     }));
   });
 

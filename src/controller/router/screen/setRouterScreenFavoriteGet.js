@@ -46,7 +46,12 @@ const setRouterScreenFavoriteGet = ({ router, authResolver, getFavoriteSummaries
           page,
           pageSize: PAGE_SIZE,
         });
-        const mediaOverviews = result.mediaOverviews.map(mapMediaOverviewThumbnailToPublicPath);
+        const mediaOverviews = result.mediaOverviews
+          .map(mapMediaOverviewThumbnailToPublicPath)
+          .map(media => ({
+            ...media,
+            thumbnailFallbackLabel: 'NO IMAGE',
+          }));
 
         res.status(200).render('screen/favorite', {
           pageTitle: 'お気に入り一覧',

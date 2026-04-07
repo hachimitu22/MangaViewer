@@ -124,7 +124,12 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
           summaryPage: range.summaryPage,
           pageSize: range.size,
         });
-        const mediaOverviews = result.mediaOverviews.map(mapMediaOverviewThumbnailToPublicPath);
+        const mediaOverviews = result.mediaOverviews
+          .map(mapMediaOverviewThumbnailToPublicPath)
+          .map(media => ({
+            ...media,
+            thumbnailFallbackLabel: 'NO IMAGE',
+          }));
 
         res.status(200).render('screen/summary', {
           pageTitle: 'メディア一覧',

@@ -18,8 +18,8 @@ const toPublicContentPath = contentId => {
     return '';
   }
 
-  if (/^(https?:)?\/\//.test(normalized) || normalized.startsWith('data:')) {
-    return normalized;
+  if (/^(https?:)?\/\//i.test(normalized) || /^data:/i.test(normalized)) {
+    return '';
   }
 
   if (normalized.startsWith('/contents/')) {
@@ -27,7 +27,7 @@ const toPublicContentPath = contentId => {
   }
 
   if (normalized.startsWith('/')) {
-    return normalized;
+    return '';
   }
 
   if ((/^[0-9a-f]{32}$/i).test(normalized)) {
@@ -35,7 +35,7 @@ const toPublicContentPath = contentId => {
     return `/contents/${buildShardedPath(canonicalContentId)}`;
   }
 
-  return `/contents/${normalized.replace(/^\/+/, '')}`;
+  return '';
 };
 
 const mapMediaOverviewThumbnailToPublicPath = mediaOverview => ({

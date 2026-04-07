@@ -61,7 +61,9 @@
         </header>
 
         <article class="stage">
-          <% if (content.type === 'video') { %>
+          <% if (!content.hasSource) { %>
+            <p>コンテンツを表示できません。</p>
+          <% } else if (content.type === 'video') { %>
             <video src="<%= content.id %>" controls playsinline>
               動画を再生できません。
             </video>

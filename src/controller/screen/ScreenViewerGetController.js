@@ -37,6 +37,9 @@ class ScreenViewerGetController {
         throw new Error('unexpected result');
       }
 
+      const contentPublicPath = toPublicContentPath(result.contentId);
+      const contentType = this.#detectContentType(result.contentId);
+
       return res.status(200).render('screen/viewer', {
         pageTitle: `ビューアー ${req.params.mediaId} - ${mediaPage}ページ`,
         mediaId: req.params.mediaId,
@@ -44,8 +47,9 @@ class ScreenViewerGetController {
         currentPath: '/screen/viewer',
         currentUserId: req.context?.userId || null,
         content: {
-          id: toPublicContentPath(result.contentId),
-          type: this.#detectContentType(result.contentId),
+          id: contentPublicPath,
+          type: contentType,
+          hasSource: contentPublicPath.length > 0,
         },
         previousPage: result.previousContentId === null ? null : {
           mediaId: req.params.mediaId,

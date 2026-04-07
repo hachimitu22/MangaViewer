@@ -73,7 +73,7 @@
                       <% if (media.thumbnail) { %>
                         <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
                       <% } else { %>
-                        <span>NO IMAGE</span>
+                        <span><%= media.thumbnailFallbackLabel %></span>
                       <% } %>
                     </a>
                     <div class="meta">
