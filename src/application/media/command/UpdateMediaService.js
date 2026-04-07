@@ -5,6 +5,7 @@ const ContentId = require('../../../domain/media/contentId');
 const Tag = require('../../../domain/media/tag');
 const Category = require('../../../domain/media/category');
 const Label = require('../../../domain/media/label');
+const normalizeTextInput = value => (typeof value === 'string' ? value.trim() : value);
 
 class UpdateMediaServiceInput {
   constructor({ id, title, contents, tags, priorityCategories }) {
@@ -44,13 +45,16 @@ class UpdateMediaService {
     const media = await this.#mediaRepository.findByMediaId(mediaId);
 
     // メディア更新
-    const mediaTitle = new MediaTitle(input.title);
+    const mediaTitle = new MediaTitle(normalizeTextInput(input.title));
     const contents = input.contents.map(c => new ContentId(c));
     const tags = input.tags.map(t =>
-      new Tag(new Category(t.category), new Label(t.label))
+      new Tag(
+        new Category(normalizeTextInput(t.category)),
+        new Label(normalizeTextInput(t.label))
+      )
     );
     const priorityCategories = input.priorityCategories.map(
-      c => new Category(c)
+      c => new Category(normalizeTextInput(c))
     );
     media.changeTitle(mediaTitle);
     media.changeContents(contents);

@@ -24,6 +24,12 @@ describe('[Domain][Value Object][MediaTitle]', () => {
     }).toThrow();
   });
 
+  it.each(['', '   ', '　'])('メディアタイトルが空値扱いのため生成に失敗する: "%s"', value => {
+    expect(() => {
+      new MediaTitle(value);
+    }).toThrow();
+  });
+
   it('同一メディアタイトルは同一と判定される', () => {
     // arrange
     const mediaTitle1 = new MediaTitle('メディアタイトル');

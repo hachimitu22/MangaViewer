@@ -24,6 +24,12 @@ describe('[Domain][Value Object][Category]', () => {
     }).toThrow();
   });
 
+  it.each(['', '   ', '　'])('カテゴリーが空値扱いのため生成に失敗する: "%s"', value => {
+    expect(() => {
+      new Category(value);
+    }).toThrow();
+  });
+
   it('同一カテゴリーは同一と判定される', () => {
     // arrange
     const category1 = new Category('カテゴリー');

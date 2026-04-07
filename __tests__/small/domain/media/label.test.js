@@ -24,6 +24,12 @@ describe('[Domain][Value Object][Label]', () => {
     }).toThrow();
   });
 
+  it.each(['', '   ', '　'])('ラベルが空値扱いのため生成に失敗する: "%s"', value => {
+    expect(() => {
+      new Label(value);
+    }).toThrow();
+  });
+
   it('同一ラベルは同一と判定される', () => {
     // arrange
     const label1 = new Label('ラベル');
