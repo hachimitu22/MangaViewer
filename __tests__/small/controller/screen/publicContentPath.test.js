@@ -15,7 +15,18 @@ describe('toPublicContentPath', () => {
     expect(toPublicContentPath('/contents/a/b/c.jpg')).toBe('/contents/a/b/c.jpg');
   });
 
-  test('相対パスは /contents を先頭に付与する', () => {
-    expect(toPublicContentPath('seed/page-1.jpg')).toBe('/contents/seed/page-1.jpg');
+  test('http/https/protocol-relative URLは拒否する', () => {
+    expect(toPublicContentPath('http://example.com/a.jpg')).toBe('');
+    expect(toPublicContentPath('https://example.com/a.jpg')).toBe('');
+    expect(toPublicContentPath('//example.com/a.jpg')).toBe('');
+  });
+
+  test('data URLは拒否する', () => {
+    expect(toPublicContentPath('data:image/png;base64,AAAA')).toBe('');
+  });
+
+  test('/contents 以外の絶対パスと相対パスは拒否する', () => {
+    expect(toPublicContentPath('/tmp/a.jpg')).toBe('');
+    expect(toPublicContentPath('seed/page-1.jpg')).toBe('');
   });
 });

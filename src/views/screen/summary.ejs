@@ -103,7 +103,7 @@
                 <article class="media-card">
                   <div class="media-body">
                     <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
-                      <% if (media.thumbnail) { %>
+                      <% if (media.hasThumbnail) { %>
                         <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
                       <% } else { %>
                         <span>NO IMAGE</span>

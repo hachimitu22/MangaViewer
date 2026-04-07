@@ -43,18 +43,21 @@ describe('ScreenViewerGetController', () => {
       currentUserId: 'admin',
       content: {
         id: '/contents/page-2.jpg',
+        hasRenderableContent: true,
         type: 'image',
       },
       previousPage: {
         mediaId: 'media-1',
         mediaPage: 1,
         contentId: '/contents/page-1.jpg',
+        hasRenderableContent: true,
         href: '/screen/viewer/media-1/1',
       },
       nextPage: {
         mediaId: 'media-1',
         mediaPage: 3,
         contentId: '/contents/page-3.jpg',
+        hasRenderableContent: true,
         href: '/screen/viewer/media-1/3',
       },
     });
@@ -76,6 +79,7 @@ describe('ScreenViewerGetController', () => {
     expect(res.render).toHaveBeenCalledWith('screen/viewer', expect.objectContaining({
       content: {
         id: '/contents/page-10.mp4',
+        hasRenderableContent: true,
         type: 'video',
       },
       previousPage: null,
@@ -100,6 +104,7 @@ describe('ScreenViewerGetController', () => {
     expect(res.render).toHaveBeenCalledWith('screen/viewer', expect.objectContaining({
       content: {
         id: '/contents/01/23/45/67/0123456789abcdef0123456789abcdef',
+        hasRenderableContent: true,
         type: 'video',
       },
     }));
