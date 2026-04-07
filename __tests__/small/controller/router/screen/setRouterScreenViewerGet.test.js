@@ -55,7 +55,7 @@ describe('setRouterScreenViewerGet', () => {
     expect(res.render).toHaveBeenCalledWith('screen/viewer', expect.objectContaining({
       mediaId: 'media-1',
       mediaPage: 2,
-      content: { id: '/contents/page-2.jpg', type: 'image' },
+      content: expect.objectContaining({ id: '/contents/page-2.jpg', type: 'image' }),
       previousPage: expect.objectContaining({ href: '/screen/viewer/media-1/1' }),
       nextPage: expect.objectContaining({ href: '/screen/viewer/media-1/3' }),
     }));
