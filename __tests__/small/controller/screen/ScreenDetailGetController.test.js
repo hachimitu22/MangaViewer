@@ -12,11 +12,12 @@ describe('ScreenDetailGetController', () => {
   };
 
   test('mediaId を service に渡して詳細画面を描画する', async () => {
+    const contentId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     const mediaDetail = {
       id: 'media-1',
       title: '作品タイトル',
       registeredAt: '2026-03-20 12:34 UTC',
-      contents: [{ id: 'content-1', thumbnail: 'content-1', position: 1 }],
+      contents: [{ id: 'content-1', thumbnail: contentId, position: 1 }],
       tags: [{ category: '作者', label: '山田' }],
       categories: ['作者'],
       priorityCategories: ['作者'],
@@ -36,7 +37,7 @@ describe('ScreenDetailGetController', () => {
       pageTitle: '作品タイトル の詳細',
       mediaDetail: {
         ...mediaDetail,
-        contents: [{ id: 'content-1', thumbnail: '/contents/content-1', position: 1 }],
+        contents: [{ id: 'content-1', thumbnail: '/contents/aa/aa/aa/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', position: 1 }],
       },
       currentPath: '/screen/detail',
       currentUserId: 'admin',
