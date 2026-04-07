@@ -82,7 +82,7 @@ describe('setRouterScreenEditGet (middle)', () => {
           mediaDetail: {
             id: 'media-001',
             title: 'メディア編集',
-            contents: [{ id: 'content-1' }],
+            contents: [{ id: '/contents/content-1' }],
             tags: [{ category: '作者', label: '山田' }],
             priorityCategories: ['作者'],
           },

@@ -24,11 +24,12 @@ const createAppWithRenderCapture = (mountRoute) => {
 
 describe('medium: ScreenDetailGetController', () => {
   test('medium: 正常系 - ルーティング由来の req.params.mediaId を使って詳細画面を描画する', async () => {
+    const contentId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
     const mediaDetail = {
       id: 'media-001',
       title: '作品タイトル',
       registeredAt: '2026-03-20 12:34 UTC',
-      contents: [{ id: 'content-001', thumbnail: 'content-001', position: 1 }],
+      contents: [{ id: 'content-001', thumbnail: contentId, position: 1 }],
       tags: [{ category: '作者', label: '山田' }],
       categories: ['作者'],
       priorityCategories: ['作者'],
@@ -51,7 +52,7 @@ describe('medium: ScreenDetailGetController', () => {
         pageTitle: '作品タイトル の詳細',
         mediaDetail: {
           ...mediaDetail,
-          contents: [{ id: 'content-001', thumbnail: '/contents/content-001', position: 1 }],
+          contents: [{ id: 'content-001', thumbnail: '/contents/aa/aa/aa/aa/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', position: 1 }],
         },
         currentPath: '/screen/detail',
         currentUserId: null,
@@ -107,6 +108,7 @@ describe('medium: ScreenViewerGetController', () => {
         content: {
           id: '/contents/page-2.jpg',
           type: 'image',
+          hasSource: true,
         },
         previousPage: {
           mediaId: 'media-001',
@@ -148,6 +150,7 @@ describe('medium: ScreenViewerGetController', () => {
         content: {
           id: '/contents/page-10.mp4',
           type: 'video',
+          hasSource: true,
         },
         previousPage: null,
         nextPage: null,

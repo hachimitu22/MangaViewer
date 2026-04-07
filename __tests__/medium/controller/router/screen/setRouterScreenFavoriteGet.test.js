@@ -78,21 +78,21 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
       await mediaRepository.save(new Media(
         new MediaId('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),
         new MediaTitle('あいうえお'),
-        [new ContentId('content-001')],
+        [new ContentId('11111111111111111111111111111111')],
         [new Tag(new Category('作者'), new Label('山田'))],
         [new Category('作者')],
       ));
       await mediaRepository.save(new Media(
         new MediaId('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'),
         new MediaTitle('かきくけこ'),
-        [new ContentId('content-002')],
+        [new ContentId('22222222222222222222222222222222')],
         [new Tag(new Category('作者'), new Label('佐藤'))],
         [new Category('作者')],
       ));
       await mediaRepository.save(new Media(
         new MediaId('cccccccccccccccccccccccccccccccc'),
         new MediaTitle('さしすせそ'),
-        [new ContentId('content-003')],
+        [new ContentId('33333333333333333333333333333333')],
         [new Tag(new Category('ジャンル'), new Label('冒険'))],
         [new Category('ジャンル')],
       ));
@@ -148,7 +148,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'favorite.ejs'));
     expect(response.bodyText).toContain('sort=date_asc');
     expect(response.bodyText).toContain('page=1');
-    expect(response.bodyText).toContain('thumbnail=/contents/content-');
+    expect(response.bodyText).toContain('thumbnail=/contents/');
   });
 
   test('sort を変更すると指定順で描画される', async () => {
@@ -172,7 +172,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
           await mediaRepository.save(new Media(
             new MediaId(mediaId),
             new MediaTitle(`追加作品${suffix}`),
-            [new ContentId(`content-${suffix}`)],
+            [new ContentId('44444444444444444444444444444444')],
             [new Tag(new Category('作者'), new Label(`作家${suffix}`))],
             [new Category('作者')],
           ));

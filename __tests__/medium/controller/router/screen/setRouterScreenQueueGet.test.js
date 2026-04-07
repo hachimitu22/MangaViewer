@@ -50,7 +50,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
         mediaOverviews: [{
           mediaId: 'media-001',
           title: 'タイトル1',
-          thumbnail: 'content-001',
+          thumbnail: '/contents/content-001',
           tags: [{ category: '作者', label: '山田' }],
           priorityCategories: [],
           isFavorite: false,

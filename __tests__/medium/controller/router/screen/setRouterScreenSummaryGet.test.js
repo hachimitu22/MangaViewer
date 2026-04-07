@@ -46,7 +46,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
         mediaOverviews: [{
           mediaId: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           title: '太郎の冒険',
-          thumbnail: 'content-001',
+          thumbnail: '/contents/content-001',
           tags: [{ category: '作者', label: '山田' }],
           priorityCategories: ['作者'],
         }],
