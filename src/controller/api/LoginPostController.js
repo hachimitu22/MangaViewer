@@ -15,6 +15,9 @@ class LoginPostController {
     if (!loginAttemptStore || typeof loginAttemptStore.recordAuthenticationFailure !== 'function') {
       throw new Error('loginAttemptStore.recordAuthenticationFailure must be a function');
     }
+    if (typeof loginAttemptStore.clearRateLimit !== 'function') {
+      throw new Error('loginAttemptStore.clearRateLimit must be a function');
+    }
 
     this.#loginService = loginService;
     this.#loginAttemptStore = loginAttemptStore;
@@ -55,6 +58,10 @@ class LoginPostController {
 
       if (result instanceof LoginSucceededResult) {
         this.#loginAttemptStore.clearAuthenticationFailures({ key: username });
+        this.#loginAttemptStore.clearRateLimit({
+          scope: 'ip',
+          key: this.#resolveIpAddress(req),
+        });
         const cookiePolicy = this.#resolveSessionCookiePolicy(req);
         res.cookie('session_token', result.sessionToken, {
           httpOnly: true,
@@ -107,6 +114,10 @@ class LoginPostController {
       sameSite: isProduction ? 'strict' : 'lax',
       maxAge: sessionTtlMs,
     };
+  }
+
+  #resolveIpAddress(req) {
+    return req.ip || req.connection?.remoteAddress || 'unknown';
   }
 
   #fail(res) {

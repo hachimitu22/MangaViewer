@@ -33,6 +33,11 @@ class InMemoryLoginAttemptStore extends LoginAttemptStore {
     };
   }
 
+  clearRateLimit({ scope, key } = {}) {
+    const bucketKey = `${scope || 'unknown'}:${key || 'anonymous'}`;
+    this.#rateLimitBuckets.delete(bucketKey);
+  }
+
   getTemporaryLockState({ key, nowMs = Date.now() } = {}) {
     const state = this.#failureStates.get(key);
     if (!state) {

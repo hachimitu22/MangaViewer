@@ -44,6 +44,7 @@ describe('LoginPostController', () => {
       getTemporaryLockState: jest.fn().mockReturnValue({ isLocked: false, failureCount: 0, lockUntilMs: 0 }),
       recordAuthenticationFailure: jest.fn().mockReturnValue({ failureCount: 1, lockUntilMs: 0, isLocked: false }),
       clearAuthenticationFailures: jest.fn(),
+      clearRateLimit: jest.fn(),
     };
     controller = new LoginPostController({ loginService, loginAttemptStore });
   });
@@ -62,6 +63,7 @@ describe('LoginPostController', () => {
       session,
     });
     expect(loginAttemptStore.clearAuthenticationFailures).toHaveBeenCalledWith({ key: 'admin' });
+    expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledWith({ scope: 'ip', key: 'unknown' });
     expect(res.cookie).toHaveBeenCalledWith('session_token', 'token-1', {
       httpOnly: true,
       path: '/',
@@ -83,6 +85,7 @@ describe('LoginPostController', () => {
 
     expect(loginAttemptStore.recordAuthenticationFailure).toHaveBeenCalledWith({ key: 'admin' });
     expect(loginAttemptStore.clearAuthenticationFailures).not.toHaveBeenCalled();
+    expect(loginAttemptStore.clearRateLimit).not.toHaveBeenCalled();
     expect(res.cookie).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
@@ -150,5 +153,20 @@ describe('LoginPostController', () => {
       sameSite: 'strict',
       maxAge: 120_000,
     });
+  });
+
+  it('認証成功が連続しても429にはならず毎回code=0を返す', async () => {
+    for (let i = 0; i < 8; i += 1) {
+      const { res } = await execute({
+        body: { username: 'admin', password: 'secret' },
+        session: { regenerate: jest.fn() },
+      });
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ code: 0 });
+    }
+
+    expect(loginAttemptStore.clearAuthenticationFailures).toHaveBeenCalledTimes(8);
+    expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledTimes(8);
   });
 });

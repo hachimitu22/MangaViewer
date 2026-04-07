@@ -3,6 +3,10 @@ class LoginAttemptStore {
     throw new Error('consumeRateLimit must be implemented');
   }
 
+  clearRateLimit() {
+    throw new Error('clearRateLimit must be implemented');
+  }
+
   getTemporaryLockState() {
     throw new Error('getTemporaryLockState must be implemented');
   }
