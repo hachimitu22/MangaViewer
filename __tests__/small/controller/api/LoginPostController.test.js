@@ -1,4 +1,5 @@
 const LoginPostController = require('../../../../src/controller/api/LoginPostController');
+const InMemoryLoginAttemptStore = require('../../../../src/infrastructure/InMemoryLoginAttemptStore');
 const {
   LoginSucceededResult,
   LoginFailedResult,
@@ -63,7 +64,7 @@ describe('LoginPostController', () => {
       session,
     });
     expect(loginAttemptStore.clearAuthenticationFailures).toHaveBeenCalledWith({ key: 'admin' });
-    expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledWith({ scope: 'ip', key: 'unknown' });
+    expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledWith({ scope: 'ip', key: 'ip:unknown|user:admin' });
     expect(res.cookie).toHaveBeenCalledWith('session_token', 'token-1', {
       httpOnly: true,
       path: '/',
@@ -168,5 +169,46 @@ describe('LoginPostController', () => {
 
     expect(loginAttemptStore.clearAuthenticationFailures).toHaveBeenCalledTimes(8);
     expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledTimes(8);
+  });
+
+  it('ログイン成功時は同一IPの別ユーザー分レート制限をクリアしない', async () => {
+    const session = { regenerate: jest.fn() };
+    const inMemoryStore = new InMemoryLoginAttemptStore();
+    const inMemoryController = new LoginPostController({
+      loginService,
+      loginAttemptStore: inMemoryStore,
+    });
+    const nowMs = 1_000;
+    inMemoryStore.consumeRateLimit({ scope: 'ip', key: 'ip:127.0.0.1|user:admin', windowMs: 60_000, nowMs });
+    inMemoryStore.consumeRateLimit({ scope: 'ip', key: 'ip:127.0.0.1|user:guest', windowMs: 60_000, nowMs });
+
+    const req = {
+      body: { username: 'admin', password: 'secret' },
+      session,
+      ip: '127.0.0.1',
+      app: {
+        locals: {
+          env: {},
+        },
+      },
+    };
+    const res = createRes();
+    await inMemoryController.execute(req, res);
+
+    const adminAfterSuccess = inMemoryStore.consumeRateLimit({
+      scope: 'ip',
+      key: 'ip:127.0.0.1|user:admin',
+      windowMs: 60_000,
+      nowMs: nowMs + 1,
+    });
+    const guestAfterSuccess = inMemoryStore.consumeRateLimit({
+      scope: 'ip',
+      key: 'ip:127.0.0.1|user:guest',
+      windowMs: 60_000,
+      nowMs: nowMs + 1,
+    });
+
+    expect(adminAfterSuccess.count).toBe(1);
+    expect(guestAfterSuccess.count).toBe(2);
   });
 });

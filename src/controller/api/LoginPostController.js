@@ -30,6 +30,7 @@ class LoginPostController {
       const username = req?.body?.username;
       const password = req?.body?.password;
       const session = req?.session;
+      const ipAddress = this.#resolveIpAddress(req);
 
       if (!this.#isValidCredential(username) || !this.#isValidCredential(password) || !session) {
         logger?.warn('auth.login.failed', {
@@ -60,7 +61,7 @@ class LoginPostController {
         this.#loginAttemptStore.clearAuthenticationFailures({ key: username });
         this.#loginAttemptStore.clearRateLimit({
           scope: 'ip',
-          key: this.#resolveIpAddress(req),
+          key: this.#buildRateLimitKey({ ipAddress, username }),
         });
         const cookiePolicy = this.#resolveSessionCookiePolicy(req);
         res.cookie('session_token', result.sessionToken, {
@@ -118,6 +119,12 @@ class LoginPostController {
 
   #resolveIpAddress(req) {
     return req.ip || req.connection?.remoteAddress || 'unknown';
+  }
+
+  #buildRateLimitKey({ ipAddress, username }) {
+    const resolvedIpAddress = typeof ipAddress === 'string' && ipAddress.length > 0 ? ipAddress : 'unknown';
+    const resolvedUsername = typeof username === 'string' && username.length > 0 ? username : 'anonymous';
+    return `ip:${resolvedIpAddress}|user:${resolvedUsername}`;
   }
 
   #fail(res) {
