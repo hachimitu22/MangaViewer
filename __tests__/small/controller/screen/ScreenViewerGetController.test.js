@@ -99,7 +99,7 @@ describe('ScreenViewerGetController', () => {
 
     expect(res.render).toHaveBeenCalledWith('screen/viewer', expect.objectContaining({
       content: {
-        id: '/contents/0123456789abcdef0123456789abcdef',
+        id: '/contents/01/23/45/67/0123456789abcdef0123456789abcdef',
         type: 'video',
       },
     }));

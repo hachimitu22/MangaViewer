@@ -10,6 +10,7 @@ const ContentId = require('../../../../src/domain/media/contentId');
 const Tag = require('../../../../src/domain/media/tag');
 const Category = require('../../../../src/domain/media/category');
 const Label = require('../../../../src/domain/media/label');
+const { toPublicContentPath } = require('../../../../src/controller/screen/publicContentPath');
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 
 const createViewerSeedMedia = ({ mediaId, title, contentIds }) => new Media(
@@ -22,7 +23,7 @@ const createViewerSeedMedia = ({ mediaId, title, contentIds }) => new Media(
   [new Category('カテゴリ')],
 );
 
-const toExpectedPublicPath = contentId => `/contents/${contentId}`;
+const toExpectedPublicPath = contentId => toPublicContentPath(contentId);
 
 test.describe('large e2e: viewer ナビゲーション', () => {
   const seedMediaId = 'media-seed-viewer-navigation-1';
