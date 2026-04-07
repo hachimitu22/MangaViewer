@@ -38,4 +38,14 @@ describe('InMemoryLoginAttemptStore', () => {
       lockUntilMs: 0,
     });
   });
+
+  test('IPレート制限カウンタをクリアできる', () => {
+    const store = new InMemoryLoginAttemptStore();
+
+    store.consumeRateLimit({ scope: 'ip', key: '127.0.0.1', windowMs: 60_000, nowMs: 1_000 });
+    store.clearRateLimit({ scope: 'ip', key: '127.0.0.1' });
+    const afterClear = store.consumeRateLimit({ scope: 'ip', key: '127.0.0.1', windowMs: 60_000, nowMs: 2_000 });
+
+    expect(afterClear.count).toBe(1);
+  });
 });

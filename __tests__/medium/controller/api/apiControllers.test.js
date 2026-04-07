@@ -14,6 +14,7 @@ const createLoginAttemptStore = () => ({
   getTemporaryLockState: jest.fn(() => ({ isLocked: false, failureCount: 0, lockUntilMs: 0 })),
   recordAuthenticationFailure: jest.fn(() => ({ failureCount: 1, lockUntilMs: 0, isLocked: false })),
   clearAuthenticationFailures: jest.fn(),
+  clearRateLimit: jest.fn(),
 });
 
 const createApp = ({ loginService, logoutService, registerMediaService, updateMediaService, deleteMediaService }) => {

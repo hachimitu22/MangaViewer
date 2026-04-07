@@ -19,7 +19,6 @@ class LoginRateLimiter {
     const nowMs = Date.now();
     const logger = req.app?.locals?.dependencies?.logger;
     const requestId = req.context?.requestId;
-    const username = this.#resolveUsername(req);
     const ipAddress = this.#resolveIpAddress(req);
 
     const ipCounter = this.#loginAttemptStore.consumeRateLimit({
@@ -28,19 +27,13 @@ class LoginRateLimiter {
       windowMs: this.#windowMs,
       nowMs,
     });
-    const usernameCounter = this.#loginAttemptStore.consumeRateLimit({
-      scope: 'username',
-      key: username,
-      windowMs: this.#windowMs,
-      nowMs,
-    });
 
-    if (ipCounter.count > this.#maxAttemptsPerWindow || usernameCounter.count > this.#maxAttemptsPerWindow) {
+    if (ipCounter.count > this.#maxAttemptsPerWindow) {
       logger?.warn('auth.login.failed', {
         request_id: requestId,
         reason: 'rate_limited',
         ip_address: ipAddress,
-        username,
+        username: this.#resolveUsername(req),
       });
       return res.status(429).json({ code: 1 });
     }

@@ -18,6 +18,7 @@ describe('setRouterApiLogin', () => {
     getTemporaryLockState: jest.fn().mockReturnValue({ isLocked: false, failureCount: 0, lockUntilMs: 0 }),
     recordAuthenticationFailure: jest.fn(),
     clearAuthenticationFailures: jest.fn(),
+    clearRateLimit: jest.fn(),
   });
 
   it('POST /api/login にRateLimiterとログインコントローラーを登録できる', async () => {

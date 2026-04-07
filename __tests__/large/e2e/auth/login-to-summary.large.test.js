@@ -57,4 +57,20 @@ test.describe('large e2e: ログイン画面からサマリー画面まで遷移
     expect(page.url()).toBe(`${baseUrl}/screen/summary`);
     await expect(page.locator('body')).toContainText(seedTitle);
   });
+
+  test('認証成功だけを連続して実行しても /api/login が 429 を返さない', async () => {
+    const { baseUrl } = appContext;
+
+    for (let i = 0; i < 8; i += 1) {
+      const response = await page.request.post(`${baseUrl}/api/login`, {
+        form: {
+          username: 'admin',
+          password: 'admin',
+        },
+      });
+
+      expect(response.status()).toBe(200);
+      await expect(response.json()).resolves.toEqual({ code: 0 });
+    }
+  });
 });
