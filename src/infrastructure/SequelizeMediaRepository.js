@@ -8,6 +8,7 @@ const ContentId = require('../domain/media/contentId');
 const Tag = require('../domain/media/tag');
 const Category = require('../domain/media/category');
 const Label = require('../domain/media/label');
+const normalizeTextInput = value => (typeof value === 'string' ? value.trim() : value);
 
 function defineModels(sequelize) {
   const MediaModel = sequelize.define('media', {
@@ -229,12 +230,12 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       .map(content => new ContentId(content.content_id));
 
     const tags = mediaTags.map(mediaTag => new Tag(
-      new Category(mediaTag.tag.category.name),
-      new Label(mediaTag.tag.name)
+      new Category(normalizeTextInput(mediaTag.tag.category.name)),
+      new Label(normalizeTextInput(mediaTag.tag.name))
     ));
 
     const priorityCategories = mediaCategories
-      .map(mediaCategory => new Category(mediaCategory.category.name));
+      .map(mediaCategory => new Category(normalizeTextInput(mediaCategory.category.name)));
 
     const registeredAt = mediaRow.created_at instanceof Date
       ? mediaRow.created_at
@@ -242,7 +243,7 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
 
     return new Media(
       new MediaId(mediaRow.media_id),
-      new MediaTitle(mediaRow.title),
+      new MediaTitle(normalizeTextInput(mediaRow.title)),
       contents,
       tags,
       priorityCategories,

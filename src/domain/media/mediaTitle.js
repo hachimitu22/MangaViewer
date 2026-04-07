@@ -3,7 +3,7 @@ const ignoreCharactersReg = /[\x00-\x1F\x7F]/;
 module.exports = class MediaTitle {
   #title;
   constructor(title) {
-    if (ignoreCharactersReg.test(title)) {
+    if (typeof title !== 'string' || title.trim() === '' || ignoreCharactersReg.test(title)) {
       throw new Error();
     }
     this.#title = title;
