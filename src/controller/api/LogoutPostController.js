@@ -46,7 +46,7 @@ class LogoutPostController {
 
   #clearSessionCookie(req, res) {
     const cookiePolicy = this.#resolveSessionCookiePolicy(req);
-    res.clearCookie('session_token', {
+    res?.clearCookie?.('session_token', {
       httpOnly: true,
       path: '/',
       secure: cookiePolicy.secure,
