@@ -32,6 +32,9 @@ test.describe('large e2e: viewer ナビゲーション', () => {
     'seed/viewer-navigation-content-2.jpg',
     'seed/viewer-navigation-content-3.jpg',
   ];
+  const seedVideoMediaId = 'media-seed-viewer-navigation-video-1';
+  const seedVideoTitle = 'ビューアー動画確認用タイトル';
+  const seedVideoContentId = '0123456789abcdef0123456789abcdef';
 
   let context;
 
@@ -46,13 +49,32 @@ test.describe('large e2e: viewer ナビゲーション', () => {
             title: seedTitle,
             contentIds: seedContentIds,
           }));
+          await app.locals.dependencies.mediaRepository.save(createViewerSeedMedia({
+            mediaId: seedVideoMediaId,
+            title: seedVideoTitle,
+            contentIds: [seedVideoContentId],
+          }));
         });
+
+        await app.locals.dependencies.sequelize.models.content.update(
+          { content_type: 'video/mp4' },
+          { where: { content_id: seedVideoContentId } }
+        );
 
         await fs.mkdir(path.join(tempContentDirectory, 'seed'), { recursive: true });
 
         await Promise.all(seedContentIds.map(contentId => {
           return fs.writeFile(path.join(tempContentDirectory, contentId), 'dummy', { encoding: 'utf8' });
         }));
+        const shardedSegments = [
+          seedVideoContentId.slice(0, 2),
+          seedVideoContentId.slice(2, 4),
+          seedVideoContentId.slice(4, 6),
+          seedVideoContentId.slice(6, 8),
+        ];
+        const videoDirectory = path.join(tempContentDirectory, ...shardedSegments);
+        await fs.mkdir(videoDirectory, { recursive: true });
+        await fs.writeFile(path.join(videoDirectory, seedVideoContentId), 'dummy-video', { encoding: 'utf8' });
       },
     });
   });
@@ -173,5 +195,21 @@ test.describe('large e2e: viewer ナビゲーション', () => {
       return elements.map(element => element.textContent.trim());
     });
     expect(footerTextsAtLastPage).toContain('次ページなし');
+  });
+
+  test('contentType=video が保存されたコンテンツは viewer で <video> として描画される', async () => {
+    const { baseUrl } = context;
+    await login({ page, baseUrl });
+
+    await page.goto(`${baseUrl}/screen/viewer/${seedVideoMediaId}/1`, { waitUntil: 'networkidle' });
+
+    await page.waitForSelector('.stage video');
+    expect(await page.$('.stage img')).toBeNull();
+    const videoState = await page.$eval('.stage video', element => ({
+      src: element.getAttribute('src'),
+      controls: element.hasAttribute('controls'),
+    }));
+    expect(videoState.src).toBe(toExpectedPublicPath(seedVideoContentId));
+    expect(videoState.controls).toBe(true);
   });
 });

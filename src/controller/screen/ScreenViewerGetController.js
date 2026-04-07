@@ -45,7 +45,7 @@ class ScreenViewerGetController {
         currentUserId: req.context?.userId || null,
         content: {
           id: toPublicContentPath(result.contentId),
-          type: this.#detectContentType(result.contentId),
+          type: result.contentType ?? this.#detectContentType(result.contentId),
         },
         previousPage: result.previousContentId === null ? null : {
           mediaId: req.params.mediaId,

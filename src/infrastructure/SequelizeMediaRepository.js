@@ -9,6 +9,22 @@ const Tag = require('../domain/media/tag');
 const Category = require('../domain/media/category');
 const Label = require('../domain/media/label');
 const normalizeTextInput = value => (typeof value === 'string' ? value.trim() : value);
+const VIDEO_MIME_TYPE_PREFIX = 'video/';
+
+const resolveContentTypeFromRow = (contentRow) => {
+  if (typeof contentRow?.content_type === 'string' && contentRow.content_type.startsWith(VIDEO_MIME_TYPE_PREFIX)) {
+    return 'video';
+  }
+  if (typeof contentRow?.content_type === 'string' && contentRow.content_type.startsWith('image/')) {
+    return 'image';
+  }
+
+  if (/\.(mp4|webm|ogg|mov|m4v)$/i.test(contentRow?.content_id ?? '')) {
+    return 'video';
+  }
+
+  return null;
+};
 
 function defineModels(sequelize) {
   const MediaModel = sequelize.define('media', {
@@ -22,6 +38,7 @@ function defineModels(sequelize) {
     content_id: { type: DataTypes.TEXT, primaryKey: true },
     media_id: { type: DataTypes.STRING, allowNull: false },
     position: { type: DataTypes.INTEGER, allowNull: false },
+    content_type: { type: DataTypes.TEXT, allowNull: true },
   }, { tableName: 'content', timestamps: false });
 
   const CategoryModel = sequelize.define('category', {
@@ -249,6 +266,41 @@ module.exports = class SequelizeMediaRepository extends IMediaRepository {
       priorityCategories,
       registeredAt,
     );
+  }
+
+  async findContentWithNavigationByMediaId({ mediaId, contentPosition }) {
+    if (!(mediaId instanceof MediaId)) {
+      throw new Error();
+    }
+    if (!Number.isInteger(contentPosition) || contentPosition <= 0) {
+      throw new Error();
+    }
+
+    const executionScope = this.#unitOfWorkContext.getCurrent();
+    const { MediaModel, ContentModel } = this.#models;
+
+    const mediaRow = await MediaModel.findByPk(mediaId.getId(), { transaction: executionScope });
+    if (!mediaRow) {
+      return null;
+    }
+
+    const rows = await ContentModel.findAll({
+      where: {
+        media_id: mediaId.getId(),
+        position: [contentPosition - 1, contentPosition, contentPosition + 1],
+      },
+      transaction: executionScope,
+    });
+
+    const rowMap = new Map(rows.map(row => [row.position, row]));
+    const current = rowMap.get(contentPosition) ?? null;
+
+    return {
+      contentId: current?.content_id ?? null,
+      previousContentId: rowMap.get(contentPosition - 1)?.content_id ?? null,
+      nextContentId: rowMap.get(contentPosition + 1)?.content_id ?? null,
+      contentType: resolveContentTypeFromRow(current),
+    };
   }
 
   async delete(media) {

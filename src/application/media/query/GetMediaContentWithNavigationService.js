@@ -22,7 +22,7 @@ class Result {
 }
 
 class FoundResult extends Result {
-  constructor({ contentId, previousContentId, nextContentId }) {
+  constructor({ contentId, previousContentId, nextContentId, contentType = null }) {
     super();
 
     if (typeof contentId !== 'string' && contentId !== null) {
@@ -34,10 +34,14 @@ class FoundResult extends Result {
     if (typeof nextContentId !== 'string' && nextContentId !== null) {
       throw new Error();
     }
+    if (!(contentType === 'image' || contentType === 'video' || contentType === null)) {
+      throw new Error();
+    }
 
     this.contentId = contentId;
     this.previousContentId = previousContentId;
     this.nextContentId = nextContentId;
+    this.contentType = contentType;
   }
 }
 
@@ -70,6 +74,26 @@ class GetMediaContentWithNavigationService {
     }
 
     const mediaId = new MediaId(input.mediaId);
+    if (typeof this.#mediaRepository.findContentWithNavigationByMediaId !== 'function') {
+      return this.#executeWithLegacyPath({ input, mediaId });
+    }
+
+    const result = await this.#mediaRepository.findContentWithNavigationByMediaId({
+      mediaId,
+      contentPosition: input.contentPosition,
+    });
+
+    if (result === null) {
+      return new MediaNotFoundResult();
+    }
+    if (result.contentId === null) {
+      return new ContentNotFoundResult();
+    }
+
+    return new FoundResult(result);
+  }
+
+  async #executeWithLegacyPath({ input, mediaId }) {
     const media = await this.#mediaRepository.findByMediaId(mediaId);
 
     if (!media) {

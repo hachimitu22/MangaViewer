@@ -83,6 +83,28 @@ describe('ScreenViewerGetController', () => {
     }));
   });
 
+  test('拡張子なしの32桁 contentId でも contentType が video なら type=video として描画する', async () => {
+    const getMediaContentWithNavigationService = {
+      execute: jest.fn().mockResolvedValue(new FoundResult({
+        contentId: '0123456789abcdef0123456789abcdef',
+        previousContentId: null,
+        nextContentId: null,
+        contentType: 'video',
+      })),
+    };
+    const controller = new ScreenViewerGetController({ getMediaContentWithNavigationService });
+    const res = createRes();
+
+    await controller.execute({ params: { mediaId: 'media-video', mediaPage: '1' } }, res);
+
+    expect(res.render).toHaveBeenCalledWith('screen/viewer', expect.objectContaining({
+      content: {
+        id: '/contents/0123456789abcdef0123456789abcdef',
+        type: 'video',
+      },
+    }));
+  });
+
   test.each([
     ['MediaNotFoundResult', new MediaNotFoundResult()],
     ['ContentNotFoundResult', new ContentNotFoundResult()],
