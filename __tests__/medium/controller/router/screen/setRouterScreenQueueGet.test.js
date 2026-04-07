@@ -105,7 +105,7 @@ describe('setRouterScreenQueueGet (middle)', () => {
     expect(response.headers.get('content-type')).toContain('text/html');
     expect(response.bodyText).toContain('<title>あとで見る一覧</title>');
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'queue.ejs'));
-    expect(response.bodyText).toContain(':title_desc:2:41:1,2,3:/contents/content-001:false:true:');
+    expect(response.bodyText).toContain(':title_desc:2:41:1,2,3::false:true:');
     expect(response.bodyText).toContain('summary=/screen/summary?summaryPage=1&sort=date_asc&tags=');
     expect(response.bodyText).toContain('page=/screen/queue?queuePage=1&sort=title_desc');
     expect(response.bodyText).toContain('favoriteLabel=お気に入り追加');

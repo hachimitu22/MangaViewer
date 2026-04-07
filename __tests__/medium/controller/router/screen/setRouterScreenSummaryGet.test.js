@@ -92,7 +92,7 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'summary.ejs'));
     expect(response.bodyText).toContain(':太郎:作者:山田:11:5:');
     expect(response.bodyText).toContain('太郎の冒険');
-    expect(response.bodyText).toContain('/contents/content-001');
+    expect(response.bodyText).toContain('太郎の冒険::1');
     expect(response.bodyText).toContain(':1</body>');
     expect(searchMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       title: '太郎',

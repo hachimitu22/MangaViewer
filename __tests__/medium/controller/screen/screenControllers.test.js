@@ -51,7 +51,7 @@ describe('medium: ScreenDetailGetController', () => {
         pageTitle: '作品タイトル の詳細',
         mediaDetail: {
           ...mediaDetail,
-          contents: [{ id: 'content-001', thumbnail: '/contents/content-001', position: 1 }],
+          contents: [{ id: 'content-001', thumbnail: '', position: 1 }],
         },
         currentPath: '/screen/detail',
         currentUserId: null,
@@ -106,18 +106,21 @@ describe('medium: ScreenViewerGetController', () => {
         currentUserId: null,
         content: {
           id: '/contents/page-2.jpg',
+          hasRenderableContent: true,
           type: 'image',
         },
         previousPage: {
           mediaId: 'media-001',
           mediaPage: 1,
           contentId: '/contents/page-1.jpg',
+          hasRenderableContent: true,
           href: '/screen/viewer/media-001/1',
         },
         nextPage: {
           mediaId: 'media-001',
           mediaPage: 3,
           contentId: '/contents/page-3.jpg',
+          hasRenderableContent: true,
           href: '/screen/viewer/media-001/3',
         },
       },
@@ -147,6 +150,7 @@ describe('medium: ScreenViewerGetController', () => {
         mediaPage: 10,
         content: {
           id: '/contents/page-10.mp4',
+          hasRenderableContent: true,
           type: 'video',
         },
         previousPage: null,
