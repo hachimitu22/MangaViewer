@@ -75,10 +75,16 @@ describe('API controllers (middle)', () => {
       .send({ username: 'admin', password: 'wrong' })
       .expect(200, { code: 1 });
 
-    await request(app)
+    const logoutResponse = await request(app)
       .post('/logout')
       .send({})
       .expect(200, { code: 1 });
+
+    expect(logoutResponse.headers['set-cookie']).toEqual(expect.arrayContaining([
+      expect.stringMatching(/session_token=;/),
+      expect.stringMatching(/Path=\//),
+      expect.stringMatching(/SameSite=Lax/),
+    ]));
   });
 
   test('normal: MediaPost / MediaPatch / MediaDelete が HTTP レベルで成功レスポンスを返す', async () => {

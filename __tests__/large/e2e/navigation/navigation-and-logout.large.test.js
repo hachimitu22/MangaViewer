@@ -175,6 +175,10 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
 
     const logoutResponse = await logoutResponsePromise;
     expect(logoutResponse.status()).toBe(200);
+    const clearCookieHeader = await logoutResponse.headerValue('set-cookie');
+    expect(clearCookieHeader).toEqual(expect.stringContaining('session_token=;'));
+    expect(clearCookieHeader).toEqual(expect.stringContaining('Path=/'));
+    expect(clearCookieHeader).toEqual(expect.stringContaining('SameSite=Lax'));
     await page.waitForURL(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
 
     const protectedResponse = await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });

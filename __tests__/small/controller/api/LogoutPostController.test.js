@@ -12,6 +12,7 @@ describe('LogoutPostController', () => {
     const res = {
       status: jest.fn(),
       json: jest.fn(),
+      clearCookie: jest.fn(),
     };
     res.status.mockReturnValue(res);
     return res;
@@ -39,6 +40,11 @@ describe('LogoutPostController', () => {
 
     expect(logoutService.execute).toHaveBeenCalledTimes(1);
     expect(logoutService.execute.mock.calls[0][0]).toMatchObject({ session });
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 0 });
   });
@@ -48,6 +54,11 @@ describe('LogoutPostController', () => {
 
     const { res } = await execute({ session: { session_token: 'token-1' } });
 
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
   });
@@ -56,6 +67,11 @@ describe('LogoutPostController', () => {
     const { res } = await execute({ session: undefined });
 
     expect(logoutService.execute).not.toHaveBeenCalled();
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
   });
@@ -65,7 +81,28 @@ describe('LogoutPostController', () => {
 
     const { res } = await execute({ session: { session_token: 'token-1' } });
 
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
+  });
+
+  it('production環境ではclearCookieにsameSite=strict, secure=trueを指定する', async () => {
+    const req = {
+      session: { session_token: 'token-1' },
+      app: { locals: { env: { nodeEnv: 'production' } } },
+    };
+    const res = createRes();
+
+    await controller.execute(req, res);
+
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'strict',
+      secure: true,
+    }));
   });
 });
