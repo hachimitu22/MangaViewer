@@ -20,10 +20,12 @@ class LoginRateLimiter {
     const logger = req.app?.locals?.dependencies?.logger;
     const requestId = req.context?.requestId;
     const ipAddress = this.#resolveIpAddress(req);
+    const username = this.#resolveUsername(req);
+    const rateLimitKey = this.#buildRateLimitKey({ ipAddress, username });
 
     const ipCounter = this.#loginAttemptStore.consumeRateLimit({
       scope: 'ip',
-      key: ipAddress,
+      key: rateLimitKey,
       windowMs: this.#windowMs,
       nowMs,
     });
@@ -33,7 +35,7 @@ class LoginRateLimiter {
         request_id: requestId,
         reason: 'rate_limited',
         ip_address: ipAddress,
-        username: this.#resolveUsername(req),
+        username,
       });
       return res.status(429).json({ code: 1 });
     }
@@ -52,6 +54,10 @@ class LoginRateLimiter {
 
   #resolveIpAddress(req) {
     return req.ip || req.connection?.remoteAddress || 'unknown';
+  }
+
+  #buildRateLimitKey({ ipAddress, username }) {
+    return `ip:${ipAddress}|user:${username}`;
   }
 }
 
