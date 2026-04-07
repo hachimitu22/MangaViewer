@@ -72,6 +72,11 @@ describe('setRouterApiLogout (middle)', () => {
 
     expect(logoutResponse.status).toBe(200);
     expect(logoutResponse.body).toEqual({ code: 0 });
+    expect(logoutResponse.headers['set-cookie']).toEqual(expect.arrayContaining([
+      expect.stringMatching(/session_token=;/),
+      expect.stringMatching(/Path=\//),
+      expect.stringMatching(/SameSite=Lax/),
+    ]));
 
     const protectedResponse = await request(app)
       .get('/api/protected')
@@ -108,5 +113,10 @@ describe('setRouterApiLogout (middle)', () => {
 
     expect(logoutResponse.status).toBe(200);
     expect(logoutResponse.body).toEqual({ code: 1 });
+    expect(logoutResponse.headers['set-cookie']).toEqual(expect.arrayContaining([
+      expect.stringMatching(/session_token=;/),
+      expect.stringMatching(/Path=\//),
+      expect.stringMatching(/SameSite=Lax/),
+    ]));
   });
 });

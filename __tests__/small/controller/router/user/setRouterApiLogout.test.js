@@ -5,6 +5,7 @@ describe('setRouterApiLogout', () => {
     const res = {
       status: jest.fn(),
       json: jest.fn(),
+      clearCookie: jest.fn(),
     };
     res.status.mockReturnValue(res);
     return res;
@@ -35,6 +36,11 @@ describe('setRouterApiLogout', () => {
 
     await handler(req, res);
     expect(logoutService.execute).toHaveBeenCalledTimes(1);
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
