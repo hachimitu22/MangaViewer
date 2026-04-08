@@ -154,6 +154,36 @@ describe('createDependencies login wiring', () => {
     })).toThrow('既知の弱いパスワードは使用できません');
   });
 
+  test('development では既存のテスト互換のため弱い固定パスワードを許容する', async () => {
+    if (dependencies) {
+      await dependencies.close();
+      dependencies = undefined;
+    }
+
+    dependencies = createDependencies({
+      nodeEnv: 'development',
+      databaseStoragePath: path.join(databaseRoot, 'weak-password-development.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'weak-password-development-contents'),
+      loginUsername: 'admin',
+      loginPassword: 'admin',
+      loginUserId: 'admin',
+      loginSessionTtlMs: 60_000,
+    });
+    await dependencies.ready;
+
+    const session = {
+      regenerate: jest.fn((callback) => callback()),
+    };
+
+    const result = await dependencies.loginService.execute(new Query({
+      username: 'admin',
+      password: 'admin',
+      session,
+    }));
+
+    expect(result).toBeInstanceOf(LoginSucceededResult);
+  });
+
   test('AUTH_STATE_STORE_BACKEND=memory では InMemory ストアを利用する', async () => {
     if (dependencies) {
       await dependencies.close();

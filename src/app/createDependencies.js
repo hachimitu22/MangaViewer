@@ -116,7 +116,7 @@ const resolveLoginAuthConfig = env => {
     };
   }
 
-  if (isConfiguredValue(rawConfig.password)) {
+  if (isProduction && isConfiguredValue(rawConfig.password)) {
     const weakPasswords = new Set([
       'admin',
       'password',
