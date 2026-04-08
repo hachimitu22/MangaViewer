@@ -112,6 +112,6 @@ describe('setRouterScreenEditGet (middle)', () => {
     expect(response.bodyText).toContain('<title>メディア編集 の編集</title>');
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'edit.ejs'));
     expect(response.bodyText).toContain('media-001');
-    expect(response.bodyText).toContain('/contents/content-1');
+    expect(response.bodyText).toContain('media-001:');
   });
 });

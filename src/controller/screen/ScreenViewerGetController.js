@@ -37,6 +37,10 @@ class ScreenViewerGetController {
         throw new Error('unexpected result');
       }
 
+      const contentPath = toPublicContentPath(result.contentId);
+      const previousContentPath = result.previousContentId === null ? null : toPublicContentPath(result.previousContentId);
+      const nextContentPath = result.nextContentId === null ? null : toPublicContentPath(result.nextContentId);
+
       return res.status(200).render('screen/viewer', {
         pageTitle: `ビューアー ${req.params.mediaId} - ${mediaPage}ページ`,
         mediaId: req.params.mediaId,
@@ -44,19 +48,22 @@ class ScreenViewerGetController {
         currentPath: '/screen/viewer',
         currentUserId: req.context?.userId || null,
         content: {
-          id: toPublicContentPath(result.contentId),
+          id: contentPath,
+          hasRenderableContent: contentPath.length > 0,
           type: result.contentType ?? this.#detectContentType(result.contentId),
         },
         previousPage: result.previousContentId === null ? null : {
           mediaId: req.params.mediaId,
           mediaPage: mediaPage - 1,
-          contentId: toPublicContentPath(result.previousContentId),
+          contentId: previousContentPath,
+          hasRenderableContent: previousContentPath.length > 0,
           href: `/screen/viewer/${req.params.mediaId}/${mediaPage - 1}`,
         },
         nextPage: result.nextContentId === null ? null : {
           mediaId: req.params.mediaId,
           mediaPage: mediaPage + 1,
-          contentId: toPublicContentPath(result.nextContentId),
+          contentId: nextContentPath,
+          hasRenderableContent: nextContentPath.length > 0,
           href: `/screen/viewer/${req.params.mediaId}/${mediaPage + 1}`,
         },
       });

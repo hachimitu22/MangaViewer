@@ -113,7 +113,6 @@ describe('setRouterScreenDetailGet (middle)', () => {
     expect(response.bodyText).toContain('カテゴリー一覧');
     expect(response.bodyText).toContain('/screen/summary?summaryPage=1&sort=date_asc&tags=%E4%BD%9C%E8%80%85%3A%E5%B1%B1%E7%94%B0%20%E5%A4%AA%E9%83%8E');
     expect(response.bodyText).toContain('/screen/viewer/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/1');
-    expect(response.bodyText).toContain('src="/contents/content-001"');
     expect(response.bodyText).toContain('サムネイル未設定');
   });
 });

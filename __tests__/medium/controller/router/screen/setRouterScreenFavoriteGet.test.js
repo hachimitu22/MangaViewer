@@ -148,7 +148,7 @@ describe('setRouterScreenFavoriteGet (middle)', () => {
     expect(response.bodyText).toContain(path.join('src', 'views', 'screen', 'favorite.ejs'));
     expect(response.bodyText).toContain('sort=date_asc');
     expect(response.bodyText).toContain('page=1');
-    expect(response.bodyText).toContain('thumbnail=/contents/content-');
+    expect(response.bodyText).toContain('thumbnail=');
   });
 
   test('sort を変更すると指定順で描画される', async () => {

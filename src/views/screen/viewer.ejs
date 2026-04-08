@@ -30,6 +30,7 @@
         border-radius: 18px; padding: 16px; overflow: hidden;
       }
       .stage img, .stage video { width: 100%; max-height: calc(100vh - 220px); object-fit: contain; border-radius: 12px; background: #000; }
+      .stage-placeholder { text-align: center; color: #cbd5e1; }
       .footer-nav { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
       .footer-nav a, .footer-nav span {
         display:inline-flex; align-items:center; justify-content:center; min-width: 128px; min-height: 44px; padding: 10px 16px;
@@ -61,7 +62,9 @@
         </header>
 
         <article class="stage">
-          <% if (content.type === 'video') { %>
+          <% if (!content.hasRenderableContent) { %>
+            <div class="stage-placeholder">表示可能なコンテンツがありません。</div>
+          <% } else if (content.type === 'video') { %>
             <video src="<%= content.id %>" controls playsinline>
               動画を再生できません。
             </video>

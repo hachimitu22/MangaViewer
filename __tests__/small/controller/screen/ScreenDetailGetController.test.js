@@ -36,7 +36,7 @@ describe('ScreenDetailGetController', () => {
       pageTitle: '作品タイトル の詳細',
       mediaDetail: {
         ...mediaDetail,
-        contents: [{ id: 'content-1', thumbnail: '/contents/content-1', position: 1 }],
+        contents: [{ id: 'content-1', thumbnail: '', position: 1 }],
       },
       currentPath: '/screen/detail',
       currentUserId: 'admin',

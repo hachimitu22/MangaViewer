@@ -70,7 +70,7 @@
                 <article class="media-card" data-media-id="<%= media.mediaId %>" data-favorite-delete-path="/api/favorite/<%= media.mediaId %>" data-queue-put-path="/api/queue/<%= media.mediaId %>">
                   <div class="media-body">
                     <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
-                      <% if (media.thumbnail) { %>
+                      <% if (media.hasThumbnail) { %>
                         <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
                       <% } else { %>
                         <span>NO IMAGE</span>
