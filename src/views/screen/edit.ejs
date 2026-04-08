@@ -121,7 +121,7 @@
       </div>
     </div>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
       (() => {
         const mediaId = <%- JSON.stringify(mediaDetail.id) %>;
         const tagsByCategory = <%- JSON.stringify(tagsByCategory) %>;

@@ -151,7 +151,7 @@
       </div>
     </main>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
       (() => {
         const mediaId = <%- JSON.stringify(mediaDetail.id) %>;
         const status = document.getElementById('request-status');

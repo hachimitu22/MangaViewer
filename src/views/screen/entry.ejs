@@ -124,7 +124,7 @@
       </div>
     </div>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
       (() => {
         const tagsByCategory = <%- JSON.stringify(tagsByCategory) %>;
         const tagList = document.getElementById('tag-list');

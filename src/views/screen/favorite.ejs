@@ -52,7 +52,7 @@
             <form class="sort-form" method="get" action="/screen/favorite">
               <input type="hidden" name="page" value="1" />
               <label for="sort">並び順</label>
-              <select id="sort" name="sort" class="select-input" onchange="this.form.submit()">
+              <select id="sort" name="sort" class="select-input">
                 <% sortOptions.forEach((option) => { %>
                   <option value="<%= option.value %>" <%= currentConditions.sort === option.value ? 'selected' : '' %>><%= option.label %></option>
                 <% }) %>
@@ -114,8 +114,13 @@
       </div>
     </div>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
       (() => {
+        const sortSelect = document.getElementById('sort');
+        if (sortSelect?.form) {
+          sortSelect.addEventListener('change', () => sortSelect.form.submit());
+        }
+
         const request = async ({ path, method, successMessage, statusElement, onSuccess }) => {
           statusElement.textContent = '通信中です...';
           try {

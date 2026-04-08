@@ -172,4 +172,47 @@ describe('setupMiddleware (small)', () => {
 
     expect(app.locals.env).toBe(env);
   });
+
+  test('全レスポンス共通のセキュリティヘッダーと nonce を設定する', () => {
+    const { middleware } = createHarness({
+      env: {
+        devSessionToken: 'dev-token',
+        devSessionPaths: ['/screen/entry'],
+      },
+    });
+    const req = createReq({ headers: {}, path: '/screen/entry' });
+    const res = createRes();
+
+    middleware(req, res, jest.fn());
+
+    expect(typeof res.locals.cspNonce).toBe('string');
+    expect(res.locals.cspNonce.length).toBeGreaterThan(0);
+    expect(req.context.cspNonce).toBe(res.locals.cspNonce);
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'Content-Security-Policy',
+      expect.stringContaining(`script-src 'self' 'nonce-${res.locals.cspNonce}'`),
+    );
+    expect(res.setHeader).toHaveBeenCalledWith('X-Content-Type-Options', 'nosniff');
+    expect(res.setHeader).toHaveBeenCalledWith('Referrer-Policy', 'strict-origin-when-cross-origin');
+    expect(res.setHeader).toHaveBeenCalledWith('X-Frame-Options', 'DENY');
+  });
+
+  test('Strict-Transport-Security は本番環境のみ設定する', () => {
+    const productionHarness = createHarness({ env: { nodeEnv: 'production' } });
+    const developmentHarness = createHarness({ env: { nodeEnv: 'development' } });
+    const productionRes = createRes();
+    const developmentRes = createRes();
+
+    productionHarness.middleware(createReq({ path: '/screen/login' }), productionRes, jest.fn());
+    developmentHarness.middleware(createReq({ path: '/screen/login' }), developmentRes, jest.fn());
+
+    expect(productionRes.setHeader).toHaveBeenCalledWith(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains',
+    );
+    expect(developmentRes.setHeader).not.toHaveBeenCalledWith(
+      'Strict-Transport-Security',
+      expect.anything(),
+    );
+  });
 });
