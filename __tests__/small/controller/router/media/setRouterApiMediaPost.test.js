@@ -13,7 +13,14 @@ describe('setRouterApiMediaPost', () => {
   const createReq = () => ({
     session: {
       session_token: 'token-1',
+      csrf_token: 'csrf-1',
     },
+    protocol: 'http',
+    get: name => ({
+      'x-csrf-token': 'csrf-1',
+      origin: 'http://localhost',
+      host: 'localhost',
+    }[String(name).toLowerCase()] || undefined),
     body: {
       title: 'sample title',
       tags: [
@@ -59,14 +66,16 @@ describe('setRouterApiMediaPost', () => {
     expect(router.post).toHaveBeenCalledTimes(1);
     const [path, ...handlers] = router.post.mock.calls[0];
     expect(path).toBe('/api/media');
-    expect(handlers).toHaveLength(3);
+    expect(handlers).toHaveLength(4);
 
     const req = createReq();
     const res = createRes();
 
     await handlers[0](req, res, async () => {
       await handlers[1](req, res, async () => {
-        await handlers[2](req, res);
+        await handlers[2](req, res, async () => {
+          await handlers[3](req, res);
+        });
       });
     });
 

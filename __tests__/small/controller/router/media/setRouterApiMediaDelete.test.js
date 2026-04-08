@@ -24,17 +24,25 @@ describe('setRouterApiMediaDelete', () => {
     expect(router.delete).toHaveBeenCalledTimes(1);
     const [path, ...handlers] = router.delete.mock.calls[0];
     expect(path).toBe('/api/media/:mediaId');
-    expect(handlers).toHaveLength(2);
+    expect(handlers).toHaveLength(3);
 
     const req = {
-      session: { session_token: 'token-1' },
+      session: { session_token: 'token-1', csrf_token: 'csrf-1' },
+      protocol: 'http',
+      get: name => ({
+        'x-csrf-token': 'csrf-1',
+        origin: 'http://localhost',
+        host: 'localhost',
+      }[String(name).toLowerCase()] || undefined),
       params: { mediaId: 'media-1' },
       context: {},
     };
     const res = createRes();
 
     await handlers[0](req, res, async () => {
-      await handlers[1](req, res);
+      await handlers[1](req, res, async () => {
+        await handlers[2](req, res);
+      });
     });
 
     expect(authResolver.execute).toHaveBeenCalledWith('token-1');

@@ -19,24 +19,37 @@ describe('setRouterApiLogout', () => {
     setRouterApiLogout({ router, authResolver, logoutService });
 
     expect(router.post).toHaveBeenCalledTimes(1);
-    const [path, middleware, handler] = router.post.mock.calls[0];
+    const [path, authMiddleware, csrfMiddleware, handler] = router.post.mock.calls[0];
     expect(path).toBe('/api/logout');
-    expect(typeof middleware).toBe('function');
+    expect(typeof authMiddleware).toBe('function');
+    expect(typeof csrfMiddleware).toBe('function');
     expect(typeof handler).toBe('function');
 
     const req = {
-      session: { session_token: 'token-1' },
+      session: { session_token: 'token-1', csrf_token: 'csrf-1' },
       context: {},
+      protocol: 'http',
+      get: name => ({
+        'x-csrf-token': 'csrf-1',
+        origin: 'http://localhost',
+        host: 'localhost',
+      }[String(name).toLowerCase()] || undefined),
     };
     const res = createRes();
     const next = jest.fn();
 
-    await middleware(req, res, next);
-    expect(next).toHaveBeenCalledTimes(1);
+    await authMiddleware(req, res, next);
+    await csrfMiddleware(req, res, next);
+    expect(next).toHaveBeenCalledTimes(2);
 
     await handler(req, res);
     expect(logoutService.execute).toHaveBeenCalledTimes(1);
     expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
+    expect(res.clearCookie).toHaveBeenCalledWith('csrf_token', expect.objectContaining({
       path: '/',
       sameSite: 'lax',
       secure: false,

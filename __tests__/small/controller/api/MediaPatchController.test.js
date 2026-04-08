@@ -81,7 +81,7 @@ describe('MediaPatchController', () => {
     expect(input.priorityCategories).toEqual(['作者', 'ジャンル']);
   });
 
-  it('UpdateMediaServiceが失敗した場合はcode=1を返す', async () => {
+  it('UpdateMediaServiceが失敗した場合は500を返す', async () => {
     updateMediaService.execute.mockRejectedValue(new Error('fail'));
 
     const { res } = await execute({
@@ -93,8 +93,8 @@ describe('MediaPatchController', () => {
       contentIds: ['c1'],
     });
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ code: 1 });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Internal Server Error' });
   });
 
   it.each([
@@ -110,11 +110,11 @@ describe('MediaPatchController', () => {
     ['contentIdsが未設定', { mediaId: 'm1' }, { title: 'title', tags: [] }, undefined],
     ['contentIdsが空配列', { mediaId: 'm1' }, { title: 'title', tags: [] }, []],
     ['contentIdsに重複がある', { mediaId: 'm1' }, { title: 'title', tags: [] }, ['c1', 'c1']],
-  ])('%sの場合は更新失敗を返す', async (_name, params, body, contentIds) => {
+  ])('%sの場合は400を返す', async (_name, params, body, contentIds) => {
     const { res } = await execute({ params, body, contentIds });
 
     expect(updateMediaService.execute).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ code: 1 });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Bad Request' });
   });
 });
