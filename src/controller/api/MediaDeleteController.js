@@ -18,7 +18,7 @@ class MediaDeleteController {
       const mediaId = req?.params?.mediaId;
 
       if (!this.#validateMediaId(mediaId)) {
-        return this.#fail(res);
+        return this.#failValidation(res);
       }
 
       const input = new DeleteMediaServiceInput({
@@ -31,7 +31,7 @@ class MediaDeleteController {
         code: 0,
       });
     } catch (_error) {
-      return this.#fail(res);
+      return this.#failServerError(res);
     }
   }
 
@@ -39,9 +39,15 @@ class MediaDeleteController {
     return typeof mediaId === 'string' && mediaId.length > 0;
   }
 
-  #fail(res) {
-    return res.status(200).json({
-      code: 1,
+  #failValidation(res) {
+    return res.status(400).json({
+      message: 'Bad Request',
+    });
+  }
+
+  #failServerError(res) {
+    return res.status(500).json({
+      message: 'Internal Server Error',
     });
   }
 }

@@ -72,6 +72,9 @@
   </div>
 </nav>
 <script>
+  window.__csrfToken = <%- JSON.stringify(csrfToken || '') %>;
+</script>
+<script>
   (() => {
     const logoutButton = document.getElementById('common-nav-logout');
     if (!logoutButton) return;
@@ -79,7 +82,10 @@
       try {
         const response = await fetch('/api/logout', {
           method: 'POST',
-          headers: { Accept: 'application/json' },
+          headers: {
+            Accept: 'application/json',
+            'X-CSRF-Token': window.__csrfToken || '',
+          },
         });
         if (response.status === 401) {
           window.location.assign('/screen/error');

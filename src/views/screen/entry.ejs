@@ -359,6 +359,9 @@
             const response = await fetch('/api/media', {
               method: 'POST',
               credentials: 'same-origin',
+              headers: {
+              'X-CSRF-Token': window.__csrfToken || '',
+            },
               body: payload,
             });
             if (response.status === 401) {

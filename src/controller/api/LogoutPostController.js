@@ -24,7 +24,7 @@ class LogoutPostController {
           request_id: requestId,
           reason: 'missing_session',
         });
-        return this.#fail(res);
+        return this.#failUnauthorized(res);
       }
 
       const result = await this.#logoutService.execute(new LogoutQuery({ session }));
@@ -40,7 +40,7 @@ class LogoutPostController {
         message: error?.message,
         error,
       });
-      return this.#fail(res);
+      return this.#failServerError(res);
     }
   }
 
@@ -48,6 +48,12 @@ class LogoutPostController {
     const cookiePolicy = this.#resolveSessionCookiePolicy(req);
     res?.clearCookie?.('session_token', {
       httpOnly: true,
+      path: '/',
+      secure: cookiePolicy.secure,
+      sameSite: cookiePolicy.sameSite,
+    });
+    res?.clearCookie?.('csrf_token', {
+      httpOnly: false,
       path: '/',
       secure: cookiePolicy.secure,
       sameSite: cookiePolicy.sameSite,
@@ -65,8 +71,16 @@ class LogoutPostController {
     };
   }
 
-  #fail(res) {
-    return res.status(200).json({ code: 1 });
+  #failUnauthorized(res) {
+    return res.status(401).json({
+      message: '認証に失敗しました',
+    });
+  }
+
+  #failServerError(res) {
+    return res.status(500).json({
+      message: 'Internal Server Error',
+    });
   }
 }
 
