@@ -61,6 +61,11 @@ const startServer = async () => {
   try {
     resolveLoginAuthConfig(env);
   } catch (error) {
+    if (error?.code === 'INSECURE_DEFAULT_LOGIN_DISALLOWED_IN_PRODUCTION') {
+      console.error('サーバーの起動を中止しました: 本番環境で insecure login(ALLOW_INSECURE_DEFAULT_LOGIN=true) は禁止されています', error);
+      process.exit(1);
+      return;
+    }
     console.error('サーバーの起動に失敗しました: ログイン認証設定が不足しています', error);
     process.exit(1);
     return;

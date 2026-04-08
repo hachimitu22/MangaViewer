@@ -188,4 +188,42 @@ describe('developmentSession wiring', () => {
     expect(errorSpy).not.toHaveBeenCalled();
     expect(exitSpy).not.toHaveBeenCalled();
   });
+
+  test('server.js 相当の初期化では production かつ insecure login 指定時に起動を中止する', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const listenMock = jest.fn((port, callback) => {
+      callback();
+      return { on: jest.fn() };
+    });
+
+    process.env.NODE_ENV = 'production';
+    process.env.PORT = '3459';
+    process.env.FIXED_LOGIN_USERNAME = '';
+    process.env.FIXED_LOGIN_PASSWORD = '';
+    process.env.FIXED_LOGIN_USER_ID = '';
+    process.env.LOGIN_USERNAME = '';
+    process.env.LOGIN_PASSWORD = '';
+    process.env.LOGIN_USER_ID = '';
+    process.env.ALLOW_INSECURE_DEFAULT_LOGIN = 'true';
+
+    jest.doMock('../../../src/app', () => jest.fn(() => ({
+      locals: {
+        ready: Promise.resolve(),
+      },
+      listen: listenMock,
+    })));
+
+    require('../../../src/server');
+    await Promise.resolve();
+
+    expect(listenMock).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('サーバーの起動を中止しました: 本番環境で insecure login(ALLOW_INSECURE_DEFAULT_LOGIN=true) は禁止されています'),
+      expect.any(Error),
+    );
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
 });
