@@ -72,7 +72,7 @@
   </div>
 </nav>
 <script>
-  window.__csrfToken = <%- JSON.stringify(csrfToken || '') %>;
+  window.__csrfToken = <%- JSON.stringify(typeof csrfToken === 'string' ? csrfToken : '') %>;
 </script>
 <script>
   (() => {

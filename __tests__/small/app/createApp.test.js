@@ -84,8 +84,18 @@ describe('createApp', () => {
       message: '認証に失敗しました',
     });
 
+    const csrfCookie = (screenResponse.headers['set-cookie'] || [])
+      .find(cookie => cookie.startsWith('csrf_token='));
+    const csrfToken = csrfCookie
+      ? csrfCookie.split(';')[0].split('=')[1]
+      : '';
+
     const mediaResponse = await request(app)
       .post('/api/media')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
+      .set('cookie', csrfCookie ? [csrfCookie] : [])
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
@@ -132,8 +142,18 @@ describe('createApp', () => {
     expect(loginResponse.text).toContain('<title>ログイン</title>');
     expect(loginResponse.text).toContain('action="/api/login"');
 
+    const csrfCookie = (screenResponse.headers['set-cookie'] || [])
+      .find(cookie => cookie.startsWith('csrf_token='));
+    const csrfToken = csrfCookie
+      ? csrfCookie.split(';')[0].split('=')[1]
+      : '';
+
     const mediaResponse = await request(app)
       .post('/api/media')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
+      .set('cookie', csrfCookie ? [csrfCookie] : [])
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
