@@ -102,7 +102,7 @@
         </noscript>
       </div>
     </div>
-    <script>
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
       (() => {
         const form = document.getElementById("loginForm");
         const message = document.getElementById("loginMessage");

@@ -71,10 +71,10 @@
     <button id="common-nav-logout" class="common-nav__logout" type="button">ログアウト</button>
   </div>
 </nav>
-<script>
+<script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
   window.__csrfToken = <%- JSON.stringify(typeof csrfToken === 'string' ? csrfToken : '') %>;
 </script>
-<script>
+<script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
   (() => {
     const logoutButton = document.getElementById('common-nav-logout');
     if (!logoutButton) return;

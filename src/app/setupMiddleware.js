@@ -57,6 +57,39 @@ const resolveCsrfCookiePolicy = env => {
   };
 };
 
+const isProductionEnvironment = env => {
+  const nodeEnv = String(env.nodeEnv || process.env.NODE_ENV || '').toLowerCase();
+  return nodeEnv === 'production';
+};
+
+const createContentSecurityPolicy = ({ nonce }) => {
+  const directives = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data:",
+    "font-src 'self'",
+    "connect-src 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ];
+
+  return directives.join('; ');
+};
+
+const applySecurityHeaders = ({ res, isProduction, cspValue }) => {
+  res.setHeader('Content-Security-Policy', cspValue);
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'DENY');
+
+  if (isProduction) {
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+};
+
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
   app.locals = app.locals ?? {};
   if (typeof app.locals.env === 'undefined') {
@@ -74,6 +107,19 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
   app.use((req, res, next) => {
     req.context = req.context ?? {};
     attachSessionHelpers(req);
+
+    const securityNonce = crypto.randomBytes(16).toString('base64');
+    req.context.cspNonce = securityNonce;
+
+    res.locals = res.locals ?? {};
+    res.locals.cspNonce = securityNonce;
+
+    const cspValue = createContentSecurityPolicy({ nonce: securityNonce });
+    applySecurityHeaders({
+      res,
+      isProduction: isProductionEnvironment(env),
+      cspValue,
+    });
 
     const cookies = parseCookieHeader(req.header('cookie'));
     const legacySessionToken = req.header('x-session-token');
@@ -97,7 +143,6 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
       });
     }
 
-    res.locals = res.locals ?? {};
     res.locals.csrfToken = req.session.csrf_token;
 
     const logger = req.app?.locals?.dependencies?.logger;

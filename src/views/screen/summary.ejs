@@ -86,7 +86,7 @@
                 <input type="hidden" name="tags" value="<%= `${tag.category}:${tag.label}` %>" />
               <% }) %>
               <label for="sort">並び順</label>
-              <select id="sort" name="sort" class="select-input" onchange="this.form.submit()">
+              <select id="sort" name="sort" class="select-input">
                 <% sortOptions.forEach((option) => { %>
                   <option value="<%= option.value %>" <%= currentConditions.sort === option.value ? 'selected' : '' %>><%= option.label %></option>
                 <% }) %>
@@ -155,5 +155,13 @@
         </nav>
       </div>
     </div>
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
+      (() => {
+        const sortSelect = document.getElementById('sort');
+        if (sortSelect?.form) {
+          sortSelect.addEventListener('change', () => sortSelect.form.submit());
+        }
+      })();
+    </script>
   </body>
 </html>

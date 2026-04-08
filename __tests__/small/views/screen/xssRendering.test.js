@@ -52,7 +52,7 @@ class ElementStub {
 }
 
 const extractInlineScript = html => {
-  const matches = [...html.matchAll(/<script>\s*([\s\S]*?)\s*<\/script>/g)];
+  const matches = [...html.matchAll(/<script(?:\s[^>]*)?>\s*([\s\S]*?)\s*<\/script>/g)];
   if (matches.length === 0) {
     throw new Error('inline script not found');
   }
