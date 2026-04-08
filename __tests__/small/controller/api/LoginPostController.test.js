@@ -169,7 +169,7 @@ describe('LoginPostController', () => {
     }
 
     expect(loginAttemptStore.clearAuthenticationFailures).toHaveBeenCalledTimes(8);
-    expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledTimes(8);
+    expect(loginAttemptStore.clearRateLimit).toHaveBeenCalledTimes(16);
   });
 
   it('ログイン成功時は必要なIP/Accountキーのみレート制限をクリアする', async () => {
