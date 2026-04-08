@@ -28,11 +28,13 @@ const expectUnauthorizedJsonResponse = async response => {
   expect(response.status()).toBe(401);
 };
 
-const toExpectedPublicPath = contentId => `/contents/${contentId}`;
+const toExpectedPublicPath = contentId => {
+  return `/contents/${contentId.slice(0, 2)}/${contentId.slice(2, 4)}/${contentId.slice(4, 6)}/${contentId.slice(6, 8)}/${contentId}`;
+};
 
 test.describe('large e2e: 認可境界（未カバー導線）', () => {
   const detailMediaId = 'auth-uncovered-media-1';
-  const contentIdForViewer = 'seed/auth-uncovered-content-1.jpg';
+  const contentIdForViewer = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
   const contentIdForPost = '11111111111111111111111111111111';
 
   let appContext;
@@ -50,8 +52,15 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
           }));
         });
 
-        await fs.mkdir(path.join(tempContentDirectory, 'seed'), { recursive: true });
-        await fs.writeFile(path.join(tempContentDirectory, contentIdForViewer), 'dummy', { encoding: 'utf8' });
+        const viewerDirectory = path.join(
+          tempContentDirectory,
+          contentIdForViewer.slice(0, 2),
+          contentIdForViewer.slice(2, 4),
+          contentIdForViewer.slice(4, 6),
+          contentIdForViewer.slice(6, 8),
+        );
+        await fs.mkdir(viewerDirectory, { recursive: true });
+        await fs.writeFile(path.join(viewerDirectory, contentIdForViewer), 'dummy', { encoding: 'utf8' });
 
         const postContentDirectory = path.join(tempContentDirectory, '11', '11', '11', '11');
         await fs.mkdir(postContentDirectory, { recursive: true });

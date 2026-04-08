@@ -29,9 +29,9 @@ test.describe('large e2e: viewer ナビゲーション', () => {
   const seedMediaId = 'media-seed-viewer-navigation-1';
   const seedTitle = 'ビューアー遷移確認用タイトル';
   const seedContentIds = [
-    'seed/viewer-navigation-content-1.jpg',
-    'seed/viewer-navigation-content-2.jpg',
-    'seed/viewer-navigation-content-3.jpg',
+    '11111111111111111111111111111111',
+    '22222222222222222222222222222222',
+    '33333333333333333333333333333333',
   ];
   const seedVideoMediaId = 'media-seed-viewer-navigation-video-1';
   const seedVideoTitle = 'ビューアー動画確認用タイトル';
@@ -62,10 +62,16 @@ test.describe('large e2e: viewer ナビゲーション', () => {
           { where: { content_id: seedVideoContentId } }
         );
 
-        await fs.mkdir(path.join(tempContentDirectory, 'seed'), { recursive: true });
-
         await Promise.all(seedContentIds.map(contentId => {
-          return fs.writeFile(path.join(tempContentDirectory, contentId), 'dummy', { encoding: 'utf8' });
+          const imageDirectory = path.join(
+            tempContentDirectory,
+            contentId.slice(0, 2),
+            contentId.slice(2, 4),
+            contentId.slice(4, 6),
+            contentId.slice(6, 8),
+          );
+          return fs.mkdir(imageDirectory, { recursive: true })
+            .then(() => fs.writeFile(path.join(imageDirectory, contentId), 'dummy', { encoding: 'utf8' }));
         }));
         const shardedSegments = [
           seedVideoContentId.slice(0, 2),
