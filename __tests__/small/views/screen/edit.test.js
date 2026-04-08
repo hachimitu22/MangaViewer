@@ -169,6 +169,9 @@ describe('screen/edit template', () => {
 
     expect(fetchMock).toHaveBeenCalledWith('/api/media/media-1', {
       method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': '',
+      },
     });
     expect(window.location.href).toBe('/screen/summary');
     expect(formMessage.textContent).toBe('');
@@ -189,6 +192,9 @@ describe('screen/edit template', () => {
 
     expect(fetchMock).toHaveBeenCalledWith('/api/media/media-1', {
       method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': '',
+      },
     });
     expect(window.location.href).toBe('/screen/edit/media-1');
     expect(formMessage.className).toBe('message error');
