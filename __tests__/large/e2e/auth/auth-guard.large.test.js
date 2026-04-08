@@ -120,6 +120,7 @@ test.describe('large e2e: 認可境界（画面ガードと保護 API）', () =>
     await login({ baseUrl });
 
     const authorizedResult = await page.evaluate(async ({ mediaId, targetDeleteMediaId, baseUrl }) => {
+      const csrfToken = window.__csrfToken || '';
       const patchFormData = new FormData();
       patchFormData.append('title', 'ログイン後更新済み');
       patchFormData.append('tags[0][category]', 'カテゴリ');
@@ -129,19 +130,20 @@ test.describe('large e2e: 認可境界（画面ガードと保護 API）', () =>
 
       const favorite = await fetch(`${baseUrl}/api/favorite/${mediaId}`, {
         method: 'PUT',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
       const queue = await fetch(`${baseUrl}/api/queue/${mediaId}`, {
         method: 'PUT',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
       const patch = await fetch(`${baseUrl}/api/media/${mediaId}`, {
         method: 'PATCH',
+        headers: { 'X-CSRF-Token': csrfToken },
         body: patchFormData,
       });
       const remove = await fetch(`${baseUrl}/api/media/${targetDeleteMediaId}`, {
         method: 'DELETE',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
 
       return Promise.all([favorite, queue, patch, remove].map(async response => {

@@ -141,6 +141,7 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
     await login({ baseUrl });
 
     const authorizedResults = await page.evaluate(async ({ mediaId, postContentId, baseUrl }) => {
+      const csrfToken = window.__csrfToken || '';
       const postFormData = new FormData();
       postFormData.append('title', 'ログイン後投稿');
       postFormData.append('tags[0][category]', 'カテゴリ');
@@ -150,19 +151,20 @@ test.describe('large e2e: 認可境界（未カバー導線）', () => {
 
       const createMedia = await fetch(`${baseUrl}/api/media`, {
         method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken },
         body: postFormData,
       });
       const deleteFavorite = await fetch(`${baseUrl}/api/favorite/${mediaId}`, {
         method: 'DELETE',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
       const deleteQueue = await fetch(`${baseUrl}/api/queue/${mediaId}`, {
         method: 'DELETE',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
       const logout = await fetch(`${baseUrl}/api/logout`, {
         method: 'POST',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
 
       return Promise.all([createMedia, deleteFavorite, deleteQueue, logout].map(async response => {
