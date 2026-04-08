@@ -7,6 +7,11 @@ const request = require('supertest');
 
 const createDependencies = require('../../../src/app/createDependencies');
 const setupMiddleware = require('../../../src/app/setupMiddleware');
+const createLoginEnv = () => ({
+  loginUsername: 'test-user',
+  loginPassword: 'test-password',
+  loginUserId: 'test-user-id',
+});
 
 describe('developmentSession wiring', () => {
   let dependencies;
@@ -38,6 +43,7 @@ describe('developmentSession wiring', () => {
     dependencies = createDependencies({
       databaseStoragePath: path.join(databaseRoot, 'data.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'contents'),
+      ...createLoginEnv(),
       devSessionToken: '',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
