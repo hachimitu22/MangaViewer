@@ -61,4 +61,17 @@ describe('developmentSession', () => {
 
     expect(shouldApplyDevelopmentSession({ env, requestPath: '/screen/entry' })).toBe(false);
   });
+
+  test('production 環境では固定セッション設定が揃っていても補完対象にしない', () => {
+    const env = {
+      nodeEnv: 'production',
+      devSessionToken: 'dev-token',
+      devSessionUserId: 'admin-dev',
+      devSessionTtlMs: 60_000,
+      devSessionPaths: ['/screen/entry'],
+    };
+
+    expect(hasDevelopmentSession(env)).toBe(false);
+    expect(shouldApplyDevelopmentSession({ env, requestPath: '/screen/entry' })).toBe(false);
+  });
 });

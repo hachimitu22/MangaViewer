@@ -80,6 +80,33 @@ describe('developmentSession wiring', () => {
     });
   });
 
+  test('setupMiddleware は production 環境では固定セッション設定が揃っていても req.session.session_token を補完しない', async () => {
+    const app = express();
+    setupMiddleware(app, {
+      env: {
+        nodeEnv: 'production',
+        devSessionToken: 'dev-token',
+        devSessionUserId: 'admin-dev',
+        devSessionTtlMs: 60_000,
+        devSessionPaths: ['/screen/entry'],
+      },
+      dependencies: {},
+    });
+
+    app.get('/screen/entry', (req, res) => {
+      res.status(200).json({
+        sessionToken: req.session.session_token ?? null,
+      });
+    });
+
+    const response = await request(app).get('/screen/entry');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      sessionToken: null,
+    });
+  });
+
   test('server.js 相当の初期化では固定セッション設定が無効な場合に有効化ログを出力しない', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -222,6 +249,48 @@ describe('developmentSession wiring', () => {
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining('サーバーの起動を中止しました: 本番環境で insecure login(ALLOW_INSECURE_DEFAULT_LOGIN=true) は禁止されています'),
+      expect.any(Error),
+    );
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  test('server.js 相当の初期化では production かつ DEV_SESSION_* 指定時に起動を中止する', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const listenMock = jest.fn((port, callback) => {
+      callback();
+      return { on: jest.fn() };
+    });
+
+    process.env.NODE_ENV = 'production';
+    process.env.PORT = '3460';
+    process.env.FIXED_LOGIN_USERNAME = 'admin-user';
+    process.env.FIXED_LOGIN_PASSWORD = 'admin-password';
+    process.env.FIXED_LOGIN_USER_ID = 'admin-user-id';
+    process.env.LOGIN_USERNAME = 'admin-user';
+    process.env.LOGIN_PASSWORD = 'admin-password';
+    process.env.LOGIN_USER_ID = 'admin-user-id';
+    process.env.ALLOW_INSECURE_DEFAULT_LOGIN = '';
+    process.env.DEV_SESSION_TOKEN = 'dev-token';
+    process.env.DEV_SESSION_USER_ID = '';
+    process.env.DEV_SESSION_TTL_MS = '';
+    process.env.DEV_SESSION_PATHS = '';
+
+    jest.doMock('../../../src/app', () => jest.fn(() => ({
+      locals: {
+        ready: Promise.resolve(),
+      },
+      listen: listenMock,
+    })));
+
+    require('../../../src/server');
+    await Promise.resolve();
+
+    expect(listenMock).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('サーバーの起動を中止しました: 本番環境で DEV_SESSION_* の設定は禁止されています'),
       expect.any(Error),
     );
     expect(exitSpy).toHaveBeenCalledWith(1);
