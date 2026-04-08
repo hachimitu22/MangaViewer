@@ -126,7 +126,7 @@
       </div>
     </div>
 
-    <script nonce="<%= cspNonce %>">
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
       (() => {
         const tagsByCategory = <%- JSON.stringify(tagsByCategory) %>;
         const form = document.getElementById('search-form');

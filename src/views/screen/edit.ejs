@@ -121,7 +121,7 @@
       </div>
     </div>
 
-    <script nonce="<%= cspNonce %>">
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
       (() => {
         const mediaId = <%- JSON.stringify(mediaDetail.id) %>;
         const tagsByCategory = <%- JSON.stringify(tagsByCategory) %>;

@@ -155,7 +155,7 @@
         </nav>
       </div>
     </div>
-    <script nonce="<%= cspNonce %>">
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
       (() => {
         const sortSelect = document.getElementById('sort');
         if (sortSelect?.form) {
