@@ -4,7 +4,6 @@ const createApp = require('./app');
 const { resolveLoginAuthConfig } = require('./app/createDependencies');
 const { hasDevelopmentSession } = require('./app/developmentSession');
 
-
 const parsePositiveInt = (value, fallback) => {
   const parsed = Number.parseInt(value, 10);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -14,6 +13,30 @@ const parseSessionPaths = value => (value || '')
   .split(',')
   .map(entry => entry.trim())
   .filter(entry => entry.length > 0);
+
+const isConfigured = value => String(value || '').trim().length > 0;
+
+const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
+  const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
+  if (!isProduction) {
+    return;
+  }
+
+  const hasConfiguredDevSession = [
+    source.DEV_SESSION_TOKEN,
+    source.DEV_SESSION_USER_ID,
+    source.DEV_SESSION_TTL_MS,
+    source.DEV_SESSION_PATHS,
+  ].some(isConfigured);
+
+  if (!hasConfiguredDevSession) {
+    return;
+  }
+
+  const error = new Error('本番環境では DEV_SESSION_* の設定を許可できません');
+  error.code = 'DEV_SESSION_DISALLOWED_IN_PRODUCTION';
+  throw error;
+};
 
 const createEnv = source => ({
   nodeEnv: source.NODE_ENV || 'development',
@@ -59,8 +82,14 @@ const createEnv = source => ({
 const startServer = async () => {
   const env = createEnv(process.env);
   try {
+    assertDevelopmentSessionConfigurationAllowed(env, process.env);
     resolveLoginAuthConfig(env);
   } catch (error) {
+    if (error?.code === 'DEV_SESSION_DISALLOWED_IN_PRODUCTION') {
+      console.error('サーバーの起動を中止しました: 本番環境で DEV_SESSION_* の設定は禁止されています', error);
+      process.exit(1);
+      return;
+    }
     if (error?.code === 'INSECURE_DEFAULT_LOGIN_DISALLOWED_IN_PRODUCTION') {
       console.error('サーバーの起動を中止しました: 本番環境で insecure login(ALLOW_INSECURE_DEFAULT_LOGIN=true) は禁止されています', error);
       process.exit(1);
@@ -102,6 +131,7 @@ const startServer = async () => {
 startServer();
 
 module.exports = {
+  assertDevelopmentSessionConfigurationAllowed,
   createEnv,
   startServer,
 };

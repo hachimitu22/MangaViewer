@@ -2,7 +2,10 @@ const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
 
-const { shouldApplyDevelopmentSession } = require('./developmentSession');
+const {
+  shouldApplyDevelopmentSession,
+  resolveDevelopmentSessionApplication,
+} = require('./developmentSession');
 
 const parseCookieHeader = cookieHeader => {
   if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
@@ -124,10 +127,31 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     const cookies = parseCookieHeader(req.header('cookie'));
     const legacySessionToken = req.header('x-session-token');
 
+    const logger = req.app?.locals?.dependencies?.logger;
+
     if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
       req.session.session_token = cookies.session_token;
-    } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
-      req.session.session_token = env.devSessionToken;
+    } else {
+      const developmentSessionDecision = resolveDevelopmentSessionApplication({
+        env,
+        requestPath: req.path,
+      });
+      logger?.info('auth.development_session.audit.before_apply', {
+        enabled: developmentSessionDecision.enabled,
+        reason: developmentSessionDecision.reason,
+        path: req.path,
+      });
+
+      if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
+        req.session.session_token = env.devSessionToken;
+      }
+
+      logger?.info('auth.development_session.audit.after_apply', {
+        enabled: typeof req.session.session_token === 'string'
+          && req.session.session_token === env.devSessionToken,
+        reason: developmentSessionDecision.reason,
+        path: req.path,
+      });
     }
 
     if (typeof cookies.csrf_token === 'string' && cookies.csrf_token.length > 0) {
@@ -144,8 +168,6 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     }
 
     res.locals.csrfToken = req.session.csrf_token;
-
-    const logger = req.app?.locals?.dependencies?.logger;
 
     if (typeof legacySessionToken === 'string' && legacySessionToken.length > 0) {
       logger?.warn('auth.legacy_session_token_header.detected', {
