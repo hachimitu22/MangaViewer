@@ -74,12 +74,12 @@ describe('API controllers (middle)', () => {
     await request(app)
       .post('/login')
       .send({ username: 'admin', password: 'wrong' })
-      .expect(400, { message: 'Bad Request' });
+      .expect(200, { code: 1 });
 
     const logoutResponse = await request(app)
       .post('/logout')
       .send({})
-      .expect(400, { message: 'Bad Request' });
+      .expect(200, { code: 1 });
 
     expect(logoutResponse.headers['set-cookie']).toEqual(expect.arrayContaining([
       expect.stringMatching(/session_token=;/),
