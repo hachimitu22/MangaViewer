@@ -19,7 +19,7 @@ class SessionTerminator {
       return false;
     }
 
-    const deleted = this.#sessionStateStore.delete(sessionToken);
+    const deleted = await this.#sessionStateStore.delete(sessionToken);
     if (!deleted) {
       return false;
     }

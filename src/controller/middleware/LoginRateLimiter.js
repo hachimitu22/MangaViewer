@@ -15,20 +15,39 @@ class LoginRateLimiter {
     this.#windowMs = windowMs;
   }
 
-  execute(req, res, next) {
+  async execute(req, res, next) {
     const nowMs = Date.now();
     const logger = req.app?.locals?.dependencies?.logger;
     const requestId = req.context?.requestId;
     const ipAddress = this.#resolveIpAddress(req);
     const username = this.#resolveUsername(req);
     const rateLimitKey = this.#buildRateLimitKey({ ipAddress, username });
+    const storeFailurePolicy = this.#resolveStoreFailurePolicy(req);
 
-    const ipCounter = this.#loginAttemptStore.consumeRateLimit({
-      scope: 'ip',
-      key: rateLimitKey,
-      windowMs: this.#windowMs,
-      nowMs,
-    });
+    let ipCounter;
+    try {
+      ipCounter = await this.#loginAttemptStore.consumeRateLimit({
+        scope: 'ip',
+        key: rateLimitKey,
+        windowMs: this.#windowMs,
+        nowMs,
+      });
+    } catch (error) {
+      logger?.warn('auth.login.failed', {
+        request_id: requestId,
+        reason: 'rate_limit_store_unavailable',
+        ip_address: ipAddress,
+        username,
+        store_failure_policy: storeFailurePolicy,
+        store_error_message: error?.message,
+      });
+
+      if (storeFailurePolicy === 'fail_open') {
+        return next();
+      }
+
+      return res.status(503).json({ code: 1 });
+    }
 
     if (ipCounter.count > this.#maxAttemptsPerWindow) {
       logger?.warn('auth.login.failed', {
@@ -41,6 +60,11 @@ class LoginRateLimiter {
     }
 
     return next();
+  }
+
+  #resolveStoreFailurePolicy(req) {
+    const policy = String(req?.app?.locals?.env?.authStoreFailurePolicy || 'fail_close').toLowerCase();
+    return policy === 'fail_open' ? 'fail_open' : 'fail_close';
   }
 
   #resolveUsername(req) {

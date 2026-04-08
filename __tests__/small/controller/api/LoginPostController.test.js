@@ -211,4 +211,19 @@ describe('LoginPostController', () => {
     expect(adminAfterSuccess.count).toBe(1);
     expect(guestAfterSuccess.count).toBe(2);
   });
+
+  it('ロック状態参照ストア障害時でも fail_open なら認証処理を継続する', async () => {
+    loginAttemptStore.getTemporaryLockState.mockRejectedValue(new Error('redis unavailable'));
+
+    const { res } = await execute({
+      body: { username: 'admin', password: 'secret' },
+      session: { regenerate: jest.fn() },
+      env: { authStoreFailurePolicy: 'fail_open' },
+    });
+
+    expect(loginService.execute).toHaveBeenCalledTimes(1);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ code: 0 });
+  });
+
 });

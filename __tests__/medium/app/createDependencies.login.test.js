@@ -130,4 +130,36 @@ describe('createDependencies login wiring', () => {
     expect(result).toBeInstanceOf(LoginSucceededResult);
     await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('admin');
   });
+
+  test('AUTH_STATE_STORE_BACKEND=memory では InMemory ストアを利用する', async () => {
+    if (dependencies) {
+      await dependencies.close();
+      dependencies = undefined;
+    }
+
+    dependencies = createDependencies({
+      databaseStoragePath: path.join(databaseRoot, 'memory.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'memory-contents'),
+      loginUsername: 'admin',
+      loginPassword: 'secret',
+      loginUserId: 'user-001',
+      authStateStoreBackend: 'memory',
+    });
+
+    await dependencies.ready;
+    expect(dependencies.authStateStoreBackend).toBe('memory');
+  });
+
+  test('AUTH_STATE_STORE_BACKEND=redis かつ redis パッケージ未導入時は初期化時に失敗する', () => {
+    expect(() => createDependencies({
+      databaseStoragePath: path.join(databaseRoot, 'redis.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'redis-contents'),
+      loginUsername: 'admin',
+      loginPassword: 'secret',
+      loginUserId: 'user-001',
+      authStateStoreBackend: 'redis',
+      redisUrl: 'redis://127.0.0.1:6379',
+    })).toThrow('redis パッケージ');
+  });
+
 });
