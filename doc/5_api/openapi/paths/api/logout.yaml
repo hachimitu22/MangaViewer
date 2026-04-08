@@ -4,27 +4,36 @@ post:
   description: session_token Cookie による認証済みセッションを破棄する。
   security:
     - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: セッションに紐づくCSRFトークン
   responses:
     "200":
-      description: ログアウト成否
+      description: ログアウト結果
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                description: ログアウト成否
           examples:
             success:
-              summary: ログアウト成功
-              value: {
-                code: 0
-              }
+              value: { code: 0 }
             fail:
-              summary: ログアウト失敗
-              value: {
-                code: 1
-              }
+              value: { code: 1 }
     "401":
       $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }

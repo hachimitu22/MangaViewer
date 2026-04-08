@@ -2,64 +2,60 @@
 parameters:
   - name: mediaId
     in: path
-    description: 対象のメディアID
     required: true
     schema:
-      type: integer
-    example: 1
+      type: string
 put:
   summary: あとで見るに追加
   security:
     - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
   responses:
     "200":
-      description: あとで見るに追加の成否
+      description: 追加処理結果
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                description: 追加成否
           examples:
             success:
-              summary: 追加成功
-              value: {
-                code: 0
-              }
-            fail:
-              summary: 追加失敗
-              value: {
-                code: 1
-              }
+              value: { code: 0 }
     "401":
       $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
 delete:
   summary: あとで見るから削除
   security:
     - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
   responses:
     "200":
-      description: あとで見るから削除の成否
+      description: 削除処理結果
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                description: 削除成否
           examples:
             success:
-              summary: 削除成功
-              value: {
-                code: 0
-              }
-            fail:
-              summary: 削除失敗
-              value: {
-                code: 1
-              }
+              value: { code: 0 }
     "401":
       $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }

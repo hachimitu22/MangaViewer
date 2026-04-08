@@ -1,16 +1,20 @@
 # /api/media/{mediaId}
+parameters:
+  - name: mediaId
+    in: path
+    required: true
+    schema:
+      type: string
 patch:
   summary: メディア更新処理
   security:
     - cookieAuth: []
   parameters:
-    - name: mediaId
-      in: path
-      description: 対象のメディアID
+    - name: X-CSRF-Token
+      in: header
       required: true
       schema:
-        type: integer
-      example: 1
+        type: string
   requestBody:
     required: true
     content:
@@ -19,149 +23,99 @@ patch:
           type: object
           properties:
             title:
-              description: メディアタイトル
               type: string
             contents:
-              description: 更新後のコンテンツ一覧
               type: array
               items:
                 type: object
+                required: [position]
                 properties:
                   file:
-                    description: ファイル（新規追加コンテンツのみ指定）
                     type: string
                     format: binary
                   id:
-                    description: コンテンツID（未更新コンテンツのみ指定）
                     type: string
-                    format: binary
                   position:
-                    description: コンテンツ位置（更新後の順序）
                     type: integer
-                required:
-                  - position
             tags:
-              description: タグ一覧
               type: array
               items:
                 type: object
                 properties:
                   category:
-                    description: タグのカテゴリー
                     type: string
                   label:
-                    description: タグのラベル
                     type: string
-        examples:
-          changeTitle:
-            summary: タイトルを変更
-            value:
-              title: スティール・ポール・ラン
-              contents: [
-                {
-                  id: a1,
-                  position: 1,
-                },
-                {
-                  id: a2,
-                  position: 2,
-                },
-              ]
-              tags: [
-                {
-                  category: 作者,
-                  label: 荒木飛呂彦,
-                },
-                {
-                  file: 雑誌,
-                  position: ジャンプ,
-                },
-              ]
-          updateOrderWithAdd:
-            summary: 並び順を変更しつつ画像を1枚追加
-            value:
-              title: スティール・ポール・ラン
-              contents: [
-                {
-                  file: new.jpg,
-                  position: 1,
-                },
-                {
-                  id: a2,
-                  position: 2,
-                },
-                {
-                  id: a1,
-                  position: 3,
-                },
-              ]
-              tags: [
-                {
-                  category: 作者,
-                  label: 荒木飛呂彦,
-                },
-                {
-                  file: 雑誌,
-                  position: ジャンプ,
-                },
-              ]
   responses:
     "200":
-      description: メディア更新成功
+      description: 更新成功
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                description: 更新成否
           examples:
             success:
-              summary: 更新成功
-              value: {
-                code: 0
-              }
-            fail:
-              summary: 更新失敗
-              value: {
-                code: 1
-              }
+              value: { code: 0 }
+    "400":
+      description: 入力不正
+      content:
+        application/json:
+          examples:
+            badRequest:
+              value: { message: Bad Request }
     "401":
       $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }
+
 delete:
   summary: メディア削除処理
   security:
     - cookieAuth: []
   parameters:
-    - name: mediaId
-      in: path
-      description: 対象のメディアID
+    - name: X-CSRF-Token
+      in: header
       required: true
       schema:
-        type: integer
-      example: 1
+        type: string
   responses:
     "200":
-      description: メディア削除成否
+      description: 削除成功
       content:
         application/json:
-          schema:
-            type: object
-            properties:
-              code:
-                type: integer
-                description: 削除成否
           examples:
             success:
-              summary: 削除成功
-              value: {
-                code: 0
-              }
-            fail:
-              summary: 削除失敗
-              value: {
-                code: 1
-              }
+              value: { code: 0 }
+    "400":
+      description: 入力不正
+      content:
+        application/json:
+          examples:
+            badRequest:
+              value: { message: Bad Request }
     "401":
       $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }
