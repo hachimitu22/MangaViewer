@@ -3,6 +3,13 @@ post:
   summary: メディア登録処理
   security:
     - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: セッションに紐づくCSRFトークン
   requestBody:
     required: true
     content:
@@ -15,77 +22,35 @@ post:
             - tags
           properties:
             title:
-              description: メディアタイトル
               type: string
               minLength: 1
             contents:
-              description: コンテンツ一覧
               type: array
               minItems: 1
               items:
                 type: object
-                required:
-                  - position
+                required: [position]
                 properties:
                   file:
-                    description: ファイル
                     type: string
                     format: binary
                   url:
-                    description: 既存コンテンツのcontentId。fileと排他で指定する
                     type: string
                     pattern: '^[0-9a-f]{32}$'
                   position:
-                    description: コンテンツ位置
                     type: integer
-                oneOf:
-                  - required:
-                      - file
-                  - required:
-                      - url
             tags:
-              description: タグ一覧
               type: array
-              minItems: 0
               items:
                 type: object
-                required:
-                  - category
-                  - label
+                required: [category, label]
                 properties:
                   category:
-                    description: タグのカテゴリー
                     type: string
                     minLength: 1
                   label:
-                    description: タグのラベル
                     type: string
                     minLength: 1
-        examples:
-          sample1:
-            summary: 画像2枚で登録
-            value:
-              title: サンプルタイトル
-              contents: [
-                {
-                  file: example1.jpg,
-                  position: 1,
-                },
-                {
-                  url: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb,
-                  position: 2,
-                },
-              ]
-              tags: [
-                {
-                  category: 作者,
-                  label: 新井太郎,
-                },
-                {
-                  category: ジャンル,
-                  label: アクション,
-                },
-              ]
   responses:
     "200":
       description: メディア登録成功
@@ -96,21 +61,31 @@ post:
             properties:
               code:
                 type: integer
-                description: 登録成否
               mediaId:
-                type: integer
-                description: メディアID
+                type: string
           examples:
             success:
-              summary: 登録成功
-              value: {
-                code: 0,
-                mediaId: 1
-              }
-            fail:
-              summary: 登録失敗
-              value: {
-                code: 1
-              }
+              value: { code: 0, mediaId: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa }
+    "400":
+      description: 入力不正
+      content:
+        application/json:
+          examples:
+            badRequest:
+              value: { message: Bad Request }
     "401":
       $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }

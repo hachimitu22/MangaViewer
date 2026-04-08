@@ -17,6 +17,14 @@ const SequelizeUnitOfWork = require('../../../../../src/infrastructure/Sequelize
 const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
 const { LoginService } = require('../../../../../src/application/user/command/LoginService');
 
+const extractCsrfToken = cookies => {
+  const cookie = (cookies || []).find(entry => entry.startsWith('csrf_token='));
+  if (!cookie) {
+    return '';
+  }
+  return cookie.split(';')[0].split('=')[1] || '';
+};
+
 class FixedMediaIdValueGenerator {
   generate() {
     return 'abcdefabcdefabcdefabcdefabcdefab';
@@ -94,7 +102,7 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
     };
   };
 
-  test('ログイン後は Cookie のみで /api/media に成功し、ヘッダ不要で認証できる', async () => {
+  test('ログイン後は Cookie + CSRF ヘッダで /api/media に成功する', async () => {
     const { app, authResolver } = createApp();
 
     const loginResponse = await request(app)
@@ -110,6 +118,9 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
 
     const response = await request(app)
       .post('/api/media')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', extractCsrfToken(loginResponse.headers['set-cookie']))
       .set('Cookie', loginResponse.headers['set-cookie'])
       .field('title', 'cookie-auth-title')
       .field('tags[0][category]', '作者')

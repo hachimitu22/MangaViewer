@@ -16,6 +16,21 @@ const Tag = require('../../../../../src/domain/media/tag');
 const Category = require('../../../../../src/domain/media/category');
 const Label = require('../../../../../src/domain/media/label');
 
+const extractCsrfTokenFromCookie = cookieHeader => {
+  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
+    return undefined;
+  }
+  const pair = cookieHeader
+    .split(';')
+    .map(entry => entry.trim())
+    .find(entry => entry.startsWith('csrf_token='));
+  if (!pair) {
+    return undefined;
+  }
+  const [, value = ''] = pair.split('=');
+  return value || undefined;
+};
+
 class InMemorySessionStateStore {
   constructor(entries = []) {
     this.tokenToUserId = new Map(entries);
@@ -61,7 +76,10 @@ describe('setRouterApiMediaDelete (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
+      req.session = {
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
+        csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
+      };
       req.context = {};
       next();
     });
@@ -83,7 +101,10 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     const response = await request(app)
       .delete(`/api/media/${mediaId}`)
-      .set('cookie', 'session_token=valid-token');
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ code: 0 });
@@ -92,15 +113,18 @@ describe('setRouterApiMediaDelete (middle)', () => {
     expect(media).toBeNull();
   });
 
-  test('削除対象が存在しない場合は code=1 を返す', async () => {
+  test('削除対象が存在しない場合は500を返す', async () => {
     const app = createApp();
 
     const response = await request(app)
       .delete('/api/media/ffffffffffffffffffffffffffffffff')
-      .set('cookie', 'session_token=valid-token');
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1');
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ code: 1 });
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({ message: 'Internal Server Error' });
   });
 
   test('認証失敗時は 401 を返し既存メディアを保持する', async () => {
@@ -108,7 +132,10 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     const response = await request(app)
       .delete(`/api/media/${mediaId}`)
-      .set('cookie', 'session_token=invalid-token');
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=invalid-token; csrf_token=csrf-1');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({

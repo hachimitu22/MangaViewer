@@ -45,6 +45,11 @@ describe('LogoutPostController', () => {
       sameSite: 'lax',
       secure: false,
     }));
+    expect(res.clearCookie).toHaveBeenCalledWith('csrf_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ code: 0 });
   });
@@ -59,15 +64,7 @@ describe('LogoutPostController', () => {
       sameSite: 'lax',
       secure: false,
     }));
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ code: 1 });
-  });
-
-  it('sessionが未設定の場合はcode=1を返す', async () => {
-    const { res } = await execute({ session: undefined });
-
-    expect(logoutService.execute).not.toHaveBeenCalled();
-    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+    expect(res.clearCookie).toHaveBeenCalledWith('csrf_token', expect.objectContaining({
       path: '/',
       sameSite: 'lax',
       secure: false,
@@ -76,7 +73,25 @@ describe('LogoutPostController', () => {
     expect(res.json).toHaveBeenCalledWith({ code: 1 });
   });
 
-  it('サービス例外時もcode=1を返す', async () => {
+  it('sessionが未設定の場合は401を返す', async () => {
+    const { res } = await execute({ session: undefined });
+
+    expect(logoutService.execute).not.toHaveBeenCalled();
+    expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
+    expect(res.clearCookie).toHaveBeenCalledWith('csrf_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({ message: '認証に失敗しました' });
+  });
+
+  it('サービス例外時は500を返す', async () => {
     logoutService.execute.mockRejectedValue(new Error('boom'));
 
     const { res } = await execute({ session: { session_token: 'token-1' } });
@@ -86,8 +101,13 @@ describe('LogoutPostController', () => {
       sameSite: 'lax',
       secure: false,
     }));
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ code: 1 });
+    expect(res.clearCookie).toHaveBeenCalledWith('csrf_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'lax',
+      secure: false,
+    }));
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Internal Server Error' });
   });
 
   it('production環境ではclearCookieにsameSite=strict, secure=trueを指定する', async () => {
@@ -100,6 +120,11 @@ describe('LogoutPostController', () => {
     await controller.execute(req, res);
 
     expect(res.clearCookie).toHaveBeenCalledWith('session_token', expect.objectContaining({
+      path: '/',
+      sameSite: 'strict',
+      secure: true,
+    }));
+    expect(res.clearCookie).toHaveBeenCalledWith('csrf_token', expect.objectContaining({
       path: '/',
       sameSite: 'strict',
       secure: true,

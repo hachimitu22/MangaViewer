@@ -12,13 +12,20 @@ describe('setRouterApiFavoriteAndQueue', () => {
 
   const createRequest = (mediaId = 'media-1') => ({
     params: { mediaId },
-    session: { session_token: 'token-1' },
+    session: { session_token: 'token-1', csrf_token: 'csrf-1' },
     context: {},
+    protocol: 'http',
+    get: name => ({
+      'x-csrf-token': 'csrf-1',
+      origin: 'http://localhost',
+      host: 'localhost',
+    }[String(name).toLowerCase()] || undefined),
   });
 
-  const executeRegisteredRoute = async ({ middleware, handler, req, res, next = jest.fn() }) => {
-    await middleware(req, res, next);
-    expect(next).toHaveBeenCalledTimes(1);
+  const executeRegisteredRoute = async ({ authMiddleware, csrfMiddleware, handler, req, res, next = jest.fn() }) => {
+    await authMiddleware(req, res, next);
+    await csrfMiddleware(req, res, next);
+    expect(next).toHaveBeenCalledTimes(2);
     await handler(req, res, next);
     return next;
   };
@@ -43,8 +50,9 @@ describe('setRouterApiFavoriteAndQueue', () => {
     expect(router.put.mock.calls[1][0]).toBe('/api/queue/:mediaId');
     expect(router.delete.mock.calls[1][0]).toBe('/api/queue/:mediaId');
 
-    [...router.put.mock.calls, ...router.delete.mock.calls].forEach(([, middleware, handler]) => {
-      expect(typeof middleware).toBe('function');
+    [...router.put.mock.calls, ...router.delete.mock.calls].forEach(([, authMiddleware, csrfMiddleware, handler]) => {
+      expect(typeof authMiddleware).toBe('function');
+      expect(typeof csrfMiddleware).toBe('function');
       expect(typeof handler).toBe('function');
     });
   });
@@ -64,10 +72,10 @@ describe('setRouterApiFavoriteAndQueue', () => {
       removeQueueService: { execute: jest.fn() },
     });
 
-    const [, favoritePutMiddleware, favoritePutHandler] = router.put.mock.calls[0];
+    const [, favoritePutAuthMiddleware, favoritePutCsrfMiddleware, favoritePutHandler] = router.put.mock.calls[0];
     const putReq = createRequest('media-put');
     const putRes = createRes();
-    await executeRegisteredRoute({ middleware: favoritePutMiddleware, handler: favoritePutHandler, req: putReq, res: putRes });
+    await executeRegisteredRoute({ authMiddleware: favoritePutAuthMiddleware, csrfMiddleware: favoritePutCsrfMiddleware, handler: favoritePutHandler, req: putReq, res: putRes });
 
     expect(authResolver.execute).toHaveBeenCalledWith('token-1');
     expect(addFavoriteService.execute).toHaveBeenCalledWith(expect.objectContaining({
@@ -77,10 +85,10 @@ describe('setRouterApiFavoriteAndQueue', () => {
     expect(putRes.status).toHaveBeenCalledWith(200);
     expect(putRes.json).toHaveBeenCalledWith({ code: 0 });
 
-    const [, favoriteDeleteMiddleware, favoriteDeleteHandler] = router.delete.mock.calls[0];
+    const [, favoriteDeleteAuthMiddleware, favoriteDeleteCsrfMiddleware, favoriteDeleteHandler] = router.delete.mock.calls[0];
     const deleteReq = createRequest('media-delete');
     const deleteRes = createRes();
-    await executeRegisteredRoute({ middleware: favoriteDeleteMiddleware, handler: favoriteDeleteHandler, req: deleteReq, res: deleteRes });
+    await executeRegisteredRoute({ authMiddleware: favoriteDeleteAuthMiddleware, csrfMiddleware: favoriteDeleteCsrfMiddleware, handler: favoriteDeleteHandler, req: deleteReq, res: deleteRes });
 
     expect(removeFavoriteService.execute).toHaveBeenCalledWith(expect.objectContaining({
       mediaId: 'media-delete',
@@ -105,15 +113,15 @@ describe('setRouterApiFavoriteAndQueue', () => {
       removeQueueService,
     });
 
-    const [, queuePutMiddleware, queuePutHandler] = router.put.mock.calls[1];
+    const [, queuePutAuthMiddleware, queuePutCsrfMiddleware, queuePutHandler] = router.put.mock.calls[1];
     const putReq = createRequest('queue-put');
     const putRes = createRes();
-    await executeRegisteredRoute({ middleware: queuePutMiddleware, handler: queuePutHandler, req: putReq, res: putRes });
+    await executeRegisteredRoute({ authMiddleware: queuePutAuthMiddleware, csrfMiddleware: queuePutCsrfMiddleware, handler: queuePutHandler, req: putReq, res: putRes });
 
-    const [, queueDeleteMiddleware, queueDeleteHandler] = router.delete.mock.calls[1];
+    const [, queueDeleteAuthMiddleware, queueDeleteCsrfMiddleware, queueDeleteHandler] = router.delete.mock.calls[1];
     const deleteReq = createRequest('queue-delete');
     const deleteRes = createRes();
-    await executeRegisteredRoute({ middleware: queueDeleteMiddleware, handler: queueDeleteHandler, req: deleteReq, res: deleteRes });
+    await executeRegisteredRoute({ authMiddleware: queueDeleteAuthMiddleware, csrfMiddleware: queueDeleteCsrfMiddleware, handler: queueDeleteHandler, req: deleteReq, res: deleteRes });
 
     expect(addQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({ mediaId: 'queue-put', userId: 'user-1' }));
     expect(removeQueueService.execute).toHaveBeenCalledWith(expect.objectContaining({ mediaId: 'queue-delete', userId: 'user-1' }));
@@ -133,15 +141,17 @@ describe('setRouterApiFavoriteAndQueue', () => {
       removeQueueService: { execute: jest.fn() },
     });
 
-    const [, middleware, handler] = router.put.mock.calls[0];
+    const [, authMiddleware, csrfMiddleware, handler] = router.put.mock.calls[0];
     const req = createRequest('media-error');
     const res = createRes();
     const next = jest.fn();
 
-    await middleware(req, res, next);
+    await authMiddleware(req, res, next);
+    await csrfMiddleware(req, res, next);
     await handler(req, res, next);
 
     expect(next).toHaveBeenNthCalledWith(1);
-    expect(next).toHaveBeenNthCalledWith(2, expectedError);
+    expect(next).toHaveBeenNthCalledWith(2);
+    expect(next).toHaveBeenNthCalledWith(3, expectedError);
   });
 });

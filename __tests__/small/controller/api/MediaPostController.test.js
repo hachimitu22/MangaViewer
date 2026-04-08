@@ -156,7 +156,7 @@ describe('MediaPostController', () => {
     expect(input.priorityCategories).toEqual(['作者', 'ジャンル', 'シリーズ']);
   });
 
-  it('RegisterMediaServiceが失敗した場合はcode=1を返す', async () => {
+  it('RegisterMediaServiceが失敗した場合は500を返す', async () => {
     // arrange
     registerMediaService.execute.mockRejectedValue(new Error('fail'));
 
@@ -170,9 +170,9 @@ describe('MediaPostController', () => {
     });
 
     // assert
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
-      code: 1,
+      message: 'Internal Server Error',
     });
   });
 
@@ -195,7 +195,7 @@ describe('MediaPostController', () => {
     ['contentIds要素が空文字', { title: 'title', tags: [] }, ['']],
     ['contentIds配列が疎配列', { title: 'title', tags: [] }, (() => { const ids = []; ids[1] = 'c1'; return ids; })()],
     ['contentIdsに重複がある', { title: 'title', tags: [] }, ['c1', 'c1']],
-  ])('%sの場合は登録失敗を返す', async (_name, body, contentIds) => {
+  ])('%sの場合は400を返す', async (_name, body, contentIds) => {
     // arrange
 
     // action
@@ -203,13 +203,13 @@ describe('MediaPostController', () => {
 
     // assert
     expect(registerMediaService.execute).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      code: 1,
+      message: 'Bad Request',
     });
   });
 
-  it('想定外例外発生時も失敗レスポンス形式を維持する', async () => {
+  it('想定外例外発生時は500を返す', async () => {
     // arrange
     const req = {
       body: {
@@ -228,9 +228,9 @@ describe('MediaPostController', () => {
 
     // assert
     expect(registerMediaService.execute).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
-      code: 1,
+      message: 'Internal Server Error',
     });
   });
 });

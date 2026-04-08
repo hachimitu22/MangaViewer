@@ -418,6 +418,9 @@
           try {
             const response = await fetch(`/api/media/${mediaId}`, {
               method: 'PATCH',
+              headers: {
+              'X-CSRF-Token': window.__csrfToken || '',
+            },
               body: payload,
             });
             if (response.status === 401) {
@@ -448,6 +451,9 @@
           try {
             const response = await fetch(`/api/media/${mediaId}`, {
               method: 'DELETE',
+              headers: {
+                'X-CSRF-Token': window.__csrfToken || '',
+              },
             });
             if (response.status === 401) {
               window.location.assign('/screen/error');

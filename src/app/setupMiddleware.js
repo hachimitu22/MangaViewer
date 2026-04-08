@@ -45,6 +45,18 @@ const attachSessionHelpers = req => {
   };
 };
 
+const createCsrfToken = () => crypto.randomBytes(32).toString('hex');
+
+const resolveCsrfCookiePolicy = env => {
+  const nodeEnv = String(env.nodeEnv || process.env.NODE_ENV || '').toLowerCase();
+  const isProduction = nodeEnv === 'production';
+
+  return {
+    secure: isProduction,
+    sameSite: isProduction ? 'strict' : 'lax',
+  };
+};
+
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
   app.locals = app.locals ?? {};
   if (typeof app.locals.env === 'undefined') {
@@ -71,6 +83,22 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     } else if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
       req.session.session_token = env.devSessionToken;
     }
+
+    if (typeof cookies.csrf_token === 'string' && cookies.csrf_token.length > 0) {
+      req.session.csrf_token = cookies.csrf_token;
+    } else {
+      req.session.csrf_token = createCsrfToken();
+      const policy = resolveCsrfCookiePolicy(env);
+      res.cookie?.('csrf_token', req.session.csrf_token, {
+        httpOnly: false,
+        path: '/',
+        secure: policy.secure,
+        sameSite: policy.sameSite,
+      });
+    }
+
+    res.locals = res.locals ?? {};
+    res.locals.csrfToken = req.session.csrf_token;
 
     const logger = req.app?.locals?.dependencies?.logger;
 

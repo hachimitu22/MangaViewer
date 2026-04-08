@@ -1,4 +1,5 @@
 const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
+const CsrfProtectionMiddleware = require('../../middleware/CsrfProtectionMiddleware');
 const { Query: AddFavoriteQuery } = require('../../../application/user/command/AddFavoriteService');
 const { Query: RemoveFavoriteQuery } = require('../../../application/user/command/RemoveFavoriteService');
 const { Query: AddQueueQuery } = require('../../../application/user/command/AddQueueService');
@@ -13,9 +14,10 @@ const setRouterApiFavoriteAndQueue = ({
   removeQueueService,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
+  const csrf = new CsrfProtectionMiddleware();
   const getUserId = req => req.context.userId;
 
-  router.put('/api/favorite/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
+  router.put('/api/favorite/:mediaId', auth.execute.bind(auth), csrf.execute.bind(csrf), async (req, res, next) => {
     const logger = req.app?.locals?.dependencies?.logger;
     try {
       await addFavoriteService.execute(new AddFavoriteQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));
@@ -37,7 +39,7 @@ const setRouterApiFavoriteAndQueue = ({
     }
   });
 
-  router.delete('/api/favorite/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
+  router.delete('/api/favorite/:mediaId', auth.execute.bind(auth), csrf.execute.bind(csrf), async (req, res, next) => {
     const logger = req.app?.locals?.dependencies?.logger;
     try {
       await removeFavoriteService.execute(new RemoveFavoriteQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));
@@ -59,7 +61,7 @@ const setRouterApiFavoriteAndQueue = ({
     }
   });
 
-  router.put('/api/queue/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
+  router.put('/api/queue/:mediaId', auth.execute.bind(auth), csrf.execute.bind(csrf), async (req, res, next) => {
     const logger = req.app?.locals?.dependencies?.logger;
     try {
       await addQueueService.execute(new AddQueueQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));
@@ -81,7 +83,7 @@ const setRouterApiFavoriteAndQueue = ({
     }
   });
 
-  router.delete('/api/queue/:mediaId', auth.execute.bind(auth), async (req, res, next) => {
+  router.delete('/api/queue/:mediaId', auth.execute.bind(auth), csrf.execute.bind(csrf), async (req, res, next) => {
     const logger = req.app?.locals?.dependencies?.logger;
     try {
       await removeQueueService.execute(new RemoveQueueQuery({ mediaId: req.params.mediaId, userId: getUserId(req) }));

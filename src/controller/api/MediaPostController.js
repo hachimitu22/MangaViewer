@@ -23,7 +23,7 @@ class MediaPostController {
       if (!this.#validateTitle(title)
         || !this.#validateTags(tags)
         || !this.#validateContentIds(contentIds)) {
-        return this.#fail(res);
+        return this.#failValidation(res);
       }
 
       const input = new RegisterMediaServiceInput({
@@ -45,7 +45,7 @@ class MediaPostController {
         message: error?.message,
         error,
       });
-      return this.#fail(res);
+      return this.#failServerError(res);
     }
   }
 
@@ -54,9 +54,15 @@ class MediaPostController {
     return [...new Set(tags.map(tag => tag.category))];
   }
 
-  #fail(res) {
-    return res.status(200).json({
-      code: 1,
+  #failValidation(res) {
+    return res.status(400).json({
+      message: 'Bad Request',
+    });
+  }
+
+  #failServerError(res) {
+    return res.status(500).json({
+      message: 'Internal Server Error',
     });
   }
 

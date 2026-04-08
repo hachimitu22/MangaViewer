@@ -163,6 +163,7 @@
               method,
               headers: {
                 Accept: 'application/json',
+                'X-CSRF-Token': window.__csrfToken || '',
               },
             });
             if (response.status === 401) {

@@ -1,4 +1,5 @@
 const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
+const CsrfProtectionMiddleware = require('../../middleware/CsrfProtectionMiddleware');
 const ContentSaveMiddleware = require('../../middleware/ContentSaveMiddleware');
 const MediaPostController = require('../../api/MediaPostController');
 const {
@@ -14,6 +15,7 @@ const setRouterApiMediaPost = ({
   unitOfWork,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
+  const csrf = new CsrfProtectionMiddleware();
 
   const save = new ContentSaveMiddleware({
     contentUploadAdapter: saveAdapter,
@@ -31,6 +33,7 @@ const setRouterApiMediaPost = ({
 
   router.post('/api/media', ...[
     auth.execute.bind(auth),
+    csrf.execute.bind(csrf),
     save.execute.bind(save),
     controller.execute.bind(controller),
   ]);

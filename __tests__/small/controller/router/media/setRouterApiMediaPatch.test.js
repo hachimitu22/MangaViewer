@@ -13,7 +13,14 @@ describe('setRouterApiMediaPatch', () => {
   const createReq = () => ({
     session: {
       session_token: 'token-1',
+      csrf_token: 'csrf-1',
     },
+    protocol: 'http',
+    get: name => ({
+      'x-csrf-token': 'csrf-1',
+      origin: 'http://localhost',
+      host: 'localhost',
+    }[String(name).toLowerCase()] || undefined),
     params: {
       mediaId: 'media-1',
     },
@@ -48,14 +55,16 @@ describe('setRouterApiMediaPatch', () => {
     expect(router.patch).toHaveBeenCalledTimes(1);
     const [path, ...handlers] = router.patch.mock.calls[0];
     expect(path).toBe('/api/media/:mediaId');
-    expect(handlers).toHaveLength(3);
+    expect(handlers).toHaveLength(4);
 
     const req = createReq();
     const res = createRes();
 
     await handlers[0](req, res, async () => {
       await handlers[1](req, res, async () => {
-        await handlers[2](req, res);
+        await handlers[2](req, res, async () => {
+          await handlers[3](req, res);
+        });
       });
     });
 

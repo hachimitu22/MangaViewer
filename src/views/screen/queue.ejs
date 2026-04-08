@@ -116,7 +116,7 @@
         const request = async ({ path, method, successMessage, failureMessage, statusElement }) => {
           statusElement.textContent = '通信中です...';
           try {
-            const response = await fetch(path, { method, headers: { Accept: 'application/json' } });
+            const response = await fetch(path, { method, headers: { Accept: 'application/json', 'X-CSRF-Token': window.__csrfToken || '' } });
             if (response.status === 401) {
               window.location.assign('/screen/error');
               return false;

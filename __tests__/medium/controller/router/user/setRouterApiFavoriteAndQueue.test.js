@@ -23,6 +23,21 @@ const Tag = require('../../../../../src/domain/media/tag');
 const Category = require('../../../../../src/domain/media/category');
 const Label = require('../../../../../src/domain/media/label');
 
+const extractCsrfTokenFromCookie = cookieHeader => {
+  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
+    return undefined;
+  }
+  const pair = cookieHeader
+    .split(';')
+    .map(entry => entry.trim())
+    .find(entry => entry.startsWith('csrf_token='));
+  if (!pair) {
+    return undefined;
+  }
+  const [, value = ''] = pair.split('=');
+  return value || undefined;
+};
+
 class InMemorySessionStateStore {
   constructor(entries = []) {
     this.tokenToUserId = new Map(entries);
@@ -72,7 +87,10 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
+      req.session = {
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
+        csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
+      };
       req.context = {};
       next();
     });
@@ -97,12 +115,18 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     await request(app)
       .put('/api/favorite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .expect(200, { code: 0 });
 
     await request(app)
       .put('/api/queue/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .expect(200, { code: 0 });
 
     let favoriteResult = await mediaQueryRepository.findOverviewsByMediaIds(['aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']);
@@ -116,12 +140,18 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     await request(app)
       .delete('/api/favorite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .expect(200, { code: 0 });
 
     await request(app)
       .delete('/api/queue/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .expect(200, { code: 0 });
 
     const userAfterDelete = await userRepository.findByUserId(new UserId('user001'));
@@ -134,7 +164,10 @@ describe('setRouterApiFavoriteAndQueue (middle)', () => {
 
     await request(app)
       .put('/api/favorite/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-      .set('cookie', 'session_token=invalid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=invalid-token; csrf_token=csrf-1')
       .expect(401, { message: '認証に失敗しました' });
 
     const user = await userRepository.findByUserId(new UserId('user001'));

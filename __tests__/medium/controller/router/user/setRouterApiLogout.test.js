@@ -14,6 +14,14 @@ const { LoginService } = require('../../../../../src/application/user/command/Lo
 const { LogoutService } = require('../../../../../src/application/user/command/LogoutService');
 const setupMiddleware = require('../../../../../src/app/setupMiddleware');
 
+const extractCsrfToken = cookies => {
+  const cookie = (cookies || []).find(entry => entry.startsWith('csrf_token='));
+  if (!cookie) {
+    return '';
+  }
+  return cookie.split(';')[0].split('=')[1] || '';
+};
+
 describe('setRouterApiLogout (middle)', () => {
   const createApp = ({ sessionTerminator } = {}) => {
     const app = express();
@@ -68,6 +76,9 @@ describe('setRouterApiLogout (middle)', () => {
 
     const logoutResponse = await request(app)
       .post('/api/logout')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', extractCsrfToken(loginResponse.headers['set-cookie']))
       .set('Cookie', loginResponse.headers['set-cookie']);
 
     expect(logoutResponse.status).toBe(200);
@@ -109,6 +120,9 @@ describe('setRouterApiLogout (middle)', () => {
 
     const logoutResponse = await request(app)
       .post('/api/logout')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', extractCsrfToken(loginResponse.headers['set-cookie']))
       .set('Cookie', loginResponse.headers['set-cookie']);
 
     expect(logoutResponse.status).toBe(200);

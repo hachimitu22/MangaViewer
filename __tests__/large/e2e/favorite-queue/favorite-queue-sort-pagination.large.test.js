@@ -73,17 +73,18 @@ const login = async ({ page, baseUrl }) => {
 
 const prepareFavoriteAndQueue = async ({ page, mediaIds }) => {
   const responseStatuses = await page.evaluate(async ids => {
+    const csrfToken = window.__csrfToken || '';
     const statuses = [];
     for (const mediaId of ids) {
       const favoriteResponse = await fetch(`/api/favorite/${mediaId}`, {
         method: 'PUT',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
       statuses.push(favoriteResponse.status);
 
       const queueResponse = await fetch(`/api/queue/${mediaId}`, {
         method: 'PUT',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
       statuses.push(queueResponse.status);
     }
@@ -255,9 +256,10 @@ test.describe('large e2e: favorite/queue の並び替えとページング', () 
     await page.goto(`${baseUrl}/screen/queue?queuePage=2&sort=date_asc`, { waitUntil: 'networkidle' });
 
     const queueDeleteResult = await page.evaluate(async targetBaseUrl => {
+      const csrfToken = window.__csrfToken || '';
       const response = await fetch(`${targetBaseUrl}/api/queue/fq-media-22`, {
         method: 'DELETE',
-        headers: { Accept: 'application/json' },
+        headers: { Accept: 'application/json', 'X-CSRF-Token': csrfToken },
       });
 
       return {

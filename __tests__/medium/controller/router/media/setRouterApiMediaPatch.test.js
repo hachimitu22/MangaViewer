@@ -20,6 +20,21 @@ const Tag = require('../../../../../src/domain/media/tag');
 const Category = require('../../../../../src/domain/media/category');
 const Label = require('../../../../../src/domain/media/label');
 
+const extractCsrfTokenFromCookie = cookieHeader => {
+  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
+    return undefined;
+  }
+  const pair = cookieHeader
+    .split(';')
+    .map(entry => entry.trim())
+    .find(entry => entry.startsWith('csrf_token='));
+  if (!pair) {
+    return undefined;
+  }
+  const [, value = ''] = pair.split('=');
+  return value || undefined;
+};
+
 class InMemorySessionStateStore {
   constructor(entries = []) {
     this.tokenToUserId = new Map(entries);
@@ -70,7 +85,10 @@ describe('setRouterApiMediaPatch (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = { session_token: extractSessionTokenFromCookie(req.header('cookie')) };
+      req.session = {
+        session_token: extractSessionTokenFromCookie(req.header('cookie')),
+        csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
+      };
       req.context = {};
       next();
     });
@@ -93,7 +111,10 @@ describe('setRouterApiMediaPatch (middle)', () => {
 
     const response = await request(app)
       .patch(`/api/media/${mediaId}`)
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .field('title', 'after title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '新作者')
@@ -129,20 +150,23 @@ describe('setRouterApiMediaPatch (middle)', () => {
     ]);
   });
 
-  test('入力不正な場合は code=1 を返して既存メディアを変更しない', async () => {
+  test('入力不正な場合は400を返して既存メディアを変更しない', async () => {
     const app = createApp();
 
     const response = await request(app)
       .patch(`/api/media/${mediaId}`)
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .field('title', '')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '新作者')
       .field('contents[0][position]', '1')
       .field('contents[0][id]', existingContent1);
 
-    expect(response.status).toBe(200);
-    expect(response.body).toEqual({ code: 1 });
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({ message: 'Bad Request' });
 
     const media = await mediaRepository.findByMediaId(new MediaId(mediaId));
     expect(media.getTitle().getTitle()).toBe('before title');

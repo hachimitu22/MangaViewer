@@ -158,7 +158,7 @@ describe('API controllers (middle)', () => {
       .expect(200, { code: 0 });
   });
 
-  test('technical: Media 系 controller は不正入力やサービス例外でも code=1 を返す', async () => {
+  test('technical: Media 系 controller は不正入力で400、例外で500を返す', async () => {
     const mediaApp = express();
     mediaApp.use(express.json());
     mediaApp.use((req, _res, next) => {
@@ -191,7 +191,7 @@ describe('API controllers (middle)', () => {
     await request(mediaApp)
       .post('/media')
       .send({ title: 'sample', tags: [{ category: '作者', label: '山田' }] })
-      .expect(200, { code: 1 });
+      .expect(400, { message: 'Bad Request' });
 
     mediaApp.use((req, _res, next) => {
       req.context = { contentIds: ['content-001'] };
@@ -222,10 +222,10 @@ describe('API controllers (middle)', () => {
     await request(patchApp)
       .patch('/media/media-001')
       .send({ title: 'sample', tags: [{ category: '作者', label: '山田' }] })
-      .expect(200, { code: 1 });
+      .expect(500, { message: 'Internal Server Error' });
 
     await request(patchApp)
       .delete('/media/media-001')
-      .expect(200, { code: 1 });
+      .expect(500, { message: 'Internal Server Error' });
   });
 });

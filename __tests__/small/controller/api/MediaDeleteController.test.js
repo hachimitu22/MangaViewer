@@ -44,23 +44,23 @@ describe('MediaDeleteController', () => {
     expect(res.json).toHaveBeenCalledWith({ code: 0 });
   });
 
-  it('DeleteMediaService が失敗した場合は code=1 を返す', async () => {
+  it('DeleteMediaService が失敗した場合は 500 を返す', async () => {
     deleteMediaService.execute.mockRejectedValue(new Error('fail'));
 
     const { res } = await execute({ mediaId: 'm1' });
 
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ code: 1 });
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Internal Server Error' });
   });
 
   it.each([
     ['mediaIdが未設定', {}],
     ['mediaIdが空文字', { mediaId: '' }],
-  ])('%sの場合は削除失敗を返す', async (_name, params) => {
+  ])('%sの場合は400を返す', async (_name, params) => {
     const { res } = await execute(params);
 
     expect(deleteMediaService.execute).not.toHaveBeenCalled();
-    expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith({ code: 1 });
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: 'Bad Request' });
   });
 });

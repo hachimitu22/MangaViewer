@@ -1,48 +1,14 @@
 # router (POST /api/media)
 
 ## 概要
-- `POST /api/media` のルーティング定義を担当する。
-- 認証・コンテンツ保存・メディア登録の各責務を、ミドルウェアとコントローラーへ順に委譲する。
-- Node.js / Express の `router.post` に対して、`SessionAuthMiddleware` → `ContentSaveMiddleware` → `MediaPostController` の順でハンドラーを設定する。
-
-## 対象
-- `POST /api/media`
-
-## 依存
-- [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware/readme.md)
-- [ContentSaveMiddleware](/doc/5_api/controller/middleware/ContentSaveMiddleware/readme.md)
-- [MediaPostController](/doc/5_api/controller/api/MediaPostController/readme.md)
-- [RegisterMediaService](/doc/4_application/media/command/RegisterMediaService/readme.md)
-
-## 依存注入
-- `router`
-  - Express Router。
-  - `post(path, ...handlers)` を持つ。
-- `authResolver`
-  - セッショントークンから `userId` を解決するアダプタ。
-  - `execute(token)` を持つ。
-- `saveAdapter`
-  - multer の `DiskStorage` を使って `req, res, cb` 形式で保存処理を実行するアダプタ。
-  - `execute(req, res, cb)` を持つ。
-- `mediaIdValueGenerator`
-  - メディアID生成。
-  - `generate()` を持つ。
-- `mediaRepository`
-  - メディア永続化。
-  - `save(media)` を持つ。
-
-## ルーティングフロー
-1. `SessionAuthMiddleware`
-   - `req.session.session_token` から `request.context.userId` を設定する。
-2. `ContentSaveMiddleware`
-   - `saveAdapter.execute(req, res, cb)` にアップロード処理を委譲し、`request.context.contentIds` を検証する。
-3. `MediaPostController`
-   - `title` / `tags` / `contentIds` を使って `RegisterMediaService` を実行し、レスポンスを返す。
+- `POST /api/media` のルーティング定義。
+- ハンドラー順: `SessionAuthMiddleware` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
 
 ## エラーハンドリング
-- 認証失敗時は `401` を返す（SessionAuthMiddleware）。
-- 入力不正・保存失敗・登録失敗時は `200` + `code: 1` を返す（ContentSaveMiddleware / MediaPostController）。
+- 認証失敗: `401`
+- CSRF不一致 / Origin不一致: `403`
+- 入力不正: `400`
+- 想定外例外: `500`
 
-## 関連ドキュメント
-- [OpenAPI /api/media](/doc/5_api/openapi/paths/api/media.yaml)
+## 関連
 - [routerテストケース](/doc/5_api/controller/router/media/setRouterApiMediaPost/testcase.medium.md)
