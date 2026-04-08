@@ -131,6 +131,29 @@ describe('createDependencies login wiring', () => {
     await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('admin');
   });
 
+  test('production では ALLOW_INSECURE_DEFAULT_LOGIN=true を拒否して初期化失敗する', () => {
+    expect(() => createDependencies({
+      nodeEnv: 'production',
+      allowInsecureDefaultLogin: 'true',
+      databaseStoragePath: path.join(databaseRoot, 'production-insecure.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'production-insecure-contents'),
+      loginUsername: '',
+      loginPassword: '',
+      loginUserId: '',
+    })).toThrow('本番環境では ALLOW_INSECURE_DEFAULT_LOGIN=true を許可できません');
+  });
+
+  test('既知の弱い固定パスワードは拒否して初期化失敗する', () => {
+    expect(() => createDependencies({
+      nodeEnv: 'production',
+      databaseStoragePath: path.join(databaseRoot, 'weak-password.sqlite'),
+      contentRootDirectory: path.join(contentRoot, 'weak-password-contents'),
+      loginUsername: 'admin',
+      loginPassword: 'admin',
+      loginUserId: 'user-001',
+    })).toThrow('既知の弱いパスワードは使用できません');
+  });
+
   test('AUTH_STATE_STORE_BACKEND=memory では InMemory ストアを利用する', async () => {
     if (dependencies) {
       await dependencies.close();

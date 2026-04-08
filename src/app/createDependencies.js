@@ -75,11 +75,19 @@ const resolveLoginHashOptions = env => ({
 });
 
 const resolveLoginAuthConfig = env => {
+  const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
+  const isAllowedInsecureDefaultLogin = String(env.allowInsecureDefaultLogin || '').toLowerCase() === 'true';
+  if (isProduction && isAllowedInsecureDefaultLogin) {
+    const error = new Error('本番環境では ALLOW_INSECURE_DEFAULT_LOGIN=true を許可できません');
+    error.code = 'INSECURE_DEFAULT_LOGIN_DISALLOWED_IN_PRODUCTION';
+    throw error;
+  }
+
   const rawConfig = {
-    username: env.loginUsername,
-    password: env.loginPassword,
-    passwordHash: env.loginPasswordHash,
-    userId: env.loginUserId,
+    username: String(env.loginUsername || '').trim(),
+    password: String(env.loginPassword || '').trim(),
+    passwordHash: String(env.loginPasswordHash || '').trim(),
+    userId: String(env.loginUserId || '').trim(),
   };
   const missingKeys = [
     !isConfiguredValue(rawConfig.username) ? 'username' : null,
@@ -88,8 +96,6 @@ const resolveLoginAuthConfig = env => {
       ? 'password/passwordHash'
       : null,
   ].filter(Boolean);
-
-  const isAllowedInsecureDefaultLogin = String(env.allowInsecureDefaultLogin || '').toLowerCase() === 'true';
 
   if (!isAllowedInsecureDefaultLogin && missingKeys.length > 0) {
     throw new Error([
@@ -108,6 +114,23 @@ const resolveLoginAuthConfig = env => {
       isUsingDefaultCredentials: true,
       isInsecureDefaultLoginEnabled: true,
     };
+  }
+
+  if (isConfiguredValue(rawConfig.password)) {
+    const weakPasswords = new Set([
+      'admin',
+      'password',
+      'password123',
+      '123456',
+      '12345678',
+      'qwerty',
+    ]);
+    const lowerUsername = rawConfig.username.toLowerCase();
+    const lowerPassword = rawConfig.password.toLowerCase();
+    const isWeakPassword = weakPasswords.has(lowerPassword) || lowerPassword === lowerUsername;
+    if (isWeakPassword) {
+      throw new Error('ログイン認証設定が脆弱です: 既知の弱いパスワードは使用できません');
+    }
   }
 
   return {

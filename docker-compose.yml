@@ -15,9 +15,9 @@ services:
       DATABASE_PASSWORD: mangaviewer
       CONTENT_ROOT_DIRECTORY: /app/var/contents
       LOG_FILE_PATH: /app/var/logs/mangaviewer.log
-      FIXED_LOGIN_USER_ID: admin
-      FIXED_LOGIN_USERNAME: admin
-      FIXED_LOGIN_PASSWORD: admin
+      LOGIN_USER_ID: ${LOGIN_USER_ID}
+      LOGIN_USERNAME: ${LOGIN_USERNAME}
+      LOGIN_PASSWORD: ${LOGIN_PASSWORD}
     ports:
       - "3000:3000"
     volumes:
