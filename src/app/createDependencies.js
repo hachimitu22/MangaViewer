@@ -22,6 +22,9 @@ const setRouterScreenViewerGet = require('../controller/router/screen/setRouterS
 const setRouterApiFavoriteAndQueue = require('../controller/router/user/setRouterApiFavoriteAndQueue');
 const InMemorySessionStateStore = require('../infrastructure/InMemorySessionStateStore');
 const InMemoryLoginAttemptStore = require('../infrastructure/InMemoryLoginAttemptStore');
+const RedisSessionStateStore = require('../infrastructure/RedisSessionStateStore');
+const RedisLoginAttemptStore = require('../infrastructure/RedisLoginAttemptStore');
+const createRedisClient = require('../infrastructure/createRedisClient');
 const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterDiskStorageContentUploadAdapter');
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
 const SequelizeMediaQueryRepository = require('../infrastructure/SequelizeMediaQueryRepository');
@@ -117,6 +120,63 @@ const resolveLoginAuthConfig = env => {
   };
 };
 
+
+const resolveStoreBackend = env => {
+  const backend = String(env.authStateStoreBackend || 'memory').trim().toLowerCase();
+  return backend === 'redis' ? 'redis' : 'memory';
+};
+
+const createAuthStateStores = ({ env, logger }) => {
+  const backend = resolveStoreBackend(env);
+  if (backend !== 'redis') {
+    return {
+      backend,
+      redisClient: null,
+      sessionStateStore: new InMemorySessionStateStore(),
+      loginAttemptStore: new InMemoryLoginAttemptStore(),
+      ready: async () => {},
+      close: async () => {},
+    };
+  }
+
+  const redisClient = createRedisClient({
+    url: env.redisUrl,
+  });
+
+  redisClient.on('error', error => {
+    logger?.error('auth.store.redis.error', {
+      reason: error?.message,
+      error,
+    });
+  });
+
+  return {
+    backend,
+    redisClient,
+    sessionStateStore: new RedisSessionStateStore({
+      redis: redisClient,
+      keyPrefix: env.redisSessionKeyPrefix || 'session',
+    }),
+    loginAttemptStore: new RedisLoginAttemptStore({
+      redis: redisClient,
+      keyPrefix: env.redisAuthKeyPrefix || 'auth',
+      defaultWindowMs: env.loginRateLimitWindowMs || 60_000,
+      failureStateTtlMs: env.loginFailureStateTtlMs || 86_400_000,
+    }),
+    ready: async () => {
+      await redisClient.connect();
+      logger?.info('auth.store.redis.connected', {
+        backend: 'redis',
+      });
+    },
+    close: async () => {
+      if (redisClient.isOpen) {
+        await redisClient.quit();
+      }
+    },
+  };
+};
+
 const createSequelize = env => {
   if (env.databaseDialect === 'postgres') {
     if (env.databaseUrl) {
@@ -166,8 +226,9 @@ const createDependencies = (env = {}) => {
     sequelize,
     unitOfWorkContext: unitOfWork,
   });
-  const sessionStateStore = new InMemorySessionStateStore();
-  const loginAttemptStore = new InMemoryLoginAttemptStore();
+  const authStateStores = createAuthStateStores({ env, logger });
+  const sessionStateStore = authStateStores.sessionStateStore;
+  const loginAttemptStore = authStateStores.loginAttemptStore;
   const mediaQueryRepository = new SequelizeMediaQueryRepository({ sequelize });
   const userRepository = new SequelizeUserRepository({
     sequelize,
@@ -209,13 +270,17 @@ const createDependencies = (env = {}) => {
     sessionTerminator,
   });
 
-  if (hasDevelopmentSession(env)) {
-    sessionStateStore.save({
+  const seedDevelopmentSession = async () => {
+    if (!hasDevelopmentSession(env)) {
+      return;
+    }
+
+    await sessionStateStore.save({
       sessionToken: env.devSessionToken,
       userId: env.devSessionUserId,
       ttlMs: env.devSessionTtlMs,
     });
-  }
+  };
 
   const dependencies = {
     sequelize,
@@ -242,6 +307,7 @@ const createDependencies = (env = {}) => {
     loginService,
     logoutService,
     logger,
+    authStateStoreBackend: authStateStores.backend,
     authResolver: new SessionStateAuthAdapter({
       sessionStateStore,
     }),
@@ -270,9 +336,13 @@ const createDependencies = (env = {}) => {
     },
   };
 
-  dependencies.ready = mediaRepository.sync();
+  dependencies.ready = Promise.all([
+    mediaRepository.sync(),
+    authStateStores.ready(),
+  ]).then(seedDevelopmentSession);
   dependencies.close = async () => {
     await dependencies.ready;
+    await authStateStores.close();
     await sequelize.close();
   };
 
