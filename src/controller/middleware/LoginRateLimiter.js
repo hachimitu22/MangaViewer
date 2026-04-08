@@ -21,45 +21,66 @@ class LoginRateLimiter {
     const requestId = req.context?.requestId;
     const ipAddress = this.#resolveIpAddress(req);
     const username = this.#resolveUsername(req);
-    const rateLimitKey = this.#buildRateLimitKey({ ipAddress, username });
     const storeFailurePolicy = this.#resolveStoreFailurePolicy(req);
 
-    let ipCounter;
-    try {
-      ipCounter = await this.#loginAttemptStore.consumeRateLimit({
-        scope: 'ip',
-        key: rateLimitKey,
-        windowMs: this.#windowMs,
-        nowMs,
-      });
-    } catch (error) {
-      logger?.warn('auth.login.failed', {
-        request_id: requestId,
-        reason: 'rate_limit_store_unavailable',
-        ip_address: ipAddress,
-        username,
-        store_failure_policy: storeFailurePolicy,
-        store_error_message: error?.message,
-      });
+    const targets = [
+      { scope: 'ip', key: ipAddress },
+      { scope: 'account', key: username },
+    ];
 
-      if (storeFailurePolicy === 'fail_open') {
-        return next();
+    for (const target of targets) {
+      let counter;
+      try {
+        counter = await this.#loginAttemptStore.consumeRateLimit({
+          scope: target.scope,
+          key: target.key,
+          windowMs: this.#windowMs,
+          nowMs,
+        });
+      } catch (error) {
+        logger?.warn('auth.login.failed', {
+          request_id: requestId,
+          reason: 'rate_limit_store_unavailable',
+          ip_address: ipAddress,
+          username,
+          scope: target.scope,
+          store_failure_policy: storeFailurePolicy,
+          store_error_message: error?.message,
+        });
+
+        if (storeFailurePolicy === 'fail_open') {
+          return next();
+        }
+
+        return res.status(503).json({ code: 1 });
       }
 
-      return res.status(503).json({ code: 1 });
-    }
-
-    if (ipCounter.count > this.#maxAttemptsPerWindow) {
-      logger?.warn('auth.login.failed', {
-        request_id: requestId,
-        reason: 'rate_limited',
-        ip_address: ipAddress,
-        username,
-      });
-      return res.status(429).json({ code: 1 });
+      if (counter.count > this.#maxAttemptsPerWindow) {
+        logger?.warn('auth.login.failed', {
+          request_id: requestId,
+          reason: 'rate_limited',
+          ip_address: ipAddress,
+          username,
+          scope: target.scope,
+          remaining: this.#resolveRemaining(counter),
+        });
+        return res.status(429).json({ code: 1 });
+      }
     }
 
     return next();
+  }
+
+  #resolveRemaining(counter) {
+    if (Number.isFinite(counter?.remaining)) {
+      return counter.remaining;
+    }
+
+    if (Number.isFinite(counter?.count)) {
+      return Math.max(this.#maxAttemptsPerWindow - counter.count, 0);
+    }
+
+    return undefined;
   }
 
   #resolveStoreFailurePolicy(req) {
@@ -78,10 +99,6 @@ class LoginRateLimiter {
 
   #resolveIpAddress(req) {
     return req.ip || req.connection?.remoteAddress || 'unknown';
-  }
-
-  #buildRateLimitKey({ ipAddress, username }) {
-    return `ip:${ipAddress}|user:${username}`;
   }
 }
 

@@ -108,7 +108,11 @@ class LoginPostController {
       await this.#loginAttemptStore.clearAuthenticationFailures({ key: username });
       await this.#loginAttemptStore.clearRateLimit({
         scope: 'ip',
-        key: this.#buildRateLimitKey({ ipAddress, username }),
+        key: ipAddress,
+      });
+      await this.#loginAttemptStore.clearRateLimit({
+        scope: 'account',
+        key: username,
       });
     } catch (error) {
       logger?.warn('auth.login.store_cleanup_failed', {
@@ -176,11 +180,6 @@ class LoginPostController {
     return req.ip || req.connection?.remoteAddress || 'unknown';
   }
 
-  #buildRateLimitKey({ ipAddress, username }) {
-    const resolvedIpAddress = typeof ipAddress === 'string' && ipAddress.length > 0 ? ipAddress : 'unknown';
-    const resolvedUsername = typeof username === 'string' && username.length > 0 ? username : 'anonymous';
-    return `ip:${resolvedIpAddress}|user:${resolvedUsername}`;
-  }
 
   #fail(res) {
     return res.status(200).json({ code: 1 });

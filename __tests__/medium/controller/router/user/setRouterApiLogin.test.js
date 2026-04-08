@@ -98,6 +98,29 @@ describe('setRouterApiLogin (middle)', () => {
     expect(third.body).toEqual({ code: 1 });
   });
 
+
+  test('usernameを回転しても同一IPからの連続試行は制限される', async () => {
+    const app = createApp({ maxAttemptsPerWindow: 2, windowMs: 60_000 });
+
+    const first = await request(app)
+      .post('/api/login')
+      .type('form')
+      .send({ username: 'admin', password: 'wrong' });
+    const second = await request(app)
+      .post('/api/login')
+      .type('form')
+      .send({ username: 'guest', password: 'wrong' });
+    const third = await request(app)
+      .post('/api/login')
+      .type('form')
+      .send({ username: 'root', password: 'wrong' });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(third.status).toBe(429);
+    expect(third.body).toEqual({ code: 1 });
+  });
+
   test('ロック期間経過後は再試行可能', async () => {
     const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
 
