@@ -5,6 +5,11 @@ const path = require('path');
 const request = require('supertest');
 
 const createApp = require('../../../src/app');
+const createLoginEnv = () => ({
+  loginUsername: 'test-user',
+  loginPassword: 'test-password',
+  loginUserId: 'test-user-id',
+});
 
 const createTempPath = (prefix, leaf) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -33,6 +38,7 @@ describe('setupRoutes not found handler (small)', () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
+      ...createLoginEnv(),
     });
   });
 
