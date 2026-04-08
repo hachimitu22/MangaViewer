@@ -61,6 +61,7 @@ describe('setupMiddleware (small)', () => {
   ])('セッショントークン解決優先順位: $title', ({ headers, expected }) => {
     const { middleware } = createHarness({
       env: {
+        enableDevSession: 'true',
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
@@ -80,6 +81,7 @@ describe('setupMiddleware (small)', () => {
   test('x-session-token はセッションへ反映せず監査ログのみ記録する', () => {
     const { middleware } = createHarness({
       env: {
+        enableDevSession: 'true',
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
@@ -112,6 +114,7 @@ describe('setupMiddleware (small)', () => {
   test('Cookie 解析: Cookieヘッダの不正要素は無視し、session_token が無い場合は開発用固定セッションへフォールバックする', () => {
     const { middleware } = createHarness({
       env: {
+        enableDevSession: 'true',
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,

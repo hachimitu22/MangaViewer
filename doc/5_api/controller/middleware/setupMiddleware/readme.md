@@ -17,6 +17,7 @@
 | `devSessionPaths` | 固定セッション自動補完の対象パス一覧 |
 | `devSessionUserId` | `shouldApplyDevelopmentSession` の前提条件となる固定セッション設定の一部 |
 | `devSessionTtlMs` | `shouldApplyDevelopmentSession` の前提条件となる固定セッション設定の一部 |
+| `enableDevSession` | 開発用固定セッションの明示有効化フラグ。`'true'` のときのみ判定処理へ進む |
 
 ### `dependencies`
 - 現行実装では利用しないが、`createApp` からシグネチャを統一して受け取る。
@@ -44,7 +45,7 @@
 
 ### 優先順位詳細
 - `session_token` Cookie が非空文字列なら、その値を採用する。
-- Cookie が無い場合に限り、`shouldApplyDevelopmentSession({ env, requestPath: req.path })` を評価する。
+- Cookie が無い場合に限り、`enableDevSession === 'true'` のときだけ `shouldApplyDevelopmentSession({ env, requestPath: req.path })` を評価する。
 - `shouldApplyDevelopmentSession(...)` が `true` のときのみ `env.devSessionToken` を補完する。
 - したがって、開発用固定セッションは Cookie で明示指定された通常セッションを上書きしない。
 - 互換期間中は `x-session-token` を検知した場合のみ監査ログ (`auth.legacy_session_token_header.detected`) を出力する。ログには件数・送信元IP・User-Agentのみを含み、トークン値は記録しない。

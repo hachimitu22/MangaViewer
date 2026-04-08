@@ -139,6 +139,7 @@ describe('developmentSession wiring', () => {
 
     expect(listenMock).toHaveBeenCalledWith(3456, expect.any(Function));
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('開発用固定セッションを有効化しました'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('開発用固定セッションは無効です: ENABLE_DEV_SESSION が未指定のため適用しません'));
     expect(errorSpy).not.toHaveBeenCalled();
     expect(exitSpy).not.toHaveBeenCalled();
   });

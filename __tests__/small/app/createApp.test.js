@@ -120,6 +120,7 @@ describe('createApp', () => {
       databaseStoragePath: databasePath,
       contentRootDirectory,
       ...createLoginEnv(),
+      enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,

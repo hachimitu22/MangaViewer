@@ -1,6 +1,7 @@
 const isNonEmptyString = value => typeof value === 'string' && value.length > 0;
 
 const resolveNodeEnv = (env = {}) => String(env.nodeEnv || process.env.NODE_ENV || '').toLowerCase();
+const isDevelopmentSessionExplicitlyEnabled = (env = {}) => env.enableDevSession === 'true';
 
 const isDevelopmentSessionEnvironment = (env = {}) => {
   const nodeEnv = resolveNodeEnv(env);
@@ -15,11 +16,16 @@ const hasDevelopmentSessionConfiguration = (env = {}) => (
 );
 
 const hasDevelopmentSession = (env = {}) => (
-  isDevelopmentSessionEnvironment(env)
+  isDevelopmentSessionExplicitlyEnabled(env)
+  && isDevelopmentSessionEnvironment(env)
   && hasDevelopmentSessionConfiguration(env)
 );
 
 const resolveDevelopmentSessionApplication = ({ env = {}, requestPath = '' } = {}) => {
+  if (!isDevelopmentSessionExplicitlyEnabled(env)) {
+    return { enabled: false, reason: 'explicit_flag_disabled' };
+  }
+
   if (!isDevelopmentSessionEnvironment(env)) {
     return { enabled: false, reason: 'environment_not_allowed' };
   }
@@ -46,6 +52,7 @@ const shouldApplyDevelopmentSession = ({ env = {}, requestPath = '' } = {}) => {
 
 module.exports = {
   hasDevelopmentSession,
+  isDevelopmentSessionExplicitlyEnabled,
   resolveDevelopmentSessionApplication,
   shouldApplyDevelopmentSession,
 };

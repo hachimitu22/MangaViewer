@@ -15,6 +15,7 @@ const parseSessionPaths = value => (value || '')
   .filter(entry => entry.length > 0);
 
 const isConfigured = value => String(value || '').trim().length > 0;
+const isNonProduction = nodeEnv => String(nodeEnv || '').toLowerCase() !== 'production';
 
 const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
   const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
@@ -56,6 +57,7 @@ const createEnv = source => ({
   devSessionUserId: source.DEV_SESSION_USER_ID || '',
   devSessionTtlMs: Number.parseInt(source.DEV_SESSION_TTL_MS, 10) || 0,
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
+  enableDevSession: source.ENABLE_DEV_SESSION || '',
   loginUsername: source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '',
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
   loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
@@ -112,6 +114,10 @@ const startServer = async () => {
 
   const server = app.listen(env.port, () => {
     console.log(`サーバーを起動しました: port=${env.port}`);
+
+    if (isNonProduction(env.nodeEnv) && !isConfigured(process.env.ENABLE_DEV_SESSION)) {
+      console.log('開発用固定セッションは無効です: ENABLE_DEV_SESSION が未指定のため適用しません');
+    }
 
     if (hasDevelopmentSession(env)) {
       console.log([
