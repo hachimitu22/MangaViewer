@@ -48,4 +48,17 @@ describe('InMemoryLoginAttemptStore', () => {
 
     expect(afterClear.count).toBe(1);
   });
+
+  test('scopeごとに独立してレート制限カウンタを管理できる', () => {
+    const store = new InMemoryLoginAttemptStore();
+
+    const ip = store.consumeRateLimit({ scope: 'ip', key: '127.0.0.1', windowMs: 60_000, nowMs: 1_000 });
+    const account = store.consumeRateLimit({ scope: 'account', key: 'admin', windowMs: 60_000, nowMs: 1_000 });
+    const ipSecond = store.consumeRateLimit({ scope: 'ip', key: '127.0.0.1', windowMs: 60_000, nowMs: 2_000 });
+
+    expect(ip.count).toBe(1);
+    expect(account.count).toBe(1);
+    expect(ipSecond.count).toBe(2);
+  });
+
 });

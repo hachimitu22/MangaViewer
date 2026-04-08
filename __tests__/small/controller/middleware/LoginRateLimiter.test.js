@@ -15,6 +15,7 @@ describe('LoginRateLimiter', () => {
     const loginAttemptStore = {
       consumeRateLimit: jest.fn()
         .mockReturnValueOnce({ count: 5, resetAtMs: Date.now() + 10_000 })
+        .mockReturnValueOnce({ count: 1, resetAtMs: Date.now() + 10_000 })
         .mockReturnValueOnce({ count: 6, resetAtMs: Date.now() + 10_000 }),
     };
     const middleware = new LoginRateLimiter({
@@ -34,7 +35,7 @@ describe('LoginRateLimiter', () => {
     expect(secondRes.json).toHaveBeenCalledWith({ code: 1 });
   });
 
-  test('同一IPでもユーザーが異なる試行は別キーとして扱う', async () => {
+  test('同一IPでusernameを回転してもIPスコープ制限を回避できない', async () => {
     const loginAttemptStore = new InMemoryLoginAttemptStore();
     const middleware = new LoginRateLimiter({
       loginAttemptStore,
@@ -50,14 +51,28 @@ describe('LoginRateLimiter', () => {
     const secondRes = createRes();
     const secondNext = jest.fn();
     await middleware.execute({ ip: '127.0.0.1', body: { username: 'bob' } }, secondRes, secondNext);
-    expect(secondNext).toHaveBeenCalledTimes(1);
-    expect(secondRes.status).not.toHaveBeenCalledWith(429);
+    expect(secondNext).not.toHaveBeenCalled();
+    expect(secondRes.status).toHaveBeenCalledWith(429);
+  });
 
-    const thirdRes = createRes();
-    const thirdNext = jest.fn();
-    await middleware.execute({ ip: '127.0.0.1', body: { username: 'alice' } }, thirdRes, thirdNext);
-    expect(thirdNext).not.toHaveBeenCalled();
-    expect(thirdRes.status).toHaveBeenCalledWith(429);
+  test('同一アカウントでIPを変えてもaccountスコープ制限を回避できない', async () => {
+    const loginAttemptStore = new InMemoryLoginAttemptStore();
+    const middleware = new LoginRateLimiter({
+      loginAttemptStore,
+      maxAttemptsPerWindow: 1,
+      windowMs: 60_000,
+    });
+
+    const firstRes = createRes();
+    const firstNext = jest.fn();
+    await middleware.execute({ ip: '127.0.0.1', body: { username: 'alice' } }, firstRes, firstNext);
+    expect(firstNext).toHaveBeenCalledTimes(1);
+
+    const secondRes = createRes();
+    const secondNext = jest.fn();
+    await middleware.execute({ ip: '127.0.0.2', body: { username: 'alice' } }, secondRes, secondNext);
+    expect(secondNext).not.toHaveBeenCalled();
+    expect(secondRes.status).toHaveBeenCalledWith(429);
   });
 
   test('認証成功が連続する想定では毎回nextへ進み429にならない', async () => {
@@ -107,7 +122,7 @@ describe('LoginRateLimiter', () => {
     expect(res.status).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'auth.login.failed',
-      expect.objectContaining({ reason: 'rate_limit_store_unavailable', store_failure_policy: 'fail_open' }),
+      expect.objectContaining({ reason: 'rate_limit_store_unavailable', store_failure_policy: 'fail_open', scope: 'ip' }),
     );
   });
 });

@@ -99,4 +99,19 @@ describe('RedisLoginAttemptStore', () => {
     expect(firstResult.count).toBe(1);
     expect(secondResult.count).toBe(2);
   });
+
+  test('scopeごとに独立したレート制限カウンタを共有できる', async () => {
+    const redis = createFakeRedis();
+    const first = new RedisLoginAttemptStore({ redis, keyPrefix: 'auth' });
+    const second = new RedisLoginAttemptStore({ redis, keyPrefix: 'auth' });
+
+    const ipFirst = await first.consumeRateLimit({ scope: 'ip', key: '127.0.0.1', windowMs: 60_000, nowMs: 100 });
+    const accountFirst = await second.consumeRateLimit({ scope: 'account', key: 'admin', windowMs: 60_000, nowMs: 101 });
+    const ipSecond = await second.consumeRateLimit({ scope: 'ip', key: '127.0.0.1', windowMs: 60_000, nowMs: 102 });
+
+    expect(ipFirst.count).toBe(1);
+    expect(accountFirst.count).toBe(1);
+    expect(ipSecond.count).toBe(2);
+  });
+
 });
