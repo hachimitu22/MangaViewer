@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const express = require('express');
 
 const {
+  isDevelopmentSessionExplicitlyEnabled,
   shouldApplyDevelopmentSession,
   resolveDevelopmentSessionApplication,
 } = require('./developmentSession');
@@ -142,7 +143,10 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
         path: req.path,
       });
 
-      if (shouldApplyDevelopmentSession({ env, requestPath: req.path })) {
+      if (
+        isDevelopmentSessionExplicitlyEnabled(env)
+        && shouldApplyDevelopmentSession({ env, requestPath: req.path })
+      ) {
         req.session.session_token = env.devSessionToken;
       }
 

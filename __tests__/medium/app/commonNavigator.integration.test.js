@@ -35,6 +35,7 @@ describe('medium: common navigator integration', () => {
     databaseStoragePath: ':memory:',
     contentRootDirectory: '/tmp/mangaviewer-medium-common-nav-contents',
     ...createLoginEnv(),
+    enableDevSession: 'true',
     devSessionToken: 'dev-token',
     devSessionUserId: userId,
     devSessionTtlMs: 60_000,

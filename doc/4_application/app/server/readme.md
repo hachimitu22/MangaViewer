@@ -19,6 +19,7 @@
 | `DEV_SESSION_USER_ID` | `devSessionUserId` | 空文字 | 開発用固定セッションの利用者ID |
 | `DEV_SESSION_TTL_MS` | `devSessionTtlMs` | `parseInt(..., 10) || 0` | 開発用固定セッションの TTL |
 | `DEV_SESSION_PATHS` | `devSessionPaths` | カンマ区切り分解後の配列 | 固定セッションを適用するパス一覧 |
+| `ENABLE_DEV_SESSION` | `enableDevSession` | 空文字 | 開発用固定セッションの明示有効化フラグ（`true` のみ有効） |
 | `FIXED_LOGIN_USERNAME` (`LOGIN_USERNAME` 互換) | `loginUsername` | 空文字 | 固定ログイン認証のユーザー名 |
 | `FIXED_LOGIN_PASSWORD` (`LOGIN_PASSWORD` 互換) | `loginPassword` | 空文字 | 固定ログイン認証のパスワード |
 | `FIXED_LOGIN_USER_ID` (`LOGIN_USER_ID` 互換) | `loginUserId` | 空文字 | ログイン成功時の利用者ID |
@@ -39,8 +40,9 @@
 4. 初期化失敗時は `console.error('アプリケーションの初期化に失敗しました', error)` を出力し、`process.exit(1)` で終了する。
 5. 初期化成功時のみ `app.listen(env.port, ...)` を実行する。
 6. listen 成功コールバックで `サーバーを起動しました: port=...` を出力する。
-7. `hasDevelopmentSession(env)` が `true` の場合は、固定セッション有効化ログも追加出力する。
-8. `server.on('error', ...)` で起動失敗を監視し、失敗時は `process.exit(1)` で終了する。
+7. `NODE_ENV !== production` かつ `ENABLE_DEV_SESSION` が未指定の場合は、固定セッションが無効である旨を起動ログへ出力する。
+8. `hasDevelopmentSession(env)` が `true` の場合は、固定セッション有効化ログも追加出力する。
+9. `server.on('error', ...)` で起動失敗を監視し、失敗時は `process.exit(1)` で終了する。
 
 ## `app.locals.ready` / `app.locals.close` の扱い
 - `server.js` が直接利用するのは `app.locals.ready` のみである。
@@ -50,6 +52,7 @@
 
 ## `DevelopmentSession` に関する起動責務
 - `hasDevelopmentSession(env)` を用いて、開発用固定セッション設定が有効かを起動時ログ判定に利用する。
+- 開発環境で `ENABLE_DEV_SESSION` が未指定の場合は無効として扱うため、起動時に誤設定検知ログを出力する。
 - セッションストアへの事前登録は `createDependencies`、リクエスト適用は `setupMiddleware` が担うため、`server.js` は環境変数解釈と起動ログ出力に責務を限定する。
 - 固定セッションの優先順位は `x-session-token` → `session_token` Cookie → 開発用固定セッションであり、その実行仕様自体は [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md) を参照する。
 - 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
@@ -59,3 +62,7 @@
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
 - [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md)
 - [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md)
+
+## 運用メモ
+- 開発用固定セッションを使う場合は、`ENABLE_DEV_SESSION=true` を明示して起動する。
+- 本リポジトリでは `npm run dev:entry` が `ENABLE_DEV_SESSION=true` を付与した開発用起動コマンドになっている。

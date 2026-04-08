@@ -18,6 +18,7 @@ const createApp = () => {
 
   setupMiddleware(app, {
     env: {
+      enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,

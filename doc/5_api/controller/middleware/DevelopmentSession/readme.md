@@ -17,6 +17,7 @@
 
 ### `hasDevelopmentSession(env)`
 以下をすべて満たす場合のみ `true` と判定する。
+- `enableDevSession` が文字列 `'true'`
 - `devSessionToken` が空文字ではない `string`
 - `devSessionUserId` が空文字ではない `string`
 - `devSessionTtlMs` が正の整数

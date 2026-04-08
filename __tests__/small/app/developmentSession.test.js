@@ -6,6 +6,7 @@ const {
 describe('developmentSession', () => {
   test('固定セッション設定が揃っていると有効と判定する', () => {
     expect(hasDevelopmentSession({
+      enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
@@ -14,6 +15,7 @@ describe('developmentSession', () => {
 
   test('devSessionToken が欠落している場合は固定セッションを無効と判定する', () => {
     expect(hasDevelopmentSession({
+      enableDevSession: 'true',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
     })).toBe(false);
@@ -21,6 +23,7 @@ describe('developmentSession', () => {
 
   test('devSessionUserId が欠落している場合は固定セッションを無効と判定する', () => {
     expect(hasDevelopmentSession({
+      enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionTtlMs: 60_000,
     })).toBe(false);
@@ -32,6 +35,7 @@ describe('developmentSession', () => {
     ['非整数', 0.5],
   ])('devSessionTtlMs が %s の場合は固定セッションを無効と判定する', (_name, devSessionTtlMs) => {
     expect(hasDevelopmentSession({
+      enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs,
@@ -40,6 +44,7 @@ describe('developmentSession', () => {
 
   test('対象パスのみ固定セッションを補完対象と判定する', () => {
     const env = {
+      enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
@@ -53,6 +58,7 @@ describe('developmentSession', () => {
 
   test('固定セッションが無効な場合は対象パスでも補完対象にしない', () => {
     const env = {
+      enableDevSession: 'true',
       devSessionToken: '',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
@@ -64,7 +70,21 @@ describe('developmentSession', () => {
 
   test('production 環境では固定セッション設定が揃っていても補完対象にしない', () => {
     const env = {
+      enableDevSession: 'true',
       nodeEnv: 'production',
+      devSessionToken: 'dev-token',
+      devSessionUserId: 'admin-dev',
+      devSessionTtlMs: 60_000,
+      devSessionPaths: ['/screen/entry'],
+    };
+
+    expect(hasDevelopmentSession(env)).toBe(false);
+    expect(shouldApplyDevelopmentSession({ env, requestPath: '/screen/entry' })).toBe(false);
+  });
+
+  test('明示フラグが true 以外の場合は固定セッションを有効化しない', () => {
+    const env = {
+      enableDevSession: '',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
