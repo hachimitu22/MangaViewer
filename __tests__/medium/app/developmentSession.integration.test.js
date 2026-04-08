@@ -90,6 +90,9 @@ describe('developmentSession wiring', () => {
     process.env.DEV_SESSION_USER_ID = 'admin-dev';
     process.env.DEV_SESSION_TTL_MS = '60000';
     process.env.DEV_SESSION_PATHS = '/screen/entry,/api/media';
+    process.env.LOGIN_USERNAME = 'admin-user';
+    process.env.LOGIN_PASSWORD = 'admin-password';
+    process.env.LOGIN_USER_ID = 'admin-user-id';
 
     jest.doMock('../../../src/app', () => jest.fn(() => ({
       locals: {
@@ -107,13 +110,10 @@ describe('developmentSession wiring', () => {
     expect(exitSpy).not.toHaveBeenCalled();
   });
 
-  test('server.js 相当の初期化では非本番かつデフォルト資格情報使用時に警告ログを出力する', async () => {
+  test('server.js 相当の初期化では認証設定不足時に起動失敗する', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit should not be called');
-    });
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
     const listenMock = jest.fn((port, callback) => {
       callback();
       return { on: jest.fn() };
@@ -127,6 +127,7 @@ describe('developmentSession wiring', () => {
     process.env.LOGIN_USERNAME = '';
     process.env.LOGIN_PASSWORD = '';
     process.env.LOGIN_USER_ID = '';
+    process.env.ALLOW_INSECURE_DEFAULT_LOGIN = '';
 
     jest.doMock('../../../src/app', () => jest.fn(() => ({
       locals: {
@@ -138,8 +139,45 @@ describe('developmentSession wiring', () => {
     require('../../../src/server');
     await Promise.resolve();
 
-    expect(listenMock).toHaveBeenCalledWith(3457, expect.any(Function));
-    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('非本番向けデフォルト資格情報'));
+    expect(listenMock).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('サーバーの起動に失敗しました: ログイン認証設定が不足しています'),
+      expect.any(Error),
+    );
+    expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  test('server.js 相当の初期化では明示フラグ有効時に insecure デフォルト資格情報で起動できる', async () => {
+    const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const listenMock = jest.fn((port, callback) => {
+      callback();
+      return { on: jest.fn() };
+    });
+
+    process.env.NODE_ENV = 'development';
+    process.env.PORT = '3458';
+    process.env.FIXED_LOGIN_USERNAME = '';
+    process.env.FIXED_LOGIN_PASSWORD = '';
+    process.env.FIXED_LOGIN_USER_ID = '';
+    process.env.LOGIN_USERNAME = '';
+    process.env.LOGIN_PASSWORD = '';
+    process.env.LOGIN_USER_ID = '';
+    process.env.ALLOW_INSECURE_DEFAULT_LOGIN = 'true';
+
+    jest.doMock('../../../src/app', () => jest.fn(() => ({
+      locals: {
+        ready: Promise.resolve(),
+      },
+      listen: listenMock,
+    })));
+
+    require('../../../src/server');
+    await Promise.resolve();
+
+    expect(listenMock).toHaveBeenCalledWith(3458, expect.any(Function));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
     expect(errorSpy).not.toHaveBeenCalled();
     expect(exitSpy).not.toHaveBeenCalled();

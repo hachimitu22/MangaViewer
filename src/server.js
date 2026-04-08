@@ -37,6 +37,7 @@ const createEnv = source => ({
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
   loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
   loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',
+  allowInsecureDefaultLogin: source.ALLOW_INSECURE_DEFAULT_LOGIN || '',
   loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
   loginHashMemoryCost: parsePositiveInt(source.LOGIN_HASH_MEMORY_COST, 65_536),
   loginHashIterations: parsePositiveInt(source.LOGIN_HASH_ITERATIONS, 16_384),
@@ -50,10 +51,14 @@ const createEnv = source => ({
 
 const startServer = async () => {
   const env = createEnv(process.env);
-  const loginAuthConfig = resolveLoginAuthConfig(env);
-  if (String(env.nodeEnv || '').toLowerCase() !== 'production' && loginAuthConfig.isUsingDefaultCredentials) {
-    console.warn('ログイン認証情報が未設定のため、非本番向けデフォルト資格情報 (admin/admin) を使用します');
+  try {
+    resolveLoginAuthConfig(env);
+  } catch (error) {
+    console.error('サーバーの起動に失敗しました: ログイン認証設定が不足しています', error);
+    process.exit(1);
+    return;
   }
+
   const app = createApp(env);
 
   try {
