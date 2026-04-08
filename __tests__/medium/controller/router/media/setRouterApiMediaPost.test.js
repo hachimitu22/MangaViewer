@@ -13,6 +13,21 @@ const SequelizeUnitOfWork = require('../../../../../src/infrastructure/Sequelize
 const MediaId = require('../../../../../src/domain/media/mediaId');
 const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
 
+const extractCsrfTokenFromCookie = cookieHeader => {
+  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
+    return undefined;
+  }
+  const pair = cookieHeader
+    .split(';')
+    .map(entry => entry.trim())
+    .find(entry => entry.startsWith('csrf_token='));
+  if (!pair) {
+    return undefined;
+  }
+  const [, value = ''] = pair.split('=');
+  return value || undefined;
+};
+
 class InMemorySessionStateStore {
   constructor(entries = []) {
     this.tokenToUserId = new Map(entries);
@@ -58,6 +73,7 @@ describe('setRouterApiMediaPost (middle)', () => {
     app.use((req, _res, next) => {
       req.session = {
         session_token: extractSessionTokenFromCookie(req.header('cookie')),
+        csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
       next();
@@ -85,7 +101,10 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     const response = await request(app)
       .post('/api/media')
-      .set('cookie', 'session_token=valid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
@@ -133,7 +152,10 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     const response = await request(app)
       .post('/api/media')
-      .set('cookie', 'session_token=invalid-token')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', 'csrf-1')
+      .set('cookie', 'session_token=invalid-token; csrf_token=csrf-1')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
