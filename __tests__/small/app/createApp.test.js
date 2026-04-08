@@ -5,6 +5,11 @@ const path = require('path');
 const request = require('supertest');
 
 const createApp = require('../../../src/app');
+const createLoginEnv = () => ({
+  loginUsername: 'test-user',
+  loginPassword: 'test-password',
+  loginUserId: 'test-user-id',
+});
 
 const createTempPath = (prefix, leaf) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -43,6 +48,7 @@ describe('createApp', () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
+      ...createLoginEnv(),
     });
 
     await app.locals.ready;
@@ -70,6 +76,7 @@ describe('createApp', () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
+      ...createLoginEnv(),
       devSessionToken: '',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
@@ -112,6 +119,7 @@ describe('createApp', () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
+      ...createLoginEnv(),
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,

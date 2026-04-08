@@ -56,15 +56,15 @@ describe('createDependencies login wiring', () => {
     await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('user-001');
   });
 
-  test('production で認証設定が不足している場合は初期化失敗する', () => {
+  test('認証設定が不足している場合は環境を問わず初期化失敗する', () => {
     expect(() => createDependencies({
-      nodeEnv: 'production',
+      nodeEnv: 'development',
       databaseStoragePath: path.join(databaseRoot, 'production.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'production-contents'),
       loginUsername: 'admin',
       loginPassword: '',
       loginUserId: '',
-    })).toThrow('本番環境ではログイン認証設定が必須です');
+    })).toThrow('ログイン認証設定が不足しています');
   });
 
 
@@ -99,7 +99,7 @@ describe('createDependencies login wiring', () => {
     expect(result).toBeInstanceOf(LoginSucceededResult);
   });
 
-  test('non-production で認証設定が不足していてもデフォルト資格情報でログインできる', async () => {
+  test('ALLOW_INSECURE_DEFAULT_LOGIN=true の場合のみデフォルト資格情報でログインできる', async () => {
     if (dependencies) {
       await dependencies.close();
       dependencies = undefined;
@@ -107,6 +107,7 @@ describe('createDependencies login wiring', () => {
 
     dependencies = createDependencies({
       nodeEnv: 'development',
+      allowInsecureDefaultLogin: 'true',
       databaseStoragePath: path.join(databaseRoot, 'development.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'development-contents'),
       loginUsername: '',

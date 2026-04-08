@@ -23,11 +23,22 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 ### 事前設定（環境変数）
 固定ユーザーの認証情報はコードに直書きせず、以下の環境変数から注入する。
 
-- `FIXED_LOGIN_USER_ID`
-- `FIXED_LOGIN_USERNAME`
-- `FIXED_LOGIN_PASSWORD`
+- 必須
+  - `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）
+  - `FIXED_LOGIN_USERNAME`（または `LOGIN_USERNAME`）
+  - `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）
+- 任意（開発時の一時回避）
+  - `ALLOW_INSECURE_DEFAULT_LOGIN=true`
+    - 明示指定時のみ `admin/admin` の簡易ログインを許可する。
+    - CI・本番では設定しないこと。
 
 `.env.example` には変数名のみを置き、実値は安全な共有手段（シークレットマネージャーなど）で管理すること。
+
+### 移行手順（既存運用向け）
+1. 既存の `.env` / Secret 設定に `*_LOGIN_USER_ID` / `*_LOGIN_USERNAME` / `*_LOGIN_PASSWORD or *_LOGIN_PASSWORD_HASH` を必ず追加する。
+2. `ALLOW_INSECURE_DEFAULT_LOGIN` を未設定（または `false`）にする。
+3. CI/CD で `npm run start` もしくは起動ヘルスチェックを実行し、設定漏れがあれば起動失敗で検知する。
+4. やむを得ずローカル開発でのみ簡易ログインが必要な場合に限り、個人環境で `ALLOW_INSECURE_DEFAULT_LOGIN=true` を一時設定する（コミットしない）。
 
 ### npm script の用途
 - `npm run start`

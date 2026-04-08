@@ -1,4 +1,9 @@
 const createApp = require('../../../src/app');
+const createLoginEnv = () => ({
+  loginUsername: 'test-user',
+  loginPassword: 'test-password',
+  loginUserId: 'test-user-id',
+});
 
 const requestApp = async ({ app, method, targetPath } = {}) => {
   const server = app.listen(0);
@@ -29,6 +34,7 @@ describe('medium: common navigator integration', () => {
   const createTestApp = ({ userId }) => createApp({
     databaseStoragePath: ':memory:',
     contentRootDirectory: '/tmp/mangaviewer-medium-common-nav-contents',
+    ...createLoginEnv(),
     devSessionToken: 'dev-token',
     devSessionUserId: userId,
     devSessionTtlMs: 60_000,

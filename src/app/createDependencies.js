@@ -64,9 +64,6 @@ const parseLogOutputs = value => String(value || '')
 
 const isConfiguredValue = value => String(value || '').trim().length > 0;
 
-const isProductionEnv = env => String(env.nodeEnv || '').toLowerCase() === 'production';
-
-
 const resolveLoginHashOptions = env => ({
   memoryCost: env.loginHashMemoryCost,
   iterations: env.loginHashIterations,
@@ -89,26 +86,34 @@ const resolveLoginAuthConfig = env => {
       : null,
   ].filter(Boolean);
 
-  if (isProductionEnv(env) && missingKeys.length > 0) {
+  const isAllowedInsecureDefaultLogin = String(env.allowInsecureDefaultLogin || '').toLowerCase() === 'true';
+
+  if (!isAllowedInsecureDefaultLogin && missingKeys.length > 0) {
     throw new Error([
-      '本番環境ではログイン認証設定が必須です',
+      'ログイン認証設定が不足しています',
       `missing=${missingKeys.join(',')}`,
+      '必要な設定: LOGIN_USERNAME(or FIXED_LOGIN_USERNAME), LOGIN_USER_ID(or FIXED_LOGIN_USER_ID), LOGIN_PASSWORDまたはLOGIN_PASSWORD_HASH',
     ].join(': '));
   }
 
-  const defaults = {
-    username: 'admin',
-    password: 'admin',
-    passwordHash: '',
-    userId: 'admin',
-  };
+  if (isAllowedInsecureDefaultLogin && missingKeys.length > 0) {
+    return {
+      username: 'admin',
+      password: 'admin',
+      passwordHash: '',
+      userId: 'admin',
+      isUsingDefaultCredentials: true,
+      isInsecureDefaultLoginEnabled: true,
+    };
+  }
 
   return {
-    username: isConfiguredValue(rawConfig.username) ? rawConfig.username : defaults.username,
-    password: isConfiguredValue(rawConfig.password) ? rawConfig.password : defaults.password,
-    passwordHash: isConfiguredValue(rawConfig.passwordHash) ? rawConfig.passwordHash : defaults.passwordHash,
-    userId: isConfiguredValue(rawConfig.userId) ? rawConfig.userId : defaults.userId,
-    isUsingDefaultCredentials: missingKeys.length > 0,
+    username: rawConfig.username,
+    password: rawConfig.password,
+    passwordHash: rawConfig.passwordHash,
+    userId: rawConfig.userId,
+    isUsingDefaultCredentials: false,
+    isInsecureDefaultLoginEnabled: false,
   };
 };
 
