@@ -5,25 +5,13 @@ const path = require('path');
 const multer = require('multer');
 
 const IContentUploadAdapter = require('../controller/middleware/adapter/IContentUploadAdapter');
+const { ALLOWED_CONTENT_MIME_TYPES } = require('../shared/contentMimeTypes');
 
 const MAX_FILES = 100;
 const MAX_FIELDS = 500;
 const MAX_PARTS = 600;
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
 const FILE_FIELD_PATTERN = /^contents\[(\d+)\]\[file\]$/;
-const IMAGE_MIME_TYPES = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/gif',
-  'image/webp',
-]);
-const VIDEO_MIME_TYPES = new Set([
-  'video/mp4',
-  'video/webm',
-  'video/quicktime',
-]);
-const ALLOWED_MIME_TYPES = new Set([...IMAGE_MIME_TYPES, ...VIDEO_MIME_TYPES]);
-
 const SIGNATURE_VALIDATORS = {
   'image/jpeg': header => header.length >= 3
     && header[0] === 0xff
@@ -124,7 +112,7 @@ module.exports = class MulterDiskStorageContentUploadAdapter extends IContentUpl
           return;
         }
 
-        if (!ALLOWED_MIME_TYPES.has(file.mimetype)) {
+        if (!ALLOWED_CONTENT_MIME_TYPES.has(file.mimetype)) {
           cb(createUploadError({
             message: 'invalid mime type',
             reason: 'type',

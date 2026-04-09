@@ -1,6 +1,7 @@
 const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
+const { ALLOWED_CONTENT_EXTENSIONS } = require('../shared/contentMimeTypes');
 
 const {
   isDevelopmentSessionExplicitlyEnabled,
@@ -94,6 +95,22 @@ const applySecurityHeaders = ({ res, isProduction, cspValue }) => {
   }
 };
 
+const validateContentStaticPath = (req, res, next) => {
+  const extension = path.extname(req.path || '').toLowerCase();
+  if (ALLOWED_CONTENT_EXTENSIONS.has(extension)) {
+    next();
+    return;
+  }
+
+  res.status(404).end();
+};
+
+const applyContentStaticHeaders = res => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+};
+
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
   app.locals = app.locals ?? {};
   if (typeof app.locals.env === 'undefined') {
@@ -103,7 +120,13 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
   app.set('views', path.join(__dirname, '..', 'views'));
   app.set('view engine', 'ejs');
   if (typeof env.contentRootDirectory === 'string' && env.contentRootDirectory.length > 0) {
-    app.use('/contents', express.static(env.contentRootDirectory));
+    app.use(
+      '/contents',
+      validateContentStaticPath,
+      express.static(env.contentRootDirectory, {
+        setHeaders: applyContentStaticHeaders,
+      }),
+    );
   }
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
