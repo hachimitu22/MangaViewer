@@ -196,37 +196,14 @@ const createAuthStateStores = ({ env, logger }) => {
   };
 };
 
-const createSequelize = env => {
-  if (env.databaseDialect === 'postgres') {
-    if (env.databaseUrl) {
-      return new Sequelize(env.databaseUrl, {
-        dialect: 'postgres',
-        logging: false,
-      });
-    }
-
-    return new Sequelize({
-      dialect: 'postgres',
-      host: env.databaseHost || 'db',
-      port: env.databasePort || 5432,
-      database: env.databaseName || 'mangaviewer',
-      username: env.databaseUsername || 'mangaviewer',
-      password: env.databasePassword || 'mangaviewer',
-      logging: false,
-    });
-  }
-
-  return new Sequelize({
-    dialect: 'sqlite',
-    storage: env.databaseStoragePath,
-    logging: false,
-  });
-};
+const createSequelize = env => new Sequelize({
+  dialect: 'sqlite',
+  storage: env.databaseStoragePath,
+  logging: false,
+});
 
 const createDependencies = (env = {}) => {
-  if (env.databaseDialect !== 'postgres') {
-    ensureParentDirectory(env.databaseStoragePath);
-  }
+  ensureParentDirectory(env.databaseStoragePath);
   ensureDirectory(env.contentRootDirectory);
   const resolvedLogFilePath = env.logFilePath || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log');
   ensureParentDirectory(resolvedLogFilePath);

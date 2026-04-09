@@ -7,8 +7,7 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 - Node.js + Express
 - EJSテンプレート
 - Sequelize ORM
-- SQLite3（開発）
-- PostgreSQL（本番）
+- SQLite3
 - デプロイ先：Raspberry Pi（予定）
 
 詳細は `requirements/` および `design/` を参照してください。
@@ -55,48 +54,6 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 - `npm run start:seeded`
   - `seed:user` を実行してから通常起動する。
   - 初期セットアップや手動確認用。
-
-## Docker運用（PostgreSQL）
-
-### 構成
-- `docker-compose.yml`
-  - `app`: Node.js アプリケーション
-  - `db`: PostgreSQL 16
-- `Dockerfile`
-  - 本番実行向け（`NODE_ENV=production`）
-  - 依存は `npm ci --omit=dev` で導入
-
-### 起動方法
-1. プロジェクトルートで以下を実行する
-   - `docker compose up --build -d`
-2. アプリケーションにアクセスする
-   - `http://localhost:3000`
-
-### 停止方法
-- `docker compose down`
-
-### 注意事項
-- Docker構成では DB を PostgreSQL として起動するため、アプリ側は `DATABASE_DIALECT=postgres` で起動する。
-- DB接続は `DATABASE_URL` もしくは `DATABASE_HOST` / `DATABASE_PORT` / `DATABASE_NAME` / `DATABASE_USERNAME` / `DATABASE_PASSWORD` で指定可能。
-- `seed:user` は production 環境では禁止のため、Dockerの `app` コンテナ起動時には実行しない。
-
-### GitHub Actionsでの確認
-- `.github/workflows/docker-compose-ci.yml` で Docker Compose の起動確認を自動実行する。
-- CI では `docker compose up --build -d` 後に `http://localhost:3000/screen/login` へ疎通し、HTTP 200 を確認する。
-- 失敗時は `app` / `db` のログを出力する。
-
-### 利用可能環境と禁止事項
-- `seed:user` / `start:seeded` は **production環境での実行禁止**。
-- seed実行時は、冒頭で production ガードが動作し、
-  「固定認証情報の本番利用禁止」を含むエラーメッセージで停止する。
-
-### 動作確認手順（短縮版）
-1. 初回実行: `npm run seed:user`
-   - 期待結果: ログに `作成` が出力され、固定ユーザーと認証情報ハッシュが作成される。
-2. 再実行: `npm run seed:user`
-   - 期待結果: 既存データは `既存スキップ`（または条件一致時の `限定更新`）となり、重複ユーザーは増えない。
-3. 連続起動確認: `npm run start:seeded`
-   - 期待結果: seed後に通常起動し、再実行時も重複作成しない。
 
 ## 考慮不足
 

@@ -76,5 +76,4 @@
 - 開発用固定セッションを使う場合は、`ENABLE_DEV_SESSION=true` を明示して起動する。
 - 本リポジトリでは `npm run dev:entry` が `ENABLE_DEV_SESSION=true` を付与した開発用起動コマンドになっている。
 - 外部公開が必要な運用（例: リバースプロキシ背後の本番公開）でのみ `NODE_ENV=production` かつ `SERVER_HOST=0.0.0.0` を明示する。
-- Docker Compose で `ports` 公開する場合は、コンテナ外から疎通できるように `SERVER_HOST=0.0.0.0` を必ず設定する。
 - 開発・検証用途では `SERVER_HOST` 未指定（既定値 `127.0.0.1`）を推奨し、不要な外部公開を防止する。

@@ -1,8 +1,0 @@
-.git
-.gitignore
-node_modules
-npm-debug.log*
-coverage
-__tests__
-doc
-var
