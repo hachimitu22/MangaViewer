@@ -136,8 +136,8 @@ const startServer = async () => {
       process.exit(1);
       return;
     }
-    if (error?.code === 'INSECURE_DEFAULT_LOGIN_DISALLOWED_IN_PRODUCTION') {
-      console.error('サーバーの起動を中止しました: 本番環境で insecure login(ALLOW_INSECURE_DEFAULT_LOGIN=true) は禁止されています', error);
+    if (error?.code === 'INSECURE_DEFAULT_LOGIN_DISALLOWED') {
+      console.error('サーバーの起動を中止しました: ALLOW_INSECURE_DEFAULT_LOGIN=true は使用できません', error);
       process.exit(1);
       return;
     }
