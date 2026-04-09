@@ -218,4 +218,38 @@ describe('setupMiddleware (small)', () => {
       expect.anything(),
     );
   });
+
+  test('/contents 配信では静的配信専用ヘッダーを付与し、許可拡張子のみ配信する', () => {
+    const app = {
+      locals: {},
+      set: jest.fn(),
+      use: jest.fn(),
+    };
+
+    setupMiddleware(app, {
+      env: {
+        contentRootDirectory: '/tmp/contents',
+      },
+      dependencies: {},
+    });
+
+    const contentsUseCall = app.use.mock.calls.find(call => call[0] === '/contents');
+    expect(contentsUseCall).toBeDefined();
+    expect(contentsUseCall).toHaveLength(3);
+
+    const [, validateContentStaticPath, staticMiddleware] = contentsUseCall;
+    expect(typeof validateContentStaticPath).toBe('function');
+    expect(typeof staticMiddleware).toBe('function');
+
+    const next = jest.fn();
+    const invalidRes = { status: jest.fn().mockReturnThis(), end: jest.fn() };
+    validateContentStaticPath({ path: '/payload.html' }, invalidRes, next);
+    expect(invalidRes.status).toHaveBeenCalledWith(404);
+    expect(invalidRes.end).toHaveBeenCalledTimes(1);
+    expect(next).not.toHaveBeenCalled();
+
+    const validNext = jest.fn();
+    validateContentStaticPath({ path: '/movie.webm' }, { status: jest.fn(), end: jest.fn() }, validNext);
+    expect(validNext).toHaveBeenCalledTimes(1);
+  });
 });
