@@ -113,7 +113,7 @@ describe('developmentSession wiring', () => {
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {
       throw new Error('process.exit should not be called');
     });
-    const listenMock = jest.fn((port, callback) => {
+    const listenMock = jest.fn((port, host, callback) => {
       callback();
       return { on: jest.fn() };
     });
@@ -137,7 +137,7 @@ describe('developmentSession wiring', () => {
     require('../../../src/server');
     await Promise.resolve();
 
-    expect(listenMock).toHaveBeenCalledWith(3456, expect.any(Function));
+    expect(listenMock).toHaveBeenCalledWith(3456, '127.0.0.1', expect.any(Function));
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('開発用固定セッションを有効化しました'));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('開発用固定セッションは無効です: ENABLE_DEV_SESSION が未指定のため適用しません'));
     expect(errorSpy).not.toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('developmentSession wiring', () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
-    const listenMock = jest.fn((port, callback) => {
+    const listenMock = jest.fn((port, host, callback) => {
       callback();
       return { on: jest.fn() };
     });
@@ -186,7 +186,7 @@ describe('developmentSession wiring', () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
-    const listenMock = jest.fn((port, callback) => {
+    const listenMock = jest.fn((port, host, callback) => {
       callback();
       return { on: jest.fn() };
     });
@@ -211,7 +211,7 @@ describe('developmentSession wiring', () => {
     require('../../../src/server');
     await Promise.resolve();
 
-    expect(listenMock).toHaveBeenCalledWith(3458, expect.any(Function));
+    expect(listenMock).toHaveBeenCalledWith(3458, '127.0.0.1', expect.any(Function));
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
     expect(errorSpy).not.toHaveBeenCalled();
     expect(exitSpy).not.toHaveBeenCalled();
@@ -221,7 +221,7 @@ describe('developmentSession wiring', () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
-    const listenMock = jest.fn((port, callback) => {
+    const listenMock = jest.fn((port, host, callback) => {
       callback();
       return { on: jest.fn() };
     });
@@ -259,7 +259,7 @@ describe('developmentSession wiring', () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
-    const listenMock = jest.fn((port, callback) => {
+    const listenMock = jest.fn((port, host, callback) => {
       callback();
       return { on: jest.fn() };
     });
@@ -295,5 +295,68 @@ describe('developmentSession wiring', () => {
       expect.any(Error),
     );
     expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  test('server.js 相当の初期化では production かつ SERVER_HOST=0.0.0.0 の指定を許可する', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const listenMock = jest.fn((port, host, callback) => {
+      callback();
+      return { on: jest.fn() };
+    });
+
+    process.env.NODE_ENV = 'production';
+    process.env.PORT = '3461';
+    process.env.SERVER_HOST = '0.0.0.0';
+    process.env.FIXED_LOGIN_USERNAME = 'admin-user';
+    process.env.FIXED_LOGIN_PASSWORD = 'admin-password';
+    process.env.FIXED_LOGIN_USER_ID = 'admin-user-id';
+    process.env.LOGIN_USERNAME = 'admin-user';
+    process.env.LOGIN_PASSWORD = 'admin-password';
+    process.env.LOGIN_USER_ID = 'admin-user-id';
+
+    jest.doMock('../../../src/app', () => jest.fn(() => ({
+      locals: {
+        ready: Promise.resolve(),
+      },
+      listen: listenMock,
+    })));
+
+    require('../../../src/server');
+    await Promise.resolve();
+
+    expect(listenMock).toHaveBeenCalledWith(3461, '0.0.0.0', expect.any(Function));
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(exitSpy).not.toHaveBeenCalled();
+  });
+
+  test('server.js 相当の初期化では non-production で SERVER_HOST=0.0.0.0 指定時に 127.0.0.1 へフォールバックする', async () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const listenMock = jest.fn((port, host, callback) => {
+      callback();
+      return { on: jest.fn() };
+    });
+
+    process.env.NODE_ENV = 'development';
+    process.env.PORT = '3462';
+    process.env.SERVER_HOST = '0.0.0.0';
+    process.env.LOGIN_USERNAME = 'admin-user';
+    process.env.LOGIN_PASSWORD = 'admin-password';
+    process.env.LOGIN_USER_ID = 'admin-user-id';
+
+    jest.doMock('../../../src/app', () => jest.fn(() => ({
+      locals: {
+        ready: Promise.resolve(),
+      },
+      listen: listenMock,
+    })));
+
+    require('../../../src/server');
+    await Promise.resolve();
+
+    expect(listenMock).toHaveBeenCalledWith(3462, '127.0.0.1', expect.any(Function));
+    expect(errorSpy).not.toHaveBeenCalled();
+    expect(exitSpy).not.toHaveBeenCalled();
   });
 });

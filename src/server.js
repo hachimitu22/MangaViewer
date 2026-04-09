@@ -16,10 +16,24 @@ const parseSessionPaths = value => (value || '')
 
 const isConfigured = value => String(value || '').trim().length > 0;
 const isNonProduction = nodeEnv => String(nodeEnv || '').toLowerCase() !== 'production';
+const isProduction = nodeEnv => String(nodeEnv || '').toLowerCase() === 'production';
+
+const resolveServerHost = (source = {}) => {
+  const requestedHost = String(source.SERVER_HOST || source.HOST || '').trim();
+  if (!requestedHost) {
+    return '127.0.0.1';
+  }
+  if (requestedHost !== '0.0.0.0') {
+    return requestedHost;
+  }
+  if (isProduction(source.NODE_ENV)) {
+    return '0.0.0.0';
+  }
+  return '127.0.0.1';
+};
 
 const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
-  const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
-  if (!isProduction) {
+  if (!isProduction(env.nodeEnv)) {
     return;
   }
 
@@ -42,6 +56,7 @@ const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
 const createEnv = source => ({
   nodeEnv: source.NODE_ENV || 'development',
   port: Number.parseInt(source.PORT, 10) || 3000,
+  host: resolveServerHost(source),
   databaseDialect: source.DATABASE_DIALECT || 'sqlite',
   databaseUrl: source.DATABASE_URL || '',
   databaseHost: source.DATABASE_HOST || '',
@@ -112,8 +127,8 @@ const startServer = async () => {
     return;
   }
 
-  const server = app.listen(env.port, () => {
-    console.log(`サーバーを起動しました: port=${env.port}`);
+  const server = app.listen(env.port, env.host, () => {
+    console.log(`サーバーを起動しました: host=${env.host}, port=${env.port}`);
 
     if (isNonProduction(env.nodeEnv) && !isConfigured(process.env.ENABLE_DEV_SESSION)) {
       console.log('開発用固定セッションは無効です: ENABLE_DEV_SESSION が未指定のため適用しません');
