@@ -84,9 +84,9 @@ const resolveLoginHashOptions = env => ({
 const resolveLoginAuthConfig = env => {
   const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
   const isAllowedInsecureDefaultLogin = String(env.allowInsecureDefaultLogin || '').toLowerCase() === 'true';
-  if (isProduction && isAllowedInsecureDefaultLogin) {
-    const error = new Error('本番環境では ALLOW_INSECURE_DEFAULT_LOGIN=true を許可できません');
-    error.code = 'INSECURE_DEFAULT_LOGIN_DISALLOWED_IN_PRODUCTION';
+  if (isAllowedInsecureDefaultLogin) {
+    const error = new Error('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
+    error.code = 'INSECURE_DEFAULT_LOGIN_DISALLOWED';
     throw error;
   }
 
@@ -110,17 +110,6 @@ const resolveLoginAuthConfig = env => {
       `missing=${missingKeys.join(',')}`,
       '必要な設定: LOGIN_USERNAME(or FIXED_LOGIN_USERNAME), LOGIN_USER_ID(or FIXED_LOGIN_USER_ID), LOGIN_PASSWORDまたはLOGIN_PASSWORD_HASH',
     ].join(': '));
-  }
-
-  if (isAllowedInsecureDefaultLogin && missingKeys.length > 0) {
-    return {
-      username: 'admin',
-      password: 'admin',
-      passwordHash: '',
-      userId: 'admin',
-      isUsingDefaultCredentials: true,
-      isInsecureDefaultLoginEnabled: true,
-    };
   }
 
   if (isProduction && isConfiguredValue(rawConfig.password)) {

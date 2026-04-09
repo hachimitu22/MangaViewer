@@ -27,18 +27,24 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
   - `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）
   - `FIXED_LOGIN_USERNAME`（または `LOGIN_USERNAME`）
   - `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）
-- 任意（開発時の一時回避）
-  - `ALLOW_INSECURE_DEFAULT_LOGIN=true`
-    - 明示指定時のみ `admin/admin` の簡易ログインを許可する。
-    - CI・本番では設定しないこと。
+- 禁止事項
+  - `ALLOW_INSECURE_DEFAULT_LOGIN=true` は **ローカル開発を含め常時禁止**。
+  - `admin/admin` のような弱いデフォルト認証を恒常運用しない。
 
 `.env.example` には変数名のみを置き、実値は安全な共有手段（シークレットマネージャーなど）で管理すること。
+
+### 初回起動時の必須設定手順
+1. `.env` または Secret に `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）を設定する。
+2. `.env` または Secret に `FIXED_LOGIN_USERNAME`（または `LOGIN_USERNAME`）を設定する。
+3. `.env` または Secret に `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）を設定する。
+4. `APP_ORIGIN` を設定する（例: `http://127.0.0.1:3000`）。
+5. `ALLOW_INSECURE_DEFAULT_LOGIN` を設定しない（または `false` を明示）ことを確認する。
+6. `npm run start` で起動し、設定漏れや禁止設定があれば fail-close で起動失敗することを確認する。
 
 ### 移行手順（既存運用向け）
 1. 既存の `.env` / Secret 設定に `*_LOGIN_USER_ID` / `*_LOGIN_USERNAME` / `*_LOGIN_PASSWORD or *_LOGIN_PASSWORD_HASH` を必ず追加する。
 2. `ALLOW_INSECURE_DEFAULT_LOGIN` を未設定（または `false`）にする。
 3. CI/CD で `npm run start` もしくは起動ヘルスチェックを実行し、設定漏れがあれば起動失敗で検知する。
-4. やむを得ずローカル開発でのみ簡易ログインが必要な場合に限り、個人環境で `ALLOW_INSECURE_DEFAULT_LOGIN=true` を一時設定する（コミットしない）。
 
 ### npm script の用途
 - `npm run start`

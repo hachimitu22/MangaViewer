@@ -175,4 +175,15 @@ describe('createApp', () => {
       mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
     });
   });
+
+  test('ALLOW_INSECURE_DEFAULT_LOGIN=true を指定しても弱いデフォルト認証は有効化されない', () => {
+    expect(() => createApp({
+      databaseStoragePath: databasePath,
+      contentRootDirectory,
+      loginUsername: '',
+      loginPassword: '',
+      loginUserId: '',
+      allowInsecureDefaultLogin: 'true',
+    })).toThrow('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
+  });
 });

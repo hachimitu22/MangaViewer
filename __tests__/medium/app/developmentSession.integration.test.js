@@ -183,7 +183,7 @@ describe('developmentSession wiring', () => {
     expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('server.js 相当の初期化では明示フラグ有効時に insecure デフォルト資格情報で起動できる', async () => {
+  test('server.js 相当の初期化では development でも ALLOW_INSECURE_DEFAULT_LOGIN=true 指定時に起動を中止する', async () => {
     const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
@@ -212,10 +212,13 @@ describe('developmentSession wiring', () => {
     require('../../../src/server');
     await Promise.resolve();
 
-    expect(listenMock).toHaveBeenCalledWith(3458, '127.0.0.1', expect.any(Function));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
-    expect(errorSpy).not.toHaveBeenCalled();
-    expect(exitSpy).not.toHaveBeenCalled();
+    expect(listenMock).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('サーバーの起動を中止しました: ALLOW_INSECURE_DEFAULT_LOGIN=true は使用できません'),
+      expect.any(Error),
+    );
+    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
   test('server.js 相当の初期化では production かつ insecure login 指定時に起動を中止する', async () => {
@@ -250,7 +253,7 @@ describe('developmentSession wiring', () => {
     expect(listenMock).not.toHaveBeenCalled();
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('サーバーを起動しました'));
     expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('サーバーの起動を中止しました: 本番環境で insecure login(ALLOW_INSECURE_DEFAULT_LOGIN=true) は禁止されています'),
+      expect.stringContaining('サーバーの起動を中止しました: ALLOW_INSECURE_DEFAULT_LOGIN=true は使用できません'),
       expect.any(Error),
     );
     expect(exitSpy).toHaveBeenCalledWith(1);

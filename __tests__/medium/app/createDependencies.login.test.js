@@ -99,13 +99,8 @@ describe('createDependencies login wiring', () => {
     expect(result).toBeInstanceOf(LoginSucceededResult);
   });
 
-  test('ALLOW_INSECURE_DEFAULT_LOGIN=true の場合のみデフォルト資格情報でログインできる', async () => {
-    if (dependencies) {
-      await dependencies.close();
-      dependencies = undefined;
-    }
-
-    dependencies = createDependencies({
+  test('ALLOW_INSECURE_DEFAULT_LOGIN=true は development でも拒否して初期化失敗する', () => {
+    expect(() => createDependencies({
       nodeEnv: 'development',
       allowInsecureDefaultLogin: 'true',
       databaseStoragePath: path.join(databaseRoot, 'development.sqlite'),
@@ -113,22 +108,7 @@ describe('createDependencies login wiring', () => {
       loginUsername: '',
       loginPassword: '',
       loginUserId: '',
-      loginSessionTtlMs: 60_000,
-    });
-    await dependencies.ready;
-
-    const session = {
-      regenerate: jest.fn((callback) => callback()),
-    };
-
-    const result = await dependencies.loginService.execute(new Query({
-      username: 'admin',
-      password: 'admin',
-      session,
-    }));
-
-    expect(result).toBeInstanceOf(LoginSucceededResult);
-    await expect(dependencies.authResolver.execute(result.sessionToken)).resolves.toBe('admin');
+    })).toThrow('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
   });
 
   test('production では ALLOW_INSECURE_DEFAULT_LOGIN=true を拒否して初期化失敗する', () => {
@@ -140,7 +120,7 @@ describe('createDependencies login wiring', () => {
       loginUsername: '',
       loginPassword: '',
       loginUserId: '',
-    })).toThrow('本番環境では ALLOW_INSECURE_DEFAULT_LOGIN=true を許可できません');
+    })).toThrow('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
   });
 
   test('既知の弱い固定パスワードは拒否して初期化失敗する', () => {
