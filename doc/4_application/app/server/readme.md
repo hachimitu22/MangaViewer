@@ -13,6 +13,7 @@
 | 環境変数 | `env` 項目 | 既定値 / 変換 | 用途 |
 | --- | --- | --- | --- |
 | `PORT` | `port` | `parseInt(..., 10) || 3000` | HTTP listen ポート |
+| `HOST` (`SERVER_HOST` 互換) | `serverHost` | 空文字（未指定時は Node.js 既定） | HTTP listen バインドホスト |
 | `DATABASE_STORAGE_PATH` | `databaseStoragePath` | `var/data/mangaviewer.sqlite` | SQLite 保存先 |
 | `CONTENT_ROOT_DIRECTORY` | `contentRootDirectory` | `public/contents` | コンテンツ保存先 |
 | `DEV_SESSION_TOKEN` | `devSessionToken` | 空文字 | 開発用固定セッショントークン |
@@ -20,6 +21,7 @@
 | `DEV_SESSION_TTL_MS` | `devSessionTtlMs` | `parseInt(..., 10) || 0` | 開発用固定セッションの TTL |
 | `DEV_SESSION_PATHS` | `devSessionPaths` | カンマ区切り分解後の配列 | 固定セッションを適用するパス一覧 |
 | `ENABLE_DEV_SESSION` | `enableDevSession` | 空文字 | 開発用固定セッションの明示有効化フラグ（`true` のみ有効） |
+| `ALLOW_NON_LOOPBACK_DEV_SESSION` | 直接参照 | 空文字 | `ENABLE_DEV_SESSION=true` 時に loopback 以外 host を例外許可するフラグ（非推奨） |
 | `FIXED_LOGIN_USERNAME` (`LOGIN_USERNAME` 互換) | `loginUsername` | 空文字 | 固定ログイン認証のユーザー名 |
 | `FIXED_LOGIN_PASSWORD` (`LOGIN_PASSWORD` 互換) | `loginPassword` | 空文字 | 固定ログイン認証のパスワード |
 | `FIXED_LOGIN_USER_ID` (`LOGIN_USER_ID` 互換) | `loginUserId` | 空文字 | ログイン成功時の利用者ID |
@@ -35,10 +37,13 @@
 
 ## 起動シーケンス
 1. `createEnv(process.env)` で `env` を構築する。
-2. `createApp(env)` で Express アプリを生成する。
-3. `await app.locals.ready` で初期化完了を待機する。
+2. 起動前ガードを検証する。
+   - `NODE_ENV=production` で `DEV_SESSION_*` を設定している場合は起動を拒否する。
+   - `ENABLE_DEV_SESSION=true` かつ `serverHost` が loopback（`localhost` / `127.0.0.1` / `::1`）以外の場合は、`ALLOW_NON_LOOPBACK_DEV_SESSION=true` が明示されない限り起動を拒否する。
+3. `createApp(env)` で Express アプリを生成する。
+4. `await app.locals.ready` で初期化完了を待機する。
 4. 初期化失敗時は `console.error('アプリケーションの初期化に失敗しました', error)` を出力し、`process.exit(1)` で終了する。
-5. 初期化成功時のみ `app.listen(env.port, ...)` を実行する。
+5. 初期化成功時のみ `app.listen(env.port, env.serverHost?, ...)` を実行する。
 6. listen 成功コールバックで `サーバーを起動しました: port=...` を出力する。
 7. `NODE_ENV !== production` かつ `ENABLE_DEV_SESSION` が未指定の場合は、固定セッションが無効である旨を起動ログへ出力する。
 8. `hasDevelopmentSession(env)` が `true` の場合は、固定セッション有効化ログも追加出力する。
@@ -65,4 +70,6 @@
 
 ## 運用メモ
 - 開発用固定セッションを使う場合は、`ENABLE_DEV_SESSION=true` を明示して起動する。
+- `DEV_SESSION` はローカル閉域（loopback host）専用とし、本番・共有環境では絶対に使用しない。
+- どうしても loopback 以外で検証する必要がある場合のみ、`ALLOW_NON_LOOPBACK_DEV_SESSION=true` を明示し、短時間・閉域に限定して利用する。
 - 本リポジトリでは `npm run dev:entry` が `ENABLE_DEV_SESSION=true` を付与した開発用起動コマンドになっている。

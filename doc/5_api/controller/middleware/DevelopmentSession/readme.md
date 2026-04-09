@@ -18,6 +18,7 @@
 ### `hasDevelopmentSession(env)`
 以下をすべて満たす場合のみ `true` と判定する。
 - `enableDevSession` が文字列 `'true'`
+- `serverHost` が loopback（`localhost` / `127.0.0.1` / `::1` / `127.*`）である
 - `devSessionToken` が空文字ではない `string`
 - `devSessionUserId` が空文字ではない `string`
 - `devSessionTtlMs` が正の整数
@@ -25,8 +26,18 @@
 ### `shouldApplyDevelopmentSession({ env, requestPath })`
 以下をすべて満たす場合のみ `true` と判定する。
 - `hasDevelopmentSession(env)` が `true`
+- `requestHost` が loopback（`localhost` / `127.0.0.1` / `::1` / `127.*`）である
 - `env.devSessionPaths` が配列である
 - `requestPath` が `env.devSessionPaths` に完全一致で含まれる
+
+### `resolveDevelopmentSessionApplication(...)` の拒否理由
+- `explicit_flag_disabled`: `ENABLE_DEV_SESSION` が未有効。
+- `environment_not_allowed`: `NODE_ENV` が `development` / `test` 以外。
+- `configuration_incomplete`: `DEV_SESSION_*` の必須設定不足。
+- `request_host_not_loopback`: リクエスト `host` が loopback 以外。
+- `paths_not_configured`: `DEV_SESSION_PATHS` が配列ではない。
+- `path_not_targeted`: 対象パス不一致。
+- `enabled`: 適用可。
 
 ## 対象パス仕様
 - `DEV_SESSION_PATHS` に列挙したパスに対してのみ固定セッションを補完する前提で判定する。
@@ -38,6 +49,7 @@
 ## セキュリティ上の前提
 - 固定トークンは認証回避のための開発補助機能であるため、秘密情報として扱い、リポジトリへハードコードしない。
 - 本機能は本番利用を想定しない。公開環境で有効化すると、対象パスに対して固定ユーザーへ成り代わり可能になるため禁止する。
+- 本機能は loopback のローカル閉域利用に限定する。共有開発環境・プレビュー環境・本番環境での有効化は禁止する。
 - 対象パスは最小限に限定し、開発に不要な管理系・更新系エンドポイントへ無制限に適用しない。
 
 ## アプリ全体設計への参照

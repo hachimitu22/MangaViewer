@@ -46,9 +46,11 @@
 ### 優先順位詳細
 - `session_token` Cookie が非空文字列なら、その値を採用する。
 - Cookie が無い場合に限り、`enableDevSession === 'true'` のときだけ `shouldApplyDevelopmentSession({ env, requestPath: req.path })` を評価する。
+- 判定時には `host` ヘッダ（取得不能時は `hostname` / `ip`）を `requestHost` として渡し、loopback 以外の host では固定セッションを適用しない。
 - `shouldApplyDevelopmentSession(...)` が `true` のときのみ `env.devSessionToken` を補完する。
 - したがって、開発用固定セッションは Cookie で明示指定された通常セッションを上書きしない。
 - 互換期間中は `x-session-token` を検知した場合のみ監査ログ (`auth.legacy_session_token_header.detected`) を出力する。ログには件数・送信元IP・User-Agentのみを含み、トークン値は記録しない。
+- 開発用固定セッション監査ログは `auth.development_session.audit.before_apply` / `auth.development_session.audit.after_apply` を出力し、`enabled` / `reason` / `path` / `host` を記録して事後調査可能にする。
 
 ## Cookie 解析
 - `parseCookieHeader(cookieHeader)` は `Cookie` ヘッダを `;` 区切りで分解し、`key=value` 形式だけを採用する。

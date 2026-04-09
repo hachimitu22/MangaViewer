@@ -50,6 +50,13 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
   - `seed:user` を実行してから通常起動する。
   - 初期セットアップや手動確認用。
 
+## 開発用固定セッション（DEV_SESSION）運用ルール
+
+- `DEV_SESSION_*` と `ENABLE_DEV_SESSION=true` は、**localhost / loopback に閉じたローカル開発環境でのみ利用する**。
+- 本番環境・共有開発環境・公開プレビュー環境では、`DEV_SESSION` の利用を禁止する。
+- `ENABLE_DEV_SESSION=true` かつ loopback 以外の host で起動する場合は、原則起動拒否となる。
+- 例外的に検証する場合でも `ALLOW_NON_LOOPBACK_DEV_SESSION=true` を明示し、短時間・閉域に限定して実施する。
+
 ## Docker運用（PostgreSQL）
 
 ### 構成

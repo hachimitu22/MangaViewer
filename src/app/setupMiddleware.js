@@ -35,6 +35,14 @@ const parseCookieHeader = cookieHeader => {
     }, {});
 };
 
+const resolveRequestHost = req => (
+  req.header('host')
+  || req.hostname
+  || req.ip
+  || req.socket?.localAddress
+  || ''
+);
+
 const attachSessionHelpers = req => {
   req.session = req.session ?? {};
   req.session.req = req;
@@ -156,19 +164,26 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
       req.session.session_token = cookies.session_token;
     } else {
+      const requestHost = resolveRequestHost(req);
       const developmentSessionDecision = resolveDevelopmentSessionApplication({
         env,
         requestPath: req.path,
+        requestHost,
       });
       logger?.info('auth.development_session.audit.before_apply', {
         enabled: developmentSessionDecision.enabled,
         reason: developmentSessionDecision.reason,
         path: req.path,
+        host: requestHost,
       });
 
       if (
         isDevelopmentSessionExplicitlyEnabled(env)
-        && shouldApplyDevelopmentSession({ env, requestPath: req.path })
+        && shouldApplyDevelopmentSession({
+          env,
+          requestPath: req.path,
+          requestHost,
+        })
       ) {
         req.session.session_token = env.devSessionToken;
       }
@@ -178,6 +193,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
           && req.session.session_token === env.devSessionToken,
         reason: developmentSessionDecision.reason,
         path: req.path,
+        host: requestHost,
       });
     }
 

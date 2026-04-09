@@ -2,7 +2,7 @@ const path = require('path');
 
 const createApp = require('./app');
 const { resolveLoginAuthConfig } = require('./app/createDependencies');
-const { hasDevelopmentSession } = require('./app/developmentSession');
+const { hasDevelopmentSession, isLoopbackHost } = require('./app/developmentSession');
 
 const parsePositiveInt = (value, fallback) => {
   const parsed = Number.parseInt(value, 10);
@@ -16,10 +16,26 @@ const parseSessionPaths = value => (value || '')
 
 const isConfigured = value => String(value || '').trim().length > 0;
 const isNonProduction = nodeEnv => String(nodeEnv || '').toLowerCase() !== 'production';
+const isEnabled = value => String(value || '').trim().toLowerCase() === 'true';
 
 const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
   const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
   if (!isProduction) {
+    const isDevSessionEnabled = isEnabled(source.ENABLE_DEV_SESSION);
+    const allowNonLoopback = isEnabled(source.ALLOW_NON_LOOPBACK_DEV_SESSION);
+    if (isDevSessionEnabled && !isLoopbackHost(env.serverHost) && !allowNonLoopback) {
+      const error = new Error('ENABLE_DEV_SESSION=true で loopback 以外の host は禁止です');
+      error.code = 'DEV_SESSION_NON_LOOPBACK_DISALLOWED';
+      throw error;
+    }
+
+    if (isDevSessionEnabled && !isLoopbackHost(env.serverHost) && allowNonLoopback) {
+      console.warn([
+        '警告: 開発用固定セッションを loopback 以外の host で許可しています。',
+        `host=${env.serverHost}`,
+        'この設定はローカル検証時のみ使用し、本番・共有環境では禁止してください。',
+      ].join(' '));
+    }
     return;
   }
 
@@ -42,6 +58,7 @@ const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
 const createEnv = source => ({
   nodeEnv: source.NODE_ENV || 'development',
   port: Number.parseInt(source.PORT, 10) || 3000,
+  serverHost: source.HOST || source.SERVER_HOST || '',
   databaseDialect: source.DATABASE_DIALECT || 'sqlite',
   databaseUrl: source.DATABASE_URL || '',
   databaseHost: source.DATABASE_HOST || '',
@@ -87,6 +104,11 @@ const startServer = async () => {
     assertDevelopmentSessionConfigurationAllowed(env, process.env);
     resolveLoginAuthConfig(env);
   } catch (error) {
+    if (error?.code === 'DEV_SESSION_NON_LOOPBACK_DISALLOWED') {
+      console.error('サーバーの起動を中止しました: ENABLE_DEV_SESSION=true の場合は loopback host のみ許可されます', error);
+      process.exit(1);
+      return;
+    }
     if (error?.code === 'DEV_SESSION_DISALLOWED_IN_PRODUCTION') {
       console.error('サーバーの起動を中止しました: 本番環境で DEV_SESSION_* の設定は禁止されています', error);
       process.exit(1);
@@ -112,7 +134,11 @@ const startServer = async () => {
     return;
   }
 
-  const server = app.listen(env.port, () => {
+  const listenArgs = [env.port];
+  if (typeof env.serverHost === 'string' && env.serverHost.length > 0) {
+    listenArgs.push(env.serverHost);
+  }
+  listenArgs.push(() => {
     console.log(`サーバーを起動しました: port=${env.port}`);
 
     if (isNonProduction(env.nodeEnv) && !isConfigured(process.env.ENABLE_DEV_SESSION)) {
@@ -127,6 +153,7 @@ const startServer = async () => {
       ].join(': '));
     }
   });
+  const server = app.listen(...listenArgs);
 
   server.on('error', error => {
     console.error('サーバーの起動に失敗しました', error);
