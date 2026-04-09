@@ -21,6 +21,7 @@
 | `DEV_SESSION_TTL_MS` | `devSessionTtlMs` | `parseInt(..., 10) || 0` | 開発用固定セッションの TTL |
 | `DEV_SESSION_PATHS` | `devSessionPaths` | カンマ区切り分解後の配列 | 固定セッションを適用するパス一覧 |
 | `ENABLE_DEV_SESSION` | `enableDevSession` | 空文字 | 開発用固定セッションの明示有効化フラグ（`true` のみ有効） |
+| `ALLOW_REMOTE_DEV_SESSION` | `allowRemoteDevSession` | 空文字 | 非 loopback bind で `ENABLE_DEV_SESSION=true` を強制許可する非常用フラグ（通常は禁止） |
 | `FIXED_LOGIN_USERNAME` (`LOGIN_USERNAME` 互換) | `loginUsername` | 空文字 | 固定ログイン認証のユーザー名 |
 | `FIXED_LOGIN_PASSWORD` (`LOGIN_PASSWORD` 互換) | `loginPassword` | 空文字 | 固定ログイン認証のパスワード |
 | `FIXED_LOGIN_USER_ID` (`LOGIN_USER_ID` 互換) | `loginUserId` | 空文字 | ログイン成功時の利用者ID |
@@ -58,6 +59,7 @@
 ## `DevelopmentSession` に関する起動責務
 - `hasDevelopmentSession(env)` を用いて、開発用固定セッション設定が有効かを起動時ログ判定に利用する。
 - 開発環境で `ENABLE_DEV_SESSION` が未指定の場合は無効として扱うため、起動時に誤設定検知ログを出力する。
+- `ENABLE_DEV_SESSION=true` かつ `host` が loopback 以外の場合は起動を拒否する（`ALLOW_REMOTE_DEV_SESSION=true` を明示した非常時のみ回避可能）。
 - セッションストアへの事前登録は `createDependencies`、リクエスト適用は `setupMiddleware` が担うため、`server.js` は環境変数解釈と起動ログ出力に責務を限定する。
 - 固定セッションの優先順位は `x-session-token` → `session_token` Cookie → 開発用固定セッションであり、その実行仕様自体は [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md) を参照する。
 - 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
@@ -69,6 +71,8 @@
 - [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md)
 
 ## 運用メモ
+- 開発用固定セッション（DEV_SESSION）はローカル閉域（loopback bind）のみで利用する。`SERVER_HOST` を外部公開アドレスへ向ける環境では禁止する。
+- 本番・共有環境では DEV_SESSION を使用しない。検証用の一時環境を含め、第三者が到達可能な経路では無効化を維持する。
 - 開発用固定セッションを使う場合は、`ENABLE_DEV_SESSION=true` を明示して起動する。
 - 本リポジトリでは `npm run dev:entry` が `ENABLE_DEV_SESSION=true` を付与した開発用起動コマンドになっている。
 - 外部公開が必要な運用（例: リバースプロキシ背後の本番公開）でのみ `NODE_ENV=production` かつ `SERVER_HOST=0.0.0.0` を明示する。

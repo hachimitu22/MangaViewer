@@ -2,7 +2,7 @@ const path = require('path');
 
 const createApp = require('./app');
 const { resolveLoginAuthConfig } = require('./app/createDependencies');
-const { hasDevelopmentSession } = require('./app/developmentSession');
+const { hasDevelopmentSession, isLoopbackHost } = require('./app/developmentSession');
 
 const parsePositiveInt = (value, fallback) => {
   const parsed = Number.parseInt(value, 10);
@@ -34,6 +34,14 @@ const resolveServerHost = (source = {}) => {
 
 const assertDevelopmentSessionConfigurationAllowed = (env, source = {}) => {
   if (!isProduction(env.nodeEnv)) {
+    const isDevSessionEnabled = env.enableDevSession === 'true';
+    const isLoopback = isLoopbackHost(env.host);
+    const allowsRemoteDevSession = env.allowRemoteDevSession === 'true';
+    if (isDevSessionEnabled && !isLoopback && !allowsRemoteDevSession) {
+      const error = new Error('ENABLE_DEV_SESSION=true で loopback 以外の host は許可されません');
+      error.code = 'DEV_SESSION_NON_LOOPBACK_HOST_DISALLOWED';
+      throw error;
+    }
     return;
   }
 
@@ -73,6 +81,7 @@ const createEnv = source => ({
   devSessionTtlMs: Number.parseInt(source.DEV_SESSION_TTL_MS, 10) || 0,
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
   enableDevSession: source.ENABLE_DEV_SESSION || '',
+  allowRemoteDevSession: source.ALLOW_REMOTE_DEV_SESSION || '',
   loginUsername: source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '',
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
   loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
@@ -104,6 +113,15 @@ const startServer = async () => {
   } catch (error) {
     if (error?.code === 'DEV_SESSION_DISALLOWED_IN_PRODUCTION') {
       console.error('サーバーの起動を中止しました: 本番環境で DEV_SESSION_* の設定は禁止されています', error);
+      process.exit(1);
+      return;
+    }
+    if (error?.code === 'DEV_SESSION_NON_LOOPBACK_HOST_DISALLOWED') {
+      console.error([
+        'サーバーの起動を中止しました: ENABLE_DEV_SESSION=true は loopback host 限定です',
+        `host=${env.host}`,
+        'どうしても許可する場合のみ ALLOW_REMOTE_DEV_SESSION=true を明示してください',
+      ].join(': '), error);
       process.exit(1);
       return;
     }
