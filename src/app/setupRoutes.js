@@ -1,6 +1,6 @@
 const express = require('express');
 
-const setupRoutes = (app, { env: _env, dependencies } = {}) => {
+const setupRoutes = (app, { env = {}, dependencies } = {}) => {
   const router = express.Router();
 
   dependencies.routeSetters.setRouterRootGet({
@@ -57,11 +57,13 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     router,
     loginService: dependencies.loginService,
     loginAttemptStore: dependencies.loginAttemptStore,
+    allowedOrigin: env.appOrigin,
   });
   dependencies.routeSetters.setRouterApiLogout({
     router,
     authResolver: dependencies.authResolver,
     logoutService: dependencies.logoutService,
+    allowedOrigin: env.appOrigin,
   });
 
   dependencies.routeSetters.setRouterApiMediaPost({
@@ -71,17 +73,20 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     mediaIdValueGenerator: dependencies.mediaIdValueGenerator,
     mediaRepository: dependencies.mediaRepository,
     unitOfWork: dependencies.unitOfWork,
+    allowedOrigin: env.appOrigin,
   });
   dependencies.routeSetters.setRouterApiMediaPatch({
     router,
     authResolver: dependencies.authResolver,
     saveAdapter: dependencies.saveAdapter,
     updateMediaService: dependencies.updateMediaService,
+    allowedOrigin: env.appOrigin,
   });
   dependencies.routeSetters.setRouterApiMediaDelete({
     router,
     authResolver: dependencies.authResolver,
     deleteMediaService: dependencies.deleteMediaService,
+    allowedOrigin: env.appOrigin,
   });
   dependencies.routeSetters.setRouterApiFavoriteAndQueue({
     router,
@@ -90,6 +95,7 @@ const setupRoutes = (app, { env: _env, dependencies } = {}) => {
     removeFavoriteService: dependencies.removeFavoriteService,
     addQueueService: dependencies.addQueueService,
     removeQueueService: dependencies.removeQueueService,
+    allowedOrigin: env.appOrigin,
   });
 
   app.use(router);

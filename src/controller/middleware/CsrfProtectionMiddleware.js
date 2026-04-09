@@ -71,14 +71,7 @@ class CsrfProtectionMiddleware {
         return null;
       }
     }
-
-    const host = req.get('host');
-    if (!this.#isNonEmptyString(host)) {
-      return null;
-    }
-
-    const protocol = req.protocol || 'http';
-    return `${protocol}://${host}`;
+    return null;
   }
 
   #resolveActualOrigin(req) {

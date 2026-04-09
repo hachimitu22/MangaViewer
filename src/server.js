@@ -1,7 +1,10 @@
 const path = require('path');
 
 const createApp = require('./app');
-const { resolveLoginAuthConfig } = require('./app/createDependencies');
+const {
+  resolveLoginAuthConfig,
+  assertRequiredSecurityConfiguration,
+} = require('./app/createDependencies');
 const { hasDevelopmentSession, isLoopbackHost } = require('./app/developmentSession');
 
 const parsePositiveInt = (value, fallback) => {
@@ -65,6 +68,8 @@ const createEnv = source => ({
   nodeEnv: source.NODE_ENV || 'development',
   port: Number.parseInt(source.PORT, 10) || 3000,
   host: resolveServerHost(source),
+  appOrigin: source.APP_ORIGIN || '',
+  allowedHosts: parseSessionPaths(source.APP_ALLOWED_HOSTS || '127.0.0.1,localhost,::1'),
   databaseDialect: source.DATABASE_DIALECT || 'sqlite',
   databaseUrl: source.DATABASE_URL || '',
   databaseHost: source.DATABASE_HOST || '',
@@ -108,9 +113,15 @@ const createEnv = source => ({
 const startServer = async () => {
   const env = createEnv(process.env);
   try {
+    assertRequiredSecurityConfiguration(env);
     assertDevelopmentSessionConfigurationAllowed(env, process.env);
     resolveLoginAuthConfig(env);
   } catch (error) {
+    if (error?.code === 'APP_ORIGIN_REQUIRED') {
+      console.error('サーバーの起動を中止しました: APP_ORIGIN を設定してください (例: http://127.0.0.1:3000)', error);
+      process.exit(1);
+      return;
+    }
     if (error?.code === 'DEV_SESSION_DISALLOWED_IN_PRODUCTION') {
       console.error('サーバーの起動を中止しました: 本番環境で DEV_SESSION_* の設定は禁止されています', error);
       process.exit(1);
@@ -170,6 +181,7 @@ const startServer = async () => {
 startServer();
 
 module.exports = {
+  assertRequiredSecurityConfiguration,
   assertDevelopmentSessionConfigurationAllowed,
   createEnv,
   startServer,

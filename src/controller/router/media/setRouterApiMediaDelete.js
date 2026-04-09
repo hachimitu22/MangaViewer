@@ -6,9 +6,10 @@ const setRouterApiMediaDelete = ({
   router,
   authResolver,
   deleteMediaService,
+  allowedOrigin,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
-  const csrf = new CsrfProtectionMiddleware();
+  const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
   const controller = new MediaDeleteController({
     deleteMediaService,
   });
