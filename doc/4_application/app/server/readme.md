@@ -13,6 +13,7 @@
 | 環境変数 | `env` 項目 | 既定値 / 変換 | 用途 |
 | --- | --- | --- | --- |
 | `PORT` | `port` | `parseInt(..., 10) || 3000` | HTTP listen ポート |
+| `SERVER_HOST` (`HOST` 互換) | `host` | 未指定時 `127.0.0.1`。`0.0.0.0` は `NODE_ENV=production` のときのみ許可し、それ以外は `127.0.0.1` へフォールバック | HTTP listen バインドアドレス |
 | `DATABASE_STORAGE_PATH` | `databaseStoragePath` | `var/data/mangaviewer.sqlite` | SQLite 保存先 |
 | `CONTENT_ROOT_DIRECTORY` | `contentRootDirectory` | `public/contents` | コンテンツ保存先 |
 | `DEV_SESSION_TOKEN` | `devSessionToken` | 空文字 | 開発用固定セッショントークン |
@@ -27,6 +28,10 @@
 
 ## `createEnv` の仕様
 - `process.env` から文字列値を読み取り、アプリ内部で扱いやすい `env` オブジェクトへ変換する。
+- `SERVER_HOST`（互換として `HOST`）は以下の規則で `env.host` を解決する。
+  - 未指定時は `127.0.0.1` を採用する。
+  - `0.0.0.0` が指定された場合は、`NODE_ENV=production` のときのみ採用する。
+  - `NODE_ENV` が `production` 以外で `0.0.0.0` が指定された場合は `127.0.0.1` へフォールバックする。
 - `DEV_SESSION_PATHS` は `parseSessionPaths` により、以下の規則で `string[]` へ変換する。
   - カンマ区切りで分割する。
   - 各要素の前後空白を除去する。
@@ -38,8 +43,8 @@
 2. `createApp(env)` で Express アプリを生成する。
 3. `await app.locals.ready` で初期化完了を待機する。
 4. 初期化失敗時は `console.error('アプリケーションの初期化に失敗しました', error)` を出力し、`process.exit(1)` で終了する。
-5. 初期化成功時のみ `app.listen(env.port, ...)` を実行する。
-6. listen 成功コールバックで `サーバーを起動しました: port=...` を出力する。
+5. 初期化成功時のみ `app.listen(env.port, env.host, ...)` を実行する。
+6. listen 成功コールバックで `サーバーを起動しました: host=..., port=...` を出力する。
 7. `NODE_ENV !== production` かつ `ENABLE_DEV_SESSION` が未指定の場合は、固定セッションが無効である旨を起動ログへ出力する。
 8. `hasDevelopmentSession(env)` が `true` の場合は、固定セッション有効化ログも追加出力する。
 9. `server.on('error', ...)` で起動失敗を監視し、失敗時は `process.exit(1)` で終了する。
@@ -66,3 +71,5 @@
 ## 運用メモ
 - 開発用固定セッションを使う場合は、`ENABLE_DEV_SESSION=true` を明示して起動する。
 - 本リポジトリでは `npm run dev:entry` が `ENABLE_DEV_SESSION=true` を付与した開発用起動コマンドになっている。
+- 外部公開が必要な運用（例: リバースプロキシ背後の本番公開）でのみ `NODE_ENV=production` かつ `SERVER_HOST=0.0.0.0` を明示する。
+- 開発・検証用途では `SERVER_HOST` 未指定（既定値 `127.0.0.1`）を推奨し、不要な外部公開を防止する。
