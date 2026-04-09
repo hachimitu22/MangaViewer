@@ -8,9 +8,10 @@ const setRouterApiMediaPatch = ({
   authResolver,
   saveAdapter,
   updateMediaService,
+  allowedOrigin,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
-  const csrf = new CsrfProtectionMiddleware();
+  const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
   const save = new ContentSaveMiddleware({
     contentUploadAdapter: saveAdapter,
   });

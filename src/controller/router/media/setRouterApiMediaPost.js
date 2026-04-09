@@ -13,9 +13,10 @@ const setRouterApiMediaPost = ({
   mediaIdValueGenerator,
   mediaRepository,
   unitOfWork,
+  allowedOrigin,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
-  const csrf = new CsrfProtectionMiddleware();
+  const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
 
   const save = new ContentSaveMiddleware({
     contentUploadAdapter: saveAdapter,

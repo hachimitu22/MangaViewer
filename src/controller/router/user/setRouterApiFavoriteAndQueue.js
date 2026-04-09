@@ -12,9 +12,10 @@ const setRouterApiFavoriteAndQueue = ({
   removeFavoriteService,
   addQueueService,
   removeQueueService,
+  allowedOrigin,
 }) => {
   const auth = new SessionAuthMiddleware(authResolver);
-  const csrf = new CsrfProtectionMiddleware();
+  const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
   const getUserId = req => req.context.userId;
 
   router.put('/api/favorite/:mediaId', auth.execute.bind(auth), csrf.execute.bind(csrf), async (req, res, next) => {

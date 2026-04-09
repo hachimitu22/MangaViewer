@@ -8,13 +8,14 @@ const setRouterApiLogin = ({
   loginAttemptStore,
   maxAttemptsPerWindow = 5,
   windowMs = 60_000,
+  allowedOrigin,
 } = {}) => {
   const rateLimiter = new LoginRateLimiter({
     loginAttemptStore,
     maxAttemptsPerWindow,
     windowMs,
   });
-  const csrf = new CsrfProtectionMiddleware();
+  const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
   const controller = new LoginPostController({ loginService, loginAttemptStore });
 
   router.post('/api/login', rateLimiter.execute.bind(rateLimiter), csrf.execute.bind(csrf), controller.execute.bind(controller));

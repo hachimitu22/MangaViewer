@@ -119,6 +119,43 @@ const applyContentStaticHeaders = res => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
 };
 
+const normalizeHost = value => String(value || '').trim().toLowerCase();
+
+const stripPortFromHost = host => {
+  if (host.startsWith('[')) {
+    const closingIndex = host.indexOf(']');
+    if (closingIndex <= 0) {
+      return host;
+    }
+    return host.slice(1, closingIndex);
+  }
+
+  const colonCount = host.split(':').length - 1;
+  if (colonCount === 1) {
+    return host.split(':')[0];
+  }
+
+  return host;
+};
+
+const resolveAllowedHosts = env => {
+  const configured = Array.isArray(env.allowedHosts)
+    ? env.allowedHosts
+    : String(env.allowedHosts || '')
+      .split(',')
+      .map(entry => entry.trim());
+
+  const defaults = ['127.0.0.1', 'localhost', '::1'];
+  const normalized = configured
+    .map(normalizeHost)
+    .filter(entry => entry.length > 0);
+
+  if (normalized.length === 0) {
+    return new Set(defaults);
+  }
+  return new Set(normalized);
+};
+
 const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) => {
   app.locals = app.locals ?? {};
   if (typeof app.locals.env === 'undefined') {
@@ -142,6 +179,26 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
   app.use((req, res, next) => {
     req.context = req.context ?? {};
     attachSessionHelpers(req);
+    const logger = req.app?.locals?.dependencies?.logger;
+    const allowedHosts = resolveAllowedHosts(env);
+    const rawHost = normalizeHost(req.header('host'));
+    const hostNameOnly = stripPortFromHost(rawHost);
+    if (hostNameOnly.length > 0 && !allowedHosts.has(hostNameOnly)) {
+      logger?.warn('security.host.validation_failed', {
+        request_id: req.context?.requestId,
+        host: rawHost,
+        allowed_hosts: Array.from(allowedHosts),
+      });
+      if (typeof res.status === 'function' && typeof res.json === 'function') {
+        res.status(400).json({
+          message: 'Bad Request',
+        });
+      } else if (typeof res.writeHead === 'function' && typeof res.end === 'function') {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Bad Request' }));
+      }
+      return;
+    }
 
     const securityNonce = crypto.randomBytes(16).toString('base64');
     req.context.cspNonce = securityNonce;
@@ -158,8 +215,6 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
 
     const cookies = parseCookieHeader(req.header('cookie'));
     const legacySessionToken = req.header('x-session-token');
-
-    const logger = req.app?.locals?.dependencies?.logger;
 
     if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
       req.session.session_token = cookies.session_token;

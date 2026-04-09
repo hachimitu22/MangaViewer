@@ -66,6 +66,13 @@ const parseLogOutputs = value => String(value || '')
   .filter(entry => entry.length > 0);
 
 const isConfiguredValue = value => String(value || '').trim().length > 0;
+const assertRequiredSecurityConfiguration = env => {
+  if (!isConfiguredValue(env.appOrigin)) {
+    const error = new Error('APP_ORIGIN の設定が不足しています');
+    error.code = 'APP_ORIGIN_REQUIRED';
+    throw error;
+  }
+};
 
 const resolveLoginHashOptions = env => ({
   memoryCost: env.loginHashMemoryCost,
@@ -374,3 +381,4 @@ const createDependencies = (env = {}) => {
 
 module.exports = createDependencies;
 module.exports.resolveLoginAuthConfig = resolveLoginAuthConfig;
+module.exports.assertRequiredSecurityConfiguration = assertRequiredSecurityConfiguration;

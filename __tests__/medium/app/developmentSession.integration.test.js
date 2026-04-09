@@ -22,6 +22,7 @@ describe('developmentSession wiring', () => {
   beforeEach(() => {
     jest.resetModules();
     originalEnv = { ...process.env };
+    process.env.APP_ORIGIN = 'http://127.0.0.1';
     databaseRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'create-deps-devsession-db-'));
     contentRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'create-deps-devsession-content-'));
   });
