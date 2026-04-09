@@ -2,11 +2,11 @@ class CsrfProtectionMiddleware {
   #options;
 
   constructor({
-    excludedPaths = ['/api/login'],
+    excludedPaths = [],
     allowedOrigin,
   } = {}) {
     this.#options = {
-      excludedPaths: new Set(Array.isArray(excludedPaths) ? excludedPaths : ['/api/login']),
+      excludedPaths: new Set(Array.isArray(excludedPaths) ? excludedPaths : []),
       allowedOrigin,
     };
   }

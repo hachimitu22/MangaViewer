@@ -1,7 +1,14 @@
 # /api/login
 post:
   summary: ログイン処理
-  description: ログイン成功時に session_token Cookie を発行する。
+  description: ログイン成功時に session_token Cookie を発行する。CSRFトークン検証に成功した場合のみ処理される。
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: セッションに紐づくCSRFトークン
   requestBody:
     required: true
     content:
