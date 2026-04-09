@@ -183,15 +183,20 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     const allowedHosts = resolveAllowedHosts(env);
     const rawHost = normalizeHost(req.header('host'));
     const hostNameOnly = stripPortFromHost(rawHost);
-    if (!allowedHosts.has(hostNameOnly)) {
+    if (hostNameOnly.length > 0 && !allowedHosts.has(hostNameOnly)) {
       logger?.warn('security.host.validation_failed', {
         request_id: req.context?.requestId,
         host: rawHost,
         allowed_hosts: Array.from(allowedHosts),
       });
-      res.status(400).json({
-        message: 'Bad Request',
-      });
+      if (typeof res.status === 'function' && typeof res.json === 'function') {
+        res.status(400).json({
+          message: 'Bad Request',
+        });
+      } else if (typeof res.writeHead === 'function' && typeof res.end === 'function') {
+        res.writeHead(400, { 'content-type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Bad Request' }));
+      }
       return;
     }
 
