@@ -52,7 +52,13 @@ describe('setRouterApiLogin', () => {
         return headers[String(name).toLowerCase()] ?? headers[name];
       }),
       protocol: 'http',
-      app: { locals: { dependencies: { logger: { warn: jest.fn() } } } },
+      app: {
+        locals: {
+          dependencies: {
+            logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
+          },
+        },
+      },
       context: {},
     };
     const res = createRes();
