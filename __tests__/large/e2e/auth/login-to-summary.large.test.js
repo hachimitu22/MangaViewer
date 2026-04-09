@@ -60,12 +60,21 @@ test.describe('large e2e: ログイン画面からサマリー画面まで遷移
 
   test('認証成功だけを連続して実行しても /api/login が 429 を返さない', async () => {
     const { baseUrl } = appContext;
+    await page.request.get(`${baseUrl}/screen/login`);
+    const cookies = await page.context().cookies(baseUrl);
+    const csrfToken = cookies.find(cookie => cookie.name === 'csrf_token')?.value || '';
+
+    expect(csrfToken).not.toBe('');
 
     for (let i = 0; i < 8; i += 1) {
       const response = await page.request.post(`${baseUrl}/api/login`, {
         form: {
           username: 'admin',
           password: 'admin',
+        },
+        headers: {
+          origin: baseUrl,
+          'x-csrf-token': csrfToken,
         },
       });
 
