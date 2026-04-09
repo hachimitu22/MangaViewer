@@ -11,6 +11,14 @@ const createLoginEnv = () => ({
   loginUserId: 'test-user-id',
 });
 
+const extractCsrfToken = cookies => {
+  const cookie = (cookies || []).find(entry => entry.startsWith('csrf_token='));
+  if (!cookie) {
+    return '';
+  }
+  return cookie.split(';')[0].split('=')[1] || '';
+};
+
 const createTempPath = (prefix, leaf) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   return {
@@ -73,9 +81,18 @@ describe('setupRoutes not found handler (middle)', () => {
 
   test('既存の api ルートは個別レスポンスを返し、未定義の api ルートだけが共通 404 JSON を返す', async () => {
     await createReadyApp();
+    const bootstrapResponse = await request(app)
+      .get('/screen/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1');
+    const csrfToken = extractCsrfToken(bootstrapResponse.headers['set-cookie']);
 
     const existingResponse = await request(app)
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
+      .set('Cookie', bootstrapResponse.headers['set-cookie'])
       .type('form')
       .send({ username: 'invalid', password: 'invalid' });
     expect(existingResponse.status).toBe(200);

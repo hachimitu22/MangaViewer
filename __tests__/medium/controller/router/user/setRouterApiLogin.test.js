@@ -11,6 +11,26 @@ const StaticLoginAuthenticator = require('../../../../../src/infrastructure/Stat
 const { LoginService } = require('../../../../../src/application/user/command/LoginService');
 const setupMiddleware = require('../../../../../src/app/setupMiddleware');
 
+const extractCsrfToken = cookies => {
+  const cookie = (cookies || []).find(entry => entry.startsWith('csrf_token='));
+  if (!cookie) {
+    return '';
+  }
+  return cookie.split(';')[0].split('=')[1] || '';
+};
+
+const createCsrfReadyAgent = async app => {
+  const agent = request.agent(app);
+  const bootstrapResponse = await agent
+    .get('/screen/login')
+    .set('origin', 'http://127.0.0.1')
+    .set('host', '127.0.0.1');
+  return {
+    agent,
+    csrfToken: extractCsrfToken(bootstrapResponse.headers['set-cookie']),
+  };
+};
+
 describe('setRouterApiLogin (middle)', () => {
   const createApp = ({
     maxAttemptsPerWindow = 5,
@@ -56,9 +76,13 @@ describe('setRouterApiLogin (middle)', () => {
 
   test('閾値以内は通常通りログインできる', async () => {
     const app = createApp({ maxAttemptsPerWindow: 5 });
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
-    const loginResponse = await request(app)
+    const loginResponse = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'secret' });
 
@@ -78,17 +102,27 @@ describe('setRouterApiLogin (middle)', () => {
 
   test('閾値超過でRateLimiterにより拒否される', async () => {
     const app = createApp({ maxAttemptsPerWindow: 2, windowMs: 60_000 });
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
-    const first = await request(app)
+    const first = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'wrong' });
-    const second = await request(app)
+    const second = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'wrong' });
-    const third = await request(app)
+    const third = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'wrong' });
 
@@ -101,17 +135,27 @@ describe('setRouterApiLogin (middle)', () => {
 
   test('usernameを回転しても同一IPからの連続試行は制限される', async () => {
     const app = createApp({ maxAttemptsPerWindow: 2, windowMs: 60_000 });
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
-    const first = await request(app)
+    const first = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'wrong' });
-    const second = await request(app)
+    const second = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'guest', password: 'wrong' });
-    const third = await request(app)
+    const third = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'root', password: 'wrong' });
 
@@ -123,17 +167,24 @@ describe('setRouterApiLogin (middle)', () => {
 
   test('ロック期間経過後は再試行可能', async () => {
     const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
       for (let i = 0; i < 3; i += 1) {
-        const response = await request(app)
+        const response = await agent
           .post('/api/login')
+          .set('origin', 'http://127.0.0.1')
+          .set('host', '127.0.0.1')
+          .set('x-csrf-token', csrfToken)
           .type('form')
           .send({ username: 'admin', password: 'wrong' });
         expect(response.status).toBe(200);
       }
 
-      const lockedResponse = await request(app)
+      const lockedResponse = await agent
         .post('/api/login')
+        .set('origin', 'http://127.0.0.1')
+        .set('host', '127.0.0.1')
+        .set('x-csrf-token', csrfToken)
         .type('form')
         .send({ username: 'admin', password: 'secret' });
 
@@ -142,8 +193,11 @@ describe('setRouterApiLogin (middle)', () => {
 
     await new Promise(resolve => setTimeout(resolve, 1_100));
 
-      const retryResponse = await request(app)
+      const retryResponse = await agent
         .post('/api/login')
+        .set('origin', 'http://127.0.0.1')
+        .set('host', '127.0.0.1')
+        .set('x-csrf-token', csrfToken)
         .type('form')
         .send({ username: 'admin', password: 'secret' });
 
@@ -153,17 +207,24 @@ describe('setRouterApiLogin (middle)', () => {
 
   test('成功時に失敗カウンタがリセットされる', async () => {
     const app = createApp({ maxAttemptsPerWindow: 100, windowMs: 60_000 });
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
       for (let i = 0; i < 2; i += 1) {
-        const response = await request(app)
+        const response = await agent
           .post('/api/login')
+          .set('origin', 'http://127.0.0.1')
+          .set('host', '127.0.0.1')
+          .set('x-csrf-token', csrfToken)
           .type('form')
           .send({ username: 'admin', password: 'wrong' });
         expect(response.status).toBe(200);
       }
 
-      const success = await request(app)
+      const success = await agent
         .post('/api/login')
+        .set('origin', 'http://127.0.0.1')
+        .set('host', '127.0.0.1')
+        .set('x-csrf-token', csrfToken)
         .type('form')
         .send({ username: 'admin', password: 'secret' });
 
@@ -171,15 +232,21 @@ describe('setRouterApiLogin (middle)', () => {
       expect(success.body).toEqual({ code: 0 });
 
       for (let i = 0; i < 2; i += 1) {
-        const response = await request(app)
+        const response = await agent
           .post('/api/login')
+          .set('origin', 'http://127.0.0.1')
+          .set('host', '127.0.0.1')
+          .set('x-csrf-token', csrfToken)
           .type('form')
           .send({ username: 'admin', password: 'wrong' });
         expect(response.status).toBe(200);
       }
 
-      const shouldNotLockYet = await request(app)
+      const shouldNotLockYet = await agent
         .post('/api/login')
+        .set('origin', 'http://127.0.0.1')
+        .set('host', '127.0.0.1')
+        .set('x-csrf-token', csrfToken)
         .type('form')
         .send({ username: 'admin', password: 'secret' });
 
