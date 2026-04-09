@@ -2,11 +2,29 @@ const isNonEmptyString = value => typeof value === 'string' && value.length > 0;
 
 const resolveNodeEnv = (env = {}) => String(env.nodeEnv || process.env.NODE_ENV || '').toLowerCase();
 const isDevelopmentSessionExplicitlyEnabled = (env = {}) => env.enableDevSession === 'true';
+const normalizeHost = host => String(host || '')
+  .trim()
+  .replace(/^\[|\]$/g, '')
+  .split(':')[0]
+  .toLowerCase();
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', 'localhost', '::1']);
+const isLoopbackHost = host => {
+  const normalizedHost = normalizeHost(host);
+  if (LOOPBACK_HOSTS.has(normalizedHost)) {
+    return true;
+  }
+  return normalizedHost.startsWith('127.');
+};
 
 const isDevelopmentSessionEnvironment = (env = {}) => {
   const nodeEnv = resolveNodeEnv(env);
   return nodeEnv === 'development' || nodeEnv === 'test';
 };
+
+const isDevelopmentSessionLoopbackHost = (env = {}) => (
+  !isNonEmptyString(env.host)
+  || isLoopbackHost(env.host)
+);
 
 const hasDevelopmentSessionConfiguration = (env = {}) => (
   isNonEmptyString(env.devSessionToken)
@@ -18,6 +36,7 @@ const hasDevelopmentSessionConfiguration = (env = {}) => (
 const hasDevelopmentSession = (env = {}) => (
   isDevelopmentSessionExplicitlyEnabled(env)
   && isDevelopmentSessionEnvironment(env)
+  && isDevelopmentSessionLoopbackHost(env)
   && hasDevelopmentSessionConfiguration(env)
 );
 
@@ -28,6 +47,10 @@ const resolveDevelopmentSessionApplication = ({ env = {}, requestPath = '' } = {
 
   if (!isDevelopmentSessionEnvironment(env)) {
     return { enabled: false, reason: 'environment_not_allowed' };
+  }
+
+  if (!isDevelopmentSessionLoopbackHost(env)) {
+    return { enabled: false, reason: 'host_not_loopback' };
   }
 
   if (!hasDevelopmentSessionConfiguration(env)) {
@@ -52,6 +75,7 @@ const shouldApplyDevelopmentSession = ({ env = {}, requestPath = '' } = {}) => {
 
 module.exports = {
   hasDevelopmentSession,
+  isLoopbackHost,
   isDevelopmentSessionExplicitlyEnabled,
   resolveDevelopmentSessionApplication,
   shouldApplyDevelopmentSession,

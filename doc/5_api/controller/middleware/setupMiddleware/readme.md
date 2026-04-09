@@ -48,6 +48,7 @@
 - Cookie が無い場合に限り、`enableDevSession === 'true'` のときだけ `shouldApplyDevelopmentSession({ env, requestPath: req.path })` を評価する。
 - `shouldApplyDevelopmentSession(...)` が `true` のときのみ `env.devSessionToken` を補完する。
 - したがって、開発用固定セッションは Cookie で明示指定された通常セッションを上書きしない。
+- 監査ログ `auth.development_session.audit.before_apply` / `after_apply` には、判定理由（`reason`）に加えて `host`（受信 Host）と `bind_host`（サーバー bind 先）を記録する。
 - 互換期間中は `x-session-token` を検知した場合のみ監査ログ (`auth.legacy_session_token_header.detected`) を出力する。ログには件数・送信元IP・User-Agentのみを含み、トークン値は記録しない。
 
 ## Cookie 解析

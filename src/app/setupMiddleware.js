@@ -35,6 +35,14 @@ const parseCookieHeader = cookieHeader => {
     }, {});
 };
 
+const resolveAuditHost = req => (
+  req.header('host')
+  || req.hostname
+  || req.ip
+  || req.socket?.remoteAddress
+  || ''
+);
+
 const attachSessionHelpers = req => {
   req.session = req.session ?? {};
   req.session.req = req;
@@ -156,6 +164,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
       req.session.session_token = cookies.session_token;
     } else {
+      const auditHost = resolveAuditHost(req);
       const developmentSessionDecision = resolveDevelopmentSessionApplication({
         env,
         requestPath: req.path,
@@ -164,6 +173,8 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
         enabled: developmentSessionDecision.enabled,
         reason: developmentSessionDecision.reason,
         path: req.path,
+        host: auditHost,
+        bind_host: env.host || '',
       });
 
       if (
@@ -178,6 +189,8 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
           && req.session.session_token === env.devSessionToken,
         reason: developmentSessionDecision.reason,
         path: req.path,
+        host: auditHost,
+        bind_host: env.host || '',
       });
     }
 

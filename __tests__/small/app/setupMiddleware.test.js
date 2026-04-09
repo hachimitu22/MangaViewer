@@ -62,6 +62,7 @@ describe('setupMiddleware (small)', () => {
     const { middleware } = createHarness({
       env: {
         enableDevSession: 'true',
+        host: '127.0.0.1',
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
@@ -82,6 +83,7 @@ describe('setupMiddleware (small)', () => {
     const { middleware } = createHarness({
       env: {
         enableDevSession: 'true',
+        host: '127.0.0.1',
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
@@ -115,6 +117,7 @@ describe('setupMiddleware (small)', () => {
     const { middleware } = createHarness({
       env: {
         enableDevSession: 'true',
+        host: '127.0.0.1',
         devSessionToken: 'dev-token',
         devSessionUserId: 'admin-dev',
         devSessionTtlMs: 60_000,
@@ -159,6 +162,44 @@ describe('setupMiddleware (small)', () => {
     expect(req.session.req).toBe(req);
     expect(typeof req.session.regenerate).toBe('function');
     expect(typeof req.session.destroy).toBe('function');
+  });
+
+  test('開発セッション監査ログに host と判定理由を記録する', () => {
+    const { middleware } = createHarness({
+      env: {
+        enableDevSession: 'true',
+        host: '127.0.0.1',
+        devSessionToken: 'dev-token',
+        devSessionUserId: 'admin-dev',
+        devSessionTtlMs: 60_000,
+        devSessionPaths: ['/screen/entry'],
+      },
+    });
+    const req = createReq({
+      headers: {
+        host: '127.0.0.1:3000',
+      },
+      path: '/screen/entry',
+    });
+
+    middleware(req, createRes(), jest.fn());
+
+    expect(req.app.locals.dependencies.logger.info).toHaveBeenCalledWith(
+      'auth.development_session.audit.before_apply',
+      expect.objectContaining({
+        reason: 'enabled',
+        host: '127.0.0.1:3000',
+        bind_host: '127.0.0.1',
+      }),
+    );
+    expect(req.app.locals.dependencies.logger.info).toHaveBeenCalledWith(
+      'auth.development_session.audit.after_apply',
+      expect.objectContaining({
+        reason: 'enabled',
+        host: '127.0.0.1:3000',
+        bind_host: '127.0.0.1',
+      }),
+    );
   });
 
   test('app.locals.env が未設定の場合は setupMiddleware に渡した env を公開する', () => {
