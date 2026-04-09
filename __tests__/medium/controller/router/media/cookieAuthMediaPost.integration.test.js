@@ -32,6 +32,18 @@ class FixedMediaIdValueGenerator {
 }
 
 describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
+  const createCsrfReadyAgent = async app => {
+    const agent = request.agent(app);
+    const bootstrapResponse = await agent
+      .get('/screen/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1');
+    return {
+      agent,
+      csrfToken: extractCsrfToken(bootstrapResponse.headers['set-cookie']),
+    };
+  };
+
   const createJpegBuffer = () => Buffer.from([
     0xff, 0xd8, 0xff, 0xdb,
     0x00, 0x43, 0x00, 0x08,
@@ -104,9 +116,13 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
 
   test('ログイン後は Cookie + CSRF ヘッダで /api/media に成功する', async () => {
     const { app, authResolver } = createApp();
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
-    const loginResponse = await request(app)
+    const loginResponse = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'secret' });
 

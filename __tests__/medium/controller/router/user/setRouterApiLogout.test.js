@@ -23,6 +23,18 @@ const extractCsrfToken = cookies => {
 };
 
 describe('setRouterApiLogout (middle)', () => {
+  const createCsrfReadyAgent = async app => {
+    const agent = request.agent(app);
+    const bootstrapResponse = await agent
+      .get('/screen/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1');
+    return {
+      agent,
+      csrfToken: extractCsrfToken(bootstrapResponse.headers['set-cookie']),
+    };
+  };
+
   const createApp = ({ sessionTerminator } = {}) => {
     const app = express();
     const router = express.Router();
@@ -68,9 +80,13 @@ describe('setRouterApiLogout (middle)', () => {
 
   test('認証済みなら POST /api/logout でcode=0を返し、後続リクエストは401になる', async () => {
     const app = createApp();
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
-    const loginResponse = await request(app)
+    const loginResponse = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'secret' });
 
@@ -112,9 +128,13 @@ describe('setRouterApiLogout (middle)', () => {
       execute: jest.fn().mockResolvedValue(false),
     };
     const app = createApp({ sessionTerminator });
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
 
-    const loginResponse = await request(app)
+    const loginResponse = await agent
       .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
       .type('form')
       .send({ username: 'admin', password: 'secret' });
 
