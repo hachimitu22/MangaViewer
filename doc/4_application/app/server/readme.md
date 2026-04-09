@@ -73,7 +73,7 @@
 ## 運用メモ
 - 開発用固定セッション（DEV_SESSION）はローカル閉域（loopback bind）のみで利用する。`SERVER_HOST` を外部公開アドレスへ向ける環境では禁止する。
 - 本番・共有環境では DEV_SESSION を使用しない。検証用の一時環境を含め、第三者が到達可能な経路では無効化を維持する。
-- 開発用固定セッションを使う場合は、`ENABLE_DEV_SESSION=true` を明示して起動する。
-- 本リポジトリでは `npm run dev:entry` が `ENABLE_DEV_SESSION=true` を付与した開発用起動コマンドになっている。
+- 開発用固定セッションを使う場合は、`.env.dev` に `ENABLE_DEV_SESSION=true` を明示して起動する。
+- 本リポジトリでは `npm run dev` / `npm run dev:entry` が `.env.dev` を読み込む開発用起動コマンドになっている。
 - 外部公開が必要な運用（例: リバースプロキシ背後の本番公開）でのみ `NODE_ENV=production` かつ `SERVER_HOST=0.0.0.0` を明示する。
 - 開発・検証用途では `SERVER_HOST` 未指定（既定値 `127.0.0.1`）を推奨し、不要な外部公開を防止する。
