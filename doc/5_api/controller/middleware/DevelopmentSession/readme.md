@@ -18,7 +18,6 @@
 ### `hasDevelopmentSession(env)`
 以下をすべて満たす場合のみ `true` と判定する。
 - `enableDevSession` が文字列 `'true'`
-- `serverHost` が loopback（`localhost` / `127.0.0.1` / `::1` / `127.*`）である
 - `devSessionToken` が空文字ではない `string`
 - `devSessionUserId` が空文字ではない `string`
 - `devSessionTtlMs` が正の整数
@@ -26,7 +25,7 @@
 ### `shouldApplyDevelopmentSession({ env, requestPath })`
 以下をすべて満たす場合のみ `true` と判定する。
 - `hasDevelopmentSession(env)` が `true`
-- `requestHost` が loopback（`localhost` / `127.0.0.1` / `::1` / `127.*`）である
+- `requestHost`（未指定時は `env.serverHost`、それも未指定時は `localhost`）が loopback（`localhost` / `127.0.0.1` / `::1` / `127.*`）である
 - `env.devSessionPaths` が配列である
 - `requestPath` が `env.devSessionPaths` に完全一致で含まれる
 

@@ -59,7 +59,6 @@ const hasDevelopmentSession = (env = {}) => (
   isDevelopmentSessionExplicitlyEnabled(env)
   && isDevelopmentSessionEnvironment(env)
   && hasDevelopmentSessionConfiguration(env)
-  && isLoopbackHost(env.serverHost)
 );
 
 const resolveDevelopmentSessionApplication = ({ env = {}, requestPath = '', requestHost = '' } = {}) => {
@@ -75,7 +74,9 @@ const resolveDevelopmentSessionApplication = ({ env = {}, requestPath = '', requ
     return { enabled: false, reason: 'configuration_incomplete' };
   }
 
-  if (!isLoopbackHost(requestHost)) {
+  const hostForDecision = requestHost || env.serverHost || 'localhost';
+
+  if (!isLoopbackHost(hostForDecision)) {
     return { enabled: false, reason: 'request_host_not_loopback' };
   }
 
