@@ -27,6 +27,7 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
   - `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）
   - `FIXED_LOGIN_USERNAME`（または `LOGIN_USERNAME`）
   - `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）
+  - 上記ログイン認証情報は**必ずユーザーごとに個別の値を設定**し、共通値・デフォルト値を使い回さないこと。
 - 禁止事項
   - `ALLOW_INSECURE_DEFAULT_LOGIN=true` は **ローカル開発を含め常時禁止**。
   - `admin/admin` のような弱いデフォルト認証を恒常運用しない。
@@ -69,6 +70,7 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 ### 起動方法
 1. プロジェクトルートで以下を実行する
    - `docker compose up --build -d`
+   - `LOGIN_USERNAME` / `LOGIN_PASSWORD_HASH` など必須認証設定が未設定の場合、起動エラーになるのが正しい挙動。
 2. アプリケーションにアクセスする
    - `http://localhost:3000`
 
