@@ -38,7 +38,6 @@ const parseCookieHeader = cookieHeader => {
 const resolveRequestHost = req => (
   req.header('host')
   || req.hostname
-  || req.ip
   || req.socket?.localAddress
   || ''
 );
