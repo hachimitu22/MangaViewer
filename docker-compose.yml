@@ -8,6 +8,7 @@ services:
       PORT: 3000
       NODE_ENV: production
       SERVER_HOST: 0.0.0.0
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
       DATABASE_DIALECT: postgres
       DATABASE_HOST: db
       DATABASE_PORT: 5432

@@ -15,6 +15,7 @@ RUN mkdir -p /app/var/contents /app/var/logs
 
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV APP_ORIGIN=http://localhost:3000
 EXPOSE 3000
 
 CMD ["node", "./src/server.js"]
