@@ -132,12 +132,11 @@ describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
 
     const validJpegHeader = Buffer.from([0xff, 0xd8, 0xff, 0xdb]);
 
-    const response = await request(app)
+    const response = await agent
       .post('/api/media')
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
-      .set('x-csrf-token', extractCsrfToken(loginResponse.headers['set-cookie']))
-      .set('Cookie', loginResponse.headers['set-cookie'])
+      .set('x-csrf-token', csrfToken)
       .field('title', 'cookie-auth-title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')

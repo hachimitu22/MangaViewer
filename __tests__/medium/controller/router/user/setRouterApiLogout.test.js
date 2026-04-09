@@ -90,12 +90,11 @@ describe('setRouterApiLogout (middle)', () => {
       .type('form')
       .send({ username: 'admin', password: 'secret' });
 
-    const logoutResponse = await request(app)
+    const logoutResponse = await agent
       .post('/api/logout')
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
-      .set('x-csrf-token', extractCsrfToken(loginResponse.headers['set-cookie']))
-      .set('Cookie', loginResponse.headers['set-cookie']);
+      .set('x-csrf-token', csrfToken);
 
     expect(logoutResponse.status).toBe(200);
     expect(logoutResponse.body).toEqual({ code: 0 });
@@ -138,12 +137,11 @@ describe('setRouterApiLogout (middle)', () => {
       .type('form')
       .send({ username: 'admin', password: 'secret' });
 
-    const logoutResponse = await request(app)
+    const logoutResponse = await agent
       .post('/api/logout')
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
-      .set('x-csrf-token', extractCsrfToken(loginResponse.headers['set-cookie']))
-      .set('Cookie', loginResponse.headers['set-cookie']);
+      .set('x-csrf-token', csrfToken);
 
     expect(logoutResponse.status).toBe(200);
     expect(logoutResponse.body).toEqual({ code: 1 });
