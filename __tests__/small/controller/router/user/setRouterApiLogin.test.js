@@ -31,20 +31,36 @@ describe('setRouterApiLogin', () => {
     setRouterApiLogin({ router, loginService, loginAttemptStore });
 
     expect(router.post).toHaveBeenCalledTimes(1);
-    const [path, rateLimiter, handler] = router.post.mock.calls[0];
+    const [path, rateLimiter, csrf, handler] = router.post.mock.calls[0];
     expect(path).toBe('/api/login');
     expect(typeof rateLimiter).toBe('function');
+    expect(typeof csrf).toBe('function');
     expect(typeof handler).toBe('function');
 
     const req = {
       ip: '127.0.0.1',
+      method: 'POST',
+      path: '/api/login',
       body: { username: 'admin', password: 'secret' },
-      session: { regenerate: jest.fn() },
+      session: { regenerate: jest.fn(), csrf_token: 'csrf-token' },
+      get: jest.fn((name) => {
+        const headers = {
+          'x-csrf-token': 'csrf-token',
+          origin: 'http://localhost',
+          host: 'localhost',
+        };
+        return headers[String(name).toLowerCase()] ?? headers[name];
+      }),
+      protocol: 'http',
+      app: { locals: { dependencies: { logger: { warn: jest.fn() } } } },
+      context: {},
     };
     const res = createRes();
 
     await rateLimiter(req, res, async () => {
-      await handler(req, res);
+      await csrf(req, res, async () => {
+        await handler(req, res);
+      });
     });
 
     expect(loginService.execute).toHaveBeenCalledTimes(1);
