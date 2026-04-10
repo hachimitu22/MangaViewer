@@ -50,6 +50,9 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
   - `.env` を読み込んで通常起動（本番同等）する。seed処理は実行しない。
 - `npm run dev`
   - `.env.dev` を読み込んで開発起動する。
+- `npm run start:test`
+  - `.env.test` を読み込んでテスト用にサーバー起動する。
+  - `DEV_SESSION_*` はこの用途でのみ使用する。
 - `npm run seed:user`
   - 固定ユーザー作成seedのみ実行する。
   - 開発・検証用途。`NODE_ENV=production` では即時失敗する。
