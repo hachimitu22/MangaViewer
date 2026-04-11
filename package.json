@@ -6,6 +6,7 @@
   "scripts": {
     "start": "cross-env ENV_FILE=.env node ./scripts/start-server.js",
     "dev": "cross-env ENV_FILE=.env.dev nodemon ./scripts/start-server.js --watch ./src --watch ./scripts/start-server.js",
+    "start:test": "cross-env ENV_FILE=.env.test NODE_ENV=test node ./scripts/start-server.js",
     "test:small": "cross-env NODE_ENV=test LOG_OUTPUTS=memory jest small",
     "test:medium": "cross-env NODE_ENV=test LOG_OUTPUTS=memory jest medium",
     "test:e2e": "cross-env NODE_ENV=test LOG_OUTPUTS=memory playwright test",
