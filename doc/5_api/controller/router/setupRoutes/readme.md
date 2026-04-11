@@ -3,7 +3,7 @@
 ## 概要
 - `src/app/setupRoutes.js` は、画面系・API 系の既存ルートを 1 つの Express Router へ登録し、最後に共通 404 JSON フォールバックを設定する。
 - 個々の URL 仕様は各 `setRouter...` モジュールへ委譲し、本モジュールは登録順序と依存注入の統括を担う。
-- ルート未一致時は画面ルート・API ルートを問わず同一の JSON 404 応答を返す。
+- 未定義ルート時の 404 応答も `setupRoutes` の責務として扱う。
 
 ## 対象実装
 - 実装: `src/app/setupRoutes.js`
@@ -52,12 +52,12 @@
 3. `app.use(router)` でまとめた Router をアプリへマウントする。
 4. 既存ルート登録後に、最後段の共通 404 ハンドラーを `app.use((_req, res) => { ... })` で追加する。
 
-## 共通 404 JSON フォールバック仕様
-- 既存の画面ルート・API ルートのいずれにも一致しなかった場合に発火する。
+## 404 ハンドラー仕様（`setupRoutes.js` 末尾）
+- `app.use(router)` 通過後もレスポンス未確定で、画面/API の既存ルートのいずれにも一致しない場合に発火する。
 - HTTP ステータスコードは `404` を返す。
 - レスポンスボディは JSON `{ "message": "Not Found" }` を返す。
-- 画面 URL でも HTML 画面を返さず、API と同一の JSON 応答へ統一する。
-- このフォールバックは `app.use(router)` の後に登録することで、正常ルートの応答を妨げない。
+- 画面 URL と API URL を区別せず、未定義ルート時の共通フォールバックとして適用する。
+- 本ハンドラーは `setupRoutes` の責務に含まれ、個別 `setRouter...` モジュールでは扱わない。
 
 ## `DevelopmentSession` との関係
 - `setupRoutes` 自体は `DevelopmentSession` を直接判定しない。
@@ -65,7 +65,10 @@
 - そのため、開発用固定セッションが有効な場合でも、各ルートは通常の認証フローと同じ経路で利用される。
 - 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
 
+## 関連テスト
+- [small テスト観点](/doc/5_api/controller/router/setupRoutes/testcase.small.md)
+- [medium テスト観点](/doc/5_api/controller/router/setupRoutes/testcase.medium.md)
+
 ## 関連ドキュメント
-- [未定義ルート共通 404 ハンドラー](/doc/5_api/controller/router/notFound/setupRoutesNotFoundHandler/readme.md)
 - [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md)
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
