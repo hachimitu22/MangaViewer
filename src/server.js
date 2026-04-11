@@ -80,7 +80,6 @@ const createEnv = source => ({
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
   enableDevSession: source.ENABLE_DEV_SESSION || '',
   allowRemoteDevSession: source.ALLOW_REMOTE_DEV_SESSION || '',
-  loginUsername: source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '',
   loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
   loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
   loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',

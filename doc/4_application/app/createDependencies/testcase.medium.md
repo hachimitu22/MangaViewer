@@ -6,7 +6,7 @@
 （対応テスト: `__tests__/medium/app/createDependencies.login.test.js`）
 
 **前提**
-- `loginUsername` / `loginPassword` / `loginUserId` / `loginSessionTtlMs` を明示した `env` で `createDependencies` を生成する。
+- `loginPassword` / `loginUserId` / `loginSessionTtlMs` を明示した `env` で `createDependencies` を生成する。
 - `session.regenerate` を持つセッションオブジェクトを用意する。
 
 **操作**

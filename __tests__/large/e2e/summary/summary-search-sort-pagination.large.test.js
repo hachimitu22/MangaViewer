@@ -87,7 +87,6 @@ test.describe('large e2e: summary の検索・並び替え・ページング', (
     app = createApp({
       databaseStoragePath: tempDatabasePath,
       contentRootDirectory: tempContentDirectory,
-      loginUsername: 'admin',
       loginPassword: 'admin',
       loginUserId: 'admin',
       loginSessionTtlMs: 60_000,

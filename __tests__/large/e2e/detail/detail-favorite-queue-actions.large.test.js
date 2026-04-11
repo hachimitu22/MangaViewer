@@ -58,7 +58,6 @@ test.describe('large e2e: 詳細画面から favorite/queue の追加と解除�
     app = createApp({
       databaseStoragePath: tempDatabasePath,
       contentRootDirectory: tempContentDirectory,
-      loginUsername: 'admin',
       loginPassword: 'admin',
       loginUserId: 'admin',
       loginSessionTtlMs: 60_000,

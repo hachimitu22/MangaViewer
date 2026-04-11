@@ -22,7 +22,7 @@
 
 ### 2) デフォルト値適用
 **前提**
-- `loginUsername` / `loginPassword` / `loginUserId` / `loginSessionTtlMs` など、任意設定の一部または全部を省略した `env` を用意する。
+- `loginPassword` / `loginUserId` / `loginSessionTtlMs` など、任意設定の一部または全部を省略した `env` を用意する。
 
 **操作**
 - `createDependencies(env)` 実行後、`loginService` など関連依存の挙動を確認する。

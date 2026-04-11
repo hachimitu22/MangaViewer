@@ -56,7 +56,6 @@ test.describe('large e2e: サマリー・詳細遷移とログアウト後導線
     app = createApp({
       databaseStoragePath: tempDatabasePath,
       contentRootDirectory: tempContentDirectory,
-      loginUsername: 'admin',
       loginPassword: 'admin',
       loginUserId: 'admin',
       loginSessionTtlMs: 60_000,
