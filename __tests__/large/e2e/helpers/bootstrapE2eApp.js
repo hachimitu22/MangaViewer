@@ -5,7 +5,6 @@ const createApp = require('../../../../src/app');
 const { removePathIfExists } = require('./fsCleanup');
 const { createE2eTempDirectory } = require('./e2eTempDirectory');
 
-
 const listenServer = app => new Promise((resolve, reject) => {
   const listeningServer = app.listen(0, () => resolve(listeningServer));
   listeningServer.on('error', reject);
@@ -22,7 +21,6 @@ const resolveBaseUrl = server => {
 
 const bootstrapE2eApp = async ({
   prefix = 'mangaviewer-e2e-',
-  loginUsername = 'admin',
   loginPassword = 'admin',
   loginUserId = 'admin',
   loginSessionTtlMs = 60_000,
@@ -35,7 +33,6 @@ const bootstrapE2eApp = async ({
   const app = createApp({
     databaseStoragePath: tempDatabasePath,
     contentRootDirectory: tempContentDirectory,
-    loginUsername,
     loginPassword,
     loginUserId,
     loginSessionTtlMs,

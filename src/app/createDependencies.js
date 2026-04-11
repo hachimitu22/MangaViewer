@@ -91,13 +91,12 @@ const resolveLoginAuthConfig = env => {
   }
 
   const rawConfig = {
-    username: String(env.loginUsername || '').trim(),
+    username: String(env.loginUserId || '').trim(),
     password: String(env.loginPassword || '').trim(),
     passwordHash: String(env.loginPasswordHash || '').trim(),
     userId: String(env.loginUserId || '').trim(),
   };
   const missingKeys = [
-    !isConfiguredValue(rawConfig.username) ? 'username' : null,
     !isConfiguredValue(rawConfig.userId) ? 'userId' : null,
     !isConfiguredValue(rawConfig.password) && !isConfiguredValue(rawConfig.passwordHash)
       ? 'password/passwordHash'
@@ -108,7 +107,7 @@ const resolveLoginAuthConfig = env => {
     throw new Error([
       'ログイン認証設定が不足しています',
       `missing=${missingKeys.join(',')}`,
-      '必要な設定: LOGIN_USERNAME(or FIXED_LOGIN_USERNAME), LOGIN_USER_ID(or FIXED_LOGIN_USER_ID), LOGIN_PASSWORDまたはLOGIN_PASSWORD_HASH',
+      '必要な設定: LOGIN_USER_ID(or FIXED_LOGIN_USER_ID), LOGIN_PASSWORDまたはLOGIN_PASSWORD_HASH',
     ].join(': '));
   }
 

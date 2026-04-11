@@ -139,7 +139,6 @@ test.describe('large e2e: favorite/queue の並び替えとページング', () 
     app = createApp({
       databaseStoragePath: tempDatabasePath,
       contentRootDirectory: tempContentDirectory,
-      loginUsername: 'admin',
       loginPassword: 'admin',
       loginUserId: 'admin',
       loginSessionTtlMs: 60_000,

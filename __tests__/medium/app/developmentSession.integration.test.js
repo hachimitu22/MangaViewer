@@ -8,7 +8,6 @@ const request = require('supertest');
 const createDependencies = require('../../../src/app/createDependencies');
 const setupMiddleware = require('../../../src/app/setupMiddleware');
 const createLoginEnv = () => ({
-  loginUsername: 'test-user',
   loginPassword: 'test-password',
   loginUserId: 'test-user-id',
 });
@@ -124,7 +123,6 @@ describe('developmentSession wiring', () => {
     process.env.DEV_SESSION_USER_ID = 'admin-dev';
     process.env.DEV_SESSION_TTL_MS = '60000';
     process.env.DEV_SESSION_PATHS = '/screen/entry,/api/media';
-    process.env.LOGIN_USERNAME = 'admin-user';
     process.env.LOGIN_PASSWORD = 'admin-password';
     process.env.LOGIN_USER_ID = 'admin-user-id';
 
@@ -156,10 +154,8 @@ describe('developmentSession wiring', () => {
 
     process.env.NODE_ENV = 'development';
     process.env.PORT = '3457';
-    process.env.FIXED_LOGIN_USERNAME = '';
     process.env.FIXED_LOGIN_PASSWORD = '';
     process.env.FIXED_LOGIN_USER_ID = '';
-    process.env.LOGIN_USERNAME = '';
     process.env.LOGIN_PASSWORD = '';
     process.env.LOGIN_USER_ID = '';
     process.env.ALLOW_INSECURE_DEFAULT_LOGIN = '';
@@ -194,10 +190,8 @@ describe('developmentSession wiring', () => {
 
     process.env.NODE_ENV = 'development';
     process.env.PORT = '3458';
-    process.env.FIXED_LOGIN_USERNAME = '';
     process.env.FIXED_LOGIN_PASSWORD = '';
     process.env.FIXED_LOGIN_USER_ID = '';
-    process.env.LOGIN_USERNAME = '';
     process.env.LOGIN_PASSWORD = '';
     process.env.LOGIN_USER_ID = '';
     process.env.ALLOW_INSECURE_DEFAULT_LOGIN = 'true';
@@ -232,10 +226,8 @@ describe('developmentSession wiring', () => {
 
     process.env.NODE_ENV = 'production';
     process.env.PORT = '3459';
-    process.env.FIXED_LOGIN_USERNAME = '';
     process.env.FIXED_LOGIN_PASSWORD = '';
     process.env.FIXED_LOGIN_USER_ID = '';
-    process.env.LOGIN_USERNAME = '';
     process.env.LOGIN_PASSWORD = '';
     process.env.LOGIN_USER_ID = '';
     process.env.ALLOW_INSECURE_DEFAULT_LOGIN = 'true';
@@ -270,10 +262,8 @@ describe('developmentSession wiring', () => {
 
     process.env.NODE_ENV = 'production';
     process.env.PORT = '3460';
-    process.env.FIXED_LOGIN_USERNAME = 'admin-user';
     process.env.FIXED_LOGIN_PASSWORD = 'admin-password';
     process.env.FIXED_LOGIN_USER_ID = 'admin-user-id';
-    process.env.LOGIN_USERNAME = 'admin-user';
     process.env.LOGIN_PASSWORD = 'admin-password';
     process.env.LOGIN_USER_ID = 'admin-user-id';
     process.env.ALLOW_INSECURE_DEFAULT_LOGIN = '';
@@ -312,10 +302,8 @@ describe('developmentSession wiring', () => {
     process.env.NODE_ENV = 'production';
     process.env.PORT = '3461';
     process.env.SERVER_HOST = '0.0.0.0';
-    process.env.FIXED_LOGIN_USERNAME = 'admin-user';
     process.env.FIXED_LOGIN_PASSWORD = 'admin-password';
     process.env.FIXED_LOGIN_USER_ID = 'admin-user-id';
-    process.env.LOGIN_USERNAME = 'admin-user';
     process.env.LOGIN_PASSWORD = 'admin-password';
     process.env.LOGIN_USER_ID = 'admin-user-id';
 
@@ -345,7 +333,6 @@ describe('developmentSession wiring', () => {
     process.env.NODE_ENV = 'development';
     process.env.PORT = '3462';
     process.env.SERVER_HOST = '0.0.0.0';
-    process.env.LOGIN_USERNAME = 'admin-user';
     process.env.LOGIN_PASSWORD = 'admin-password';
     process.env.LOGIN_USER_ID = 'admin-user-id';
 
@@ -380,7 +367,6 @@ describe('developmentSession wiring', () => {
     process.env.DEV_SESSION_USER_ID = 'admin-dev';
     process.env.DEV_SESSION_TTL_MS = '60000';
     process.env.DEV_SESSION_PATHS = '/screen/entry';
-    process.env.LOGIN_USERNAME = 'admin-user';
     process.env.LOGIN_PASSWORD = 'admin-password';
     process.env.LOGIN_USER_ID = 'admin-user-id';
 

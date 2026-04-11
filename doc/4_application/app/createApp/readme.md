@@ -20,7 +20,6 @@
 | --- | --- | --- |
 | `databaseStoragePath` | SQLite ファイル格納先 | `createDependencies` |
 | `contentRootDirectory` | コンテンツ保存先ディレクトリ | `createDependencies` |
-| `loginUsername` | 固定ログイン認証のユーザー名 | `createDependencies` |
 | `loginPassword` | 固定ログイン認証のパスワード | `createDependencies` |
 | `loginUserId` | ログイン成功時に採用するユーザーID | `createDependencies` |
 | `loginSessionTtlMs` | 通常ログインセッションの TTL | `createDependencies` |

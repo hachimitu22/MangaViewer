@@ -10,7 +10,7 @@
 
 ## 利用箇所
 - `src/app/createDependencies.js`
-  - `env.loginUsername` / `env.loginPassword` / `env.loginUserId` をもとに `StaticLoginAuthenticator` を生成する
+  - `env.loginUserId` / `env.loginPassword` をもとに `StaticLoginAuthenticator` を生成する
   - 生成した `loginAuthenticator` を `LoginService` へ注入する
 - 関連実装: [LoginService](/doc/4_application/user/command/LoginService/readme.md)
 

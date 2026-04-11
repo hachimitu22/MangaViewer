@@ -1,6 +1,5 @@
 const createApp = require('../../../src/app');
 const createLoginEnv = () => ({
-  loginUsername: 'test-user',
   loginPassword: 'test-password',
   loginUserId: 'test-user-id',
 });

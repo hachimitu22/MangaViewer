@@ -11,14 +11,10 @@ const createDatabaseStoragePath = source => source.DATABASE_STORAGE_PATH
 
 const validateFixedUserEnv = source => {
   const userId = source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '';
-  const username = source.FIXED_LOGIN_USERNAME || source.LOGIN_USERNAME || '';
   const password = source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '';
 
   if (typeof userId !== 'string' || userId.length === 0) {
     throw new Error('FIXED_LOGIN_USER_ID (または LOGIN_USER_ID) を設定してください。');
-  }
-  if (typeof username !== 'string' || username.length === 0) {
-    throw new Error('FIXED_LOGIN_USERNAME (または LOGIN_USERNAME) を設定してください。');
   }
   if (typeof password !== 'string' || password.length === 0) {
     throw new Error('FIXED_LOGIN_PASSWORD (または LOGIN_PASSWORD) を設定してください。');
@@ -26,7 +22,7 @@ const validateFixedUserEnv = source => {
 
   return {
     userId,
-    username,
+    username: userId,
     password,
   };
 };
@@ -78,7 +74,7 @@ const seedFixedUser = async (source = process.env) => {
     if (!existingByUserId) {
       await FixedCredentialModel.create({
         user_id: userId,
-        username,
+        username: userId,
         password_hash: passwordHash,
       });
       credentialResult = '作成';
@@ -87,7 +83,7 @@ const seedFixedUser = async (source = process.env) => {
       if (shouldUpdate) {
         await FixedCredentialModel.update(
           {
-            username,
+            username: userId,
             password_hash: passwordHash,
           },
           { where: { user_id: userId } },

@@ -17,7 +17,6 @@ describe('createDependencies login wiring', () => {
     dependencies = createDependencies({
       databaseStoragePath: path.join(databaseRoot, 'data.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'contents'),
-      loginUsername: 'admin',
       loginPassword: 'secret',
       loginUserId: 'user-001',
       loginSessionTtlMs: 60_000,
@@ -41,7 +40,7 @@ describe('createDependencies login wiring', () => {
       regenerate: jest.fn((callback) => callback()),
     };
     const query = new Query({
-      username: 'admin',
+      username: 'user-001',
       password: 'secret',
       session,
     });
@@ -61,7 +60,6 @@ describe('createDependencies login wiring', () => {
       nodeEnv: 'development',
       databaseStoragePath: path.join(databaseRoot, 'production.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'production-contents'),
-      loginUsername: 'admin',
       loginPassword: '',
       loginUserId: '',
     })).toThrow('ログイン認証設定が不足しています');
@@ -79,7 +77,6 @@ describe('createDependencies login wiring', () => {
       nodeEnv: 'production',
       databaseStoragePath: path.join(databaseRoot, 'hashed.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'hashed-contents'),
-      loginUsername: 'admin',
       loginPasswordHash: sha256Hex('secret'),
       loginUserId: 'user-001',
       loginSessionTtlMs: 60_000,
@@ -91,7 +88,7 @@ describe('createDependencies login wiring', () => {
     };
 
     const result = await dependencies.loginService.execute(new Query({
-      username: 'admin',
+      username: 'user-001',
       password: 'secret',
       session,
     }));
@@ -105,7 +102,6 @@ describe('createDependencies login wiring', () => {
       allowInsecureDefaultLogin: 'true',
       databaseStoragePath: path.join(databaseRoot, 'development.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'development-contents'),
-      loginUsername: '',
       loginPassword: '',
       loginUserId: '',
     })).toThrow('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
@@ -117,7 +113,6 @@ describe('createDependencies login wiring', () => {
       allowInsecureDefaultLogin: 'true',
       databaseStoragePath: path.join(databaseRoot, 'production-insecure.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'production-insecure-contents'),
-      loginUsername: '',
       loginPassword: '',
       loginUserId: '',
     })).toThrow('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
@@ -128,7 +123,6 @@ describe('createDependencies login wiring', () => {
       nodeEnv: 'production',
       databaseStoragePath: path.join(databaseRoot, 'weak-password.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'weak-password-contents'),
-      loginUsername: 'admin',
       loginPassword: 'admin',
       loginUserId: 'user-001',
     })).toThrow('既知の弱いパスワードは使用できません');
@@ -144,7 +138,6 @@ describe('createDependencies login wiring', () => {
       nodeEnv: 'development',
       databaseStoragePath: path.join(databaseRoot, 'weak-password-development.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'weak-password-development-contents'),
-      loginUsername: 'admin',
       loginPassword: 'admin',
       loginUserId: 'admin',
       loginSessionTtlMs: 60_000,
@@ -173,7 +166,6 @@ describe('createDependencies login wiring', () => {
     dependencies = createDependencies({
       databaseStoragePath: path.join(databaseRoot, 'memory.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'memory-contents'),
-      loginUsername: 'admin',
       loginPassword: 'secret',
       loginUserId: 'user-001',
       authStateStoreBackend: 'memory',
@@ -187,7 +179,6 @@ describe('createDependencies login wiring', () => {
     expect(() => createDependencies({
       databaseStoragePath: path.join(databaseRoot, 'redis.sqlite'),
       contentRootDirectory: path.join(contentRoot, 'redis-contents'),
-      loginUsername: 'admin',
       loginPassword: 'secret',
       loginUserId: 'user-001',
       authStateStoreBackend: 'redis',
