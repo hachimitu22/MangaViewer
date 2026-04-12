@@ -1,9 +1,10 @@
 const path = require('path');
+const fs = require('fs/promises');
 const { test, expect } = require('@playwright/test');
 
 const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
 const { waitForApiResponse } = require('../support/api-response');
-const { seedSingleMedia } = require('../helpers/seedMedia');
+const { createSeedMedia } = require('../helpers/seedMedia');
 
 const seedMediaId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 const seedTitle = 'APIエラー再操作テスト用タイトル';
@@ -42,14 +43,15 @@ test.describe('large e2e: API異常時の画面内エラーメッセージと再
     appContext = await bootstrapE2eApp({
       prefix: 'mangaviewer-e2e-error-message-retry-',
       seed: async ({ app, tempContentDirectory }) => {
-        await seedSingleMedia({
-          app,
-          mediaId: seedMediaId,
-          title: seedTitle,
-          contentIds: ['seed/retry-content-1.jpg'],
+        await app.locals.dependencies.unitOfWork.run(async () => {
+          await app.locals.dependencies.mediaRepository.save(createSeedMedia({
+            mediaId: seedMediaId,
+            title: seedTitle,
+            contentId: 'seed/retry-content-1.jpg',
+          }));
         });
-        await require('fs/promises').mkdir(path.join(tempContentDirectory, 'seed'), { recursive: true });
-        await require('fs/promises').writeFile(
+        await fs.mkdir(path.join(tempContentDirectory, 'seed'), { recursive: true });
+        await fs.writeFile(
           path.join(tempContentDirectory, 'seed', 'retry-content-1.jpg'),
           'dummy',
           { encoding: 'utf8' },
