@@ -56,6 +56,12 @@
     background: #dc2626;
     cursor: pointer;
   }
+  .common-nav__status {
+    margin: 0;
+    width: 100%;
+    font-size: 13px;
+    color: #b91c1c;
+  }
 </style>
 <nav class="common-nav" aria-label="共通ナビゲーター">
   <div class="common-nav__inner">
@@ -69,6 +75,7 @@
       <% } %>
     </div>
     <button id="common-nav-logout" class="common-nav__logout" type="button">ログアウト</button>
+    <p id="common-nav-logout-status" class="common-nav__status" aria-live="polite"></p>
   </div>
 </nav>
 <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
@@ -77,8 +84,12 @@
 <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
   (() => {
     const logoutButton = document.getElementById('common-nav-logout');
+    const status = document.getElementById('common-nav-logout-status');
     if (!logoutButton) return;
     logoutButton.addEventListener('click', async () => {
+      if (status) {
+        status.textContent = '通信中です...';
+      }
       try {
         const response = await fetch('/api/logout', {
           method: 'POST',
@@ -87,12 +98,24 @@
             'X-CSRF-Token': window.__csrfToken || '',
           },
         });
-        if (response.status === 401) {
-          window.location.assign('/screen/error');
+
+        let payload = {};
+        try {
+          payload = await response.json();
+        } catch (_error) {
+          payload = {};
+        }
+
+        if (!response.ok || payload.code !== 0) {
+          if (status) {
+            status.textContent = payload.message || `ログアウトに失敗しました (${response.status})`;
+          }
           return;
         }
       } catch (_error) {
-        window.location.assign('/screen/error');
+        if (status) {
+          status.textContent = 'ログアウトに失敗しました';
+        }
         return;
       }
 

@@ -254,7 +254,7 @@ test.describe('large e2e: API異常時の画面内エラーメッセージと再
     await expect(page.locator(`[data-media-id="${seedMediaId}"]`)).toBeVisible();
   });
 
-  test.fixme('ナビゲーター: POST /api/logout 失敗時に画面内メッセージを表示して操作継続できる', async ({ page }) => {
+  test('ナビゲーター: POST /api/logout 失敗時に画面内メッセージを表示して操作継続できる', async ({ page }) => {
     const { baseUrl } = appContext;
     await page.goto(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' });
 
