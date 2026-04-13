@@ -423,10 +423,6 @@
             },
               body: payload,
             });
-            if (response.status === 401) {
-              window.location.assign('/screen/error');
-              return;
-            }
             const result = await response.json();
             if (!response.ok || result.code !== 0) {
               throw new Error(result.message || 'メディア更新に失敗しました。');
@@ -455,10 +451,6 @@
                 'X-CSRF-Token': window.__csrfToken || '',
               },
             });
-            if (response.status === 401) {
-              window.location.assign('/screen/error');
-              return;
-            }
             const result = await response.json();
             if (!response.ok || result.code !== 0) {
               throw new Error(result.message || 'メディア削除に失敗しました。');
