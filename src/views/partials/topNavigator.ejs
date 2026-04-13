@@ -108,7 +108,9 @@
 
         if (!response.ok || payload.code !== 0) {
           if (status) {
-            status.textContent = payload.message || `ログアウトに失敗しました (${response.status})`;
+            status.textContent = payload.message
+              ? `ログアウトに失敗しました: ${payload.message}`
+              : `ログアウトに失敗しました (${response.status})`;
           }
           return;
         }
