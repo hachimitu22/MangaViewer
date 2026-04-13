@@ -4,14 +4,37 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "cross-env ENV_FILE=.env node ./scripts/start-server.js",
+    "dev": "cross-env ENV_FILE=.env.dev nodemon ./scripts/start-server.js --watch ./src --watch ./scripts/start-server.js",
+    "start:test": "cross-env ENV_FILE=.env.test NODE_ENV=test node ./scripts/start-server.js",
+    "test:small": "cross-env NODE_ENV=test LOG_OUTPUTS=memory jest small",
+    "test:medium": "cross-env NODE_ENV=test LOG_OUTPUTS=memory jest medium",
+    "test:e2e": "cross-env NODE_ENV=test LOG_OUTPUTS=memory playwright test",
+    "test:large": "npm run test:e2e",
+    "test:all": "npm run test:small && npm run test:medium && npm run test:large",
+    "test:all:coverage": "cross-env NODE_ENV=test LOG_OUTPUTS=memory jest __tests__/ --coverage",
+    "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
+    "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s",
+    "dev:entry": "npm run dev",
+    "seed:user": "node ./scripts/seed-fixed-user.js",
+    "start:seeded": "npm run seed:user && npm run start"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.1"
+    "ejs": "^3.1.8",
+    "express": "^4.18.1",
+    "multer": "^2.0.2",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "aglio": "^2.3.0"
+    "aglio": "^2.3.0",
+    "cross-env": "^10.1.0",
+    "jest": "^28.1.0",
+    "nodemon": "^3.1.10",
+    "start-server-and-test": "^1.14.0",
+    "supertest": "^6.2.3",
+    "@playwright/test": "^1.53.0"
   }
 }

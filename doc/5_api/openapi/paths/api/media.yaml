@@ -1,0 +1,91 @@
+# /api/media
+post:
+  summary: メディア登録処理
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+      description: セッションに紐づくCSRFトークン
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          required:
+            - title
+            - contents
+            - tags
+          properties:
+            title:
+              type: string
+              minLength: 1
+            contents:
+              type: array
+              minItems: 1
+              items:
+                type: object
+                required: [position]
+                properties:
+                  file:
+                    type: string
+                    format: binary
+                  url:
+                    type: string
+                    pattern: '^[0-9a-f]{32}$'
+                  position:
+                    type: integer
+            tags:
+              type: array
+              items:
+                type: object
+                required: [category, label]
+                properties:
+                  category:
+                    type: string
+                    minLength: 1
+                  label:
+                    type: string
+                    minLength: 1
+  responses:
+    "200":
+      description: メディア登録成功
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+              mediaId:
+                type: string
+          examples:
+            success:
+              value: { code: 0, mediaId: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa }
+    "400":
+      description: 入力不正
+      content:
+        application/json:
+          examples:
+            badRequest:
+              value: { message: Bad Request }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }

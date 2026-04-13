@@ -1,0 +1,127 @@
+<%
+  const isAdminUser = currentUserId === 'admin';
+  const isCurrent = path => currentPath === path;
+%>
+<style>
+  .common-nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #ffffff;
+    border-bottom: 1px solid #d1d5db;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08);
+  }
+  .common-nav__inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .common-nav__links {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .common-nav__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    color: #1f2937;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .common-nav__link[aria-current='page'] {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+  }
+  .common-nav__logout {
+    border: 0;
+    border-radius: 10px;
+    min-height: 36px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #dc2626;
+    cursor: pointer;
+  }
+  .common-nav__status {
+    margin: 0;
+    width: 100%;
+    font-size: 13px;
+    color: #b91c1c;
+  }
+</style>
+<nav class="common-nav" aria-label="共通ナビゲーター">
+  <div class="common-nav__inner">
+    <div class="common-nav__links">
+      <a class="common-nav__link" href="/screen/summary" <%= isCurrent('/screen/summary') ? "aria-current='page'" : '' %>>メディア一覧</a>
+      <a class="common-nav__link" href="/screen/favorite" <%= isCurrent('/screen/favorite') ? "aria-current='page'" : '' %>>お気に入り</a>
+      <a class="common-nav__link" href="/screen/queue" <%= isCurrent('/screen/queue') ? "aria-current='page'" : '' %>>あとで見る</a>
+      <a class="common-nav__link" href="/screen/search" <%= isCurrent('/screen/search') ? "aria-current='page'" : '' %>>メディア検索</a>
+      <% if (isAdminUser) { %>
+        <a class="common-nav__link" href="/screen/entry" <%= isCurrent('/screen/entry') ? "aria-current='page'" : '' %>>メディア登録</a>
+      <% } %>
+    </div>
+    <button id="common-nav-logout" class="common-nav__logout" type="button">ログアウト</button>
+    <p id="common-nav-logout-status" class="common-nav__status" aria-live="polite"></p>
+  </div>
+</nav>
+<script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
+  window.__csrfToken = <%- JSON.stringify(typeof csrfToken === 'string' ? csrfToken : '') %>;
+</script>
+<script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
+  (() => {
+    const logoutButton = document.getElementById('common-nav-logout');
+    const status = document.getElementById('common-nav-logout-status');
+    if (!logoutButton) return;
+    logoutButton.addEventListener('click', async () => {
+      if (status) {
+        status.textContent = '通信中です...';
+      }
+      try {
+        const response = await fetch('/api/logout', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'X-CSRF-Token': window.__csrfToken || '',
+          },
+        });
+
+        let payload = {};
+        try {
+          payload = await response.json();
+        } catch (_error) {
+          payload = {};
+        }
+
+        if (!response.ok || payload.code !== 0) {
+          if (status) {
+            status.textContent = payload.message
+              ? `ログアウトに失敗しました: ${payload.message}`
+              : `ログアウトに失敗しました (${response.status})`;
+          }
+          return;
+        }
+      } catch (_error) {
+        if (status) {
+          status.textContent = 'ログアウトに失敗しました';
+        }
+        return;
+      }
+
+      window.location.assign('/screen/login');
+    });
+  })();
+</script>

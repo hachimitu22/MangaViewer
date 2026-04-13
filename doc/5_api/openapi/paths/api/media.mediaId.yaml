@@ -1,0 +1,121 @@
+# /api/media/{mediaId}
+parameters:
+  - name: mediaId
+    in: path
+    required: true
+    schema:
+      type: string
+patch:
+  summary: メディア更新処理
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+  requestBody:
+    required: true
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            title:
+              type: string
+            contents:
+              type: array
+              items:
+                type: object
+                required: [position]
+                properties:
+                  file:
+                    type: string
+                    format: binary
+                  id:
+                    type: string
+                  position:
+                    type: integer
+            tags:
+              type: array
+              items:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  label:
+                    type: string
+  responses:
+    "200":
+      description: 更新成功
+      content:
+        application/json:
+          examples:
+            success:
+              value: { code: 0 }
+    "400":
+      description: 入力不正
+      content:
+        application/json:
+          examples:
+            badRequest:
+              value: { message: Bad Request }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }
+
+delete:
+  summary: メディア削除処理
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: 削除成功
+      content:
+        application/json:
+          examples:
+            success:
+              value: { code: 0 }
+    "400":
+      description: 入力不正
+      content:
+        application/json:
+          examples:
+            badRequest:
+              value: { message: Bad Request }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+    "500":
+      description: サーバー内部エラー
+      content:
+        application/json:
+          examples:
+            internalError:
+              value: { message: Internal Server Error }

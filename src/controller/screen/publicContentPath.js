@@ -1,0 +1,54 @@
+const normalizeSeparators = value => value.replace(/\\/g, '/');
+
+const buildShardedPath = contentId => [
+  contentId.slice(0, 2),
+  contentId.slice(2, 4),
+  contentId.slice(4, 6),
+  contentId.slice(6, 8),
+  contentId,
+].join('/');
+
+const toPublicContentPath = contentId => {
+  if (!(typeof contentId === 'string' && contentId.length > 0)) {
+    return '';
+  }
+
+  const normalized = normalizeSeparators(contentId.trim());
+  if (normalized.length === 0) {
+    return '';
+  }
+
+  if (/^(https?:)?\/\//i.test(normalized) || /^data:/i.test(normalized)) {
+    return '';
+  }
+
+  if (normalized.startsWith('/contents/')) {
+    return normalized;
+  }
+
+  if (normalized.startsWith('/')) {
+    return '';
+  }
+
+  if ((/^[0-9a-f]{32}$/i).test(normalized)) {
+    const canonicalContentId = normalized.toLowerCase();
+    return `/contents/${buildShardedPath(canonicalContentId)}`;
+  }
+
+  return '';
+};
+
+const mapMediaOverviewThumbnailToPublicPath = mediaOverview => {
+  const thumbnail = toPublicContentPath(mediaOverview.thumbnail);
+
+  return {
+    ...mediaOverview,
+    thumbnail,
+    hasThumbnail: thumbnail.length > 0,
+  };
+};
+
+module.exports = {
+  toPublicContentPath,
+  mapMediaOverviewThumbnailToPublicPath,
+};

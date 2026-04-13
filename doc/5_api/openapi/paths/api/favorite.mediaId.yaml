@@ -1,0 +1,61 @@
+# /api/favorite/{mediaId}
+parameters:
+  - name: mediaId
+    in: path
+    required: true
+    schema:
+      type: string
+put:
+  summary: お気に入りに追加
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: 追加処理結果
+      content:
+        application/json:
+          examples:
+            success:
+              value: { code: 0 }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }
+delete:
+  summary: お気に入りから削除
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: X-CSRF-Token
+      in: header
+      required: true
+      schema:
+        type: string
+  responses:
+    "200":
+      description: 削除処理結果
+      content:
+        application/json:
+          examples:
+            success:
+              value: { code: 0 }
+    "401":
+      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+    "403":
+      description: CSRF検証またはOrigin検証に失敗
+      content:
+        application/json:
+          examples:
+            forbidden:
+              value: { message: Forbidden }

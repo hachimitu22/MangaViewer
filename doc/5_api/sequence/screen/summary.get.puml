@@ -1,0 +1,17 @@
+@startuml
+
+title get /summary
+
+participant クライアント
+participant サーバー
+database データベース
+
+クライアント -> サーバー: リクエスト
+!include ./auth_guard.puml
+
+サーバー -> データベース: メディアを検索
+サーバー <-- データベース: メディア一覧
+
+クライアント <-- サーバー: メディア一覧画面HTML
+
+@enduml

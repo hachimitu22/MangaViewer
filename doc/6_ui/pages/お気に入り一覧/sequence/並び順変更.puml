@@ -1,0 +1,18 @@
+@startuml
+
+title 並び順変更
+
+actor ユーザー
+participant ブラウザ
+participant サーバー
+
+ユーザー -> ブラウザ: 並び順ドロップダウンリスト選択
+ブラウザ -> サーバー: メディア一覧画面取得\nget /summary?sort={並び順}
+note left
+    title, tagは付与したまま
+    pageは削除
+end note
+ブラウザ <-- サーバー: メディア一覧画面HTML
+ユーザー <- ブラウザ: メディア一覧画面を表示
+
+@enduml

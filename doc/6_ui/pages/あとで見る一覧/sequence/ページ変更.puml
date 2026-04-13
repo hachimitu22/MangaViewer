@@ -1,0 +1,17 @@
+@startuml
+
+title ページ変更
+
+actor ユーザー
+participant ブラウザ
+participant サーバー
+
+ユーザー -> ブラウザ: サムネイル押下
+ブラウザ -> サーバー: メディア一覧画面取得\nget /summary?summaryPage={ページ番号}
+note left
+    summaryPage以外は付与したまま
+end note
+ブラウザ <-- サーバー: メディア詳細画面HTML
+ユーザー <- ブラウザ: メディア詳細画面を表示
+
+@enduml

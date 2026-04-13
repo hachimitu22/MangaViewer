@@ -1,0 +1,13 @@
+@startuml
+left to right direction
+actor "ユーザー" as User
+actor "管理者" as Admin
+
+package "MediaViewer" {
+    User <|- Admin
+    package "アカウント操作" {
+        User --> (ログイン)
+        User --> (ログアウト)
+    }
+}
+@enduml

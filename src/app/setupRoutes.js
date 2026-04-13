@@ -1,0 +1,124 @@
+const express = require('express');
+
+const setupRoutes = (app, { env = {}, dependencies } = {}) => {
+  const router = express.Router();
+
+  dependencies.routeSetters.setRouterRootGet({
+    router,
+    authResolver: dependencies.authResolver,
+  });
+  dependencies.routeSetters.setRouterScreenEntryGet({
+    router,
+    authResolver: dependencies.authResolver,
+  });
+  dependencies.routeSetters.setRouterScreenDetailGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getMediaDetailService: dependencies.getMediaDetailService,
+  });
+  dependencies.routeSetters.setRouterScreenEditGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getMediaDetailService: dependencies.getMediaDetailService,
+  });
+
+  dependencies.routeSetters.setRouterScreenErrorGet({
+    router,
+  });
+  dependencies.routeSetters.setRouterScreenFavoriteGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getFavoriteSummariesService: dependencies.getFavoriteSummariesService,
+  });
+  dependencies.routeSetters.setRouterScreenLoginGet({
+    router,
+  });
+  dependencies.routeSetters.setRouterScreenQueueGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getQueueService: dependencies.getQueueService,
+  });
+  dependencies.routeSetters.setRouterScreenSearchGet({
+    router,
+    authResolver: dependencies.authResolver,
+  });
+  dependencies.routeSetters.setRouterScreenSummaryGet({
+    router,
+    authResolver: dependencies.authResolver,
+    searchMediaService: dependencies.searchMediaService,
+  });
+  dependencies.routeSetters.setRouterScreenViewerGet({
+    router,
+    authResolver: dependencies.authResolver,
+    getMediaContentWithNavigationService: dependencies.getMediaContentWithNavigationService,
+  });
+
+  dependencies.routeSetters.setRouterApiLogin({
+    router,
+    loginService: dependencies.loginService,
+    loginAttemptStore: dependencies.loginAttemptStore,
+    allowedOrigin: env.appOrigin,
+  });
+  dependencies.routeSetters.setRouterApiLogout({
+    router,
+    authResolver: dependencies.authResolver,
+    logoutService: dependencies.logoutService,
+    allowedOrigin: env.appOrigin,
+  });
+
+  dependencies.routeSetters.setRouterApiMediaPost({
+    router,
+    authResolver: dependencies.authResolver,
+    saveAdapter: dependencies.saveAdapter,
+    mediaIdValueGenerator: dependencies.mediaIdValueGenerator,
+    mediaRepository: dependencies.mediaRepository,
+    unitOfWork: dependencies.unitOfWork,
+    allowedOrigin: env.appOrigin,
+  });
+  dependencies.routeSetters.setRouterApiMediaPatch({
+    router,
+    authResolver: dependencies.authResolver,
+    saveAdapter: dependencies.saveAdapter,
+    updateMediaService: dependencies.updateMediaService,
+    allowedOrigin: env.appOrigin,
+  });
+  dependencies.routeSetters.setRouterApiMediaDelete({
+    router,
+    authResolver: dependencies.authResolver,
+    deleteMediaService: dependencies.deleteMediaService,
+    allowedOrigin: env.appOrigin,
+  });
+  dependencies.routeSetters.setRouterApiFavoriteAndQueue({
+    router,
+    authResolver: dependencies.authResolver,
+    addFavoriteService: dependencies.addFavoriteService,
+    removeFavoriteService: dependencies.removeFavoriteService,
+    addQueueService: dependencies.addQueueService,
+    removeQueueService: dependencies.removeQueueService,
+    allowedOrigin: env.appOrigin,
+  });
+
+  app.use(router);
+
+  app.use((_req, res) => {
+    res.status(404).json({
+      message: 'Not Found',
+    });
+  });
+
+  app.use((error, req, res, _next) => {
+    dependencies.logger?.error('http.request.error', {
+      request_id: req.context?.requestId,
+      method: req.method,
+      path: req.originalUrl,
+      user_id: req.context?.userId || 'anonymous',
+      message: error?.message,
+      error,
+    });
+    res.status(500).json({
+      message: 'Internal Server Error',
+    });
+  });
+};
+
+module.exports = setupRoutes;

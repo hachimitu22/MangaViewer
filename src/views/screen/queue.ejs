@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root { color-scheme: light; font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif; background: #f5f6f8; color: #1f2937; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      a { color: #2563eb; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 1080px; margin: 0 auto; padding: 32px 16px 64px; }
+      .stack { display: grid; gap: 24px; }
+      .card { background: #fff; border: 1px solid #d1d5db; border-radius: 16px; padding: 24px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06); }
+      .toolbar { display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; }
+      .sort-form { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+      .select-input { border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; background:#fff; }
+      .media-grid { display: grid; gap: 16px; }
+      .media-card { border: 1px solid #dbe3f0; border-radius: 16px; background: #f8fafc; padding: 16px; }
+      .media-body { display: grid; grid-template-columns: 160px 1fr; gap: 16px; }
+      .thumbnail { width: 160px; height: 120px; border-radius: 12px; background: #dbeafe; overflow: hidden; display:flex; align-items:center; justify-content:center; color:#1d4ed8; font-size:12px; }
+      .thumbnail img { width:100%; height:100%; object-fit:cover; }
+      .meta { display:grid; gap: 12px; }
+      .tag-list, .actions, .pagination { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+      .chip { background: #eff6ff; color: #1d4ed8; border-radius: 999px; padding: 6px 12px; font-size: 14px; }
+      .button { border: 0; border-radius: 10px; padding: 10px 16px; font-size: 14px; font-weight: 700; cursor: pointer; background:#2563eb; color:#fff; }
+      .button.secondary { background:#475569; }
+      .page-link, .page-current { min-width: 40px; height: 40px; border-radius: 999px; display:inline-flex; align-items:center; justify-content:center; border: 1px solid #cbd5e1; background: #fff; padding: 0 12px; }
+      .page-current { background: #2563eb; color: #fff; border-color: #2563eb; }
+      .status { min-height: 20px; font-size: 13px; color: #475569; }
+      .empty { color: #64748b; }
+      @media (max-width: 720px) { .media-body { grid-template-columns: 1fr; } .thumbnail { width: 100%; height: 200px; } }
+    </style>
+  </head>
+  <body>
+    <%- include('../partials/topNavigator', { currentPath: typeof currentPath === 'string' ? currentPath : '', currentUserId: typeof currentUserId === 'string' ? currentUserId : null }) %>
+    <div class="page">
+      <div class="stack">
+        <section class="card">
+          <h1><%= pageTitle %></h1>
+          <p>あとで見るに登録したメディアを一覧表示します。</p>
+        </section>
+
+        <section class="card">
+          <div class="toolbar">
+            <p><strong><%= totalCount %></strong> 件</p>
+            <form class="sort-form" method="get" action="/screen/queue">
+              <input type="hidden" name="queuePage" value="1" />
+              <label for="sort">並び順</label>
+              <select id="sort" name="sort" class="select-input">
+                <% sortOptions.forEach((option) => { %>
+                  <option value="<%= option.value %>" <%= currentConditions.sort === option.value ? 'selected' : '' %>><%= option.label %></option>
+                <% }) %>
+              </select>
+              <noscript><button class="button" type="submit">更新</button></noscript>
+            </form>
+          </div>
+
+          <% if (mediaOverviews.length === 0) { %>
+            <p class="empty">検索結果はありません。</p>
+          <% } else { %>
+            <div class="media-grid">
+              <% mediaOverviews.forEach((media) => { %>
+                <article class="media-card" data-media-id="<%= media.mediaId %>" data-favorite-put-path="/api/favorite/<%= media.mediaId %>" data-favorite-delete-path="/api/favorite/<%= media.mediaId %>" data-queue-put-path="/api/queue/<%= media.mediaId %>" data-queue-delete-path="/api/queue/<%= media.mediaId %>" data-is-favorite="<%= media.isFavorite %>" data-is-queued="<%= media.isQueued %>">
+                  <div class="media-body">
+                    <a class="thumbnail" href="/screen/detail/<%= media.mediaId %>">
+                      <% if (media.hasThumbnail) { %>
+                        <img src="<%= media.thumbnail %>" alt="<%= media.title %> のサムネイル" />
+                      <% } else { %>
+                        <span>NO IMAGE</span>
+                      <% } %>
+                    </a>
+                    <div class="meta">
+                      <div>
+                        <h2><a href="/screen/detail/<%= media.mediaId %>"><%= media.title %></a></h2>
+                      </div>
+                      <div class="tag-list">
+                        <% media.tags.forEach((tag) => { %>
+                          <a class="chip" href="/screen/summary?summaryPage=1&sort=date_asc&tags=<%= encodeURIComponent(`${tag.category}:${tag.label}`) %>"><%= tag.category %>:<%= tag.label %></a>
+                        <% }) %>
+                      </div>
+                      <div class="actions">
+                        <a href="/screen/detail/<%= media.mediaId %>">詳細画面へ</a>
+                        <button class="button js-favorite-toggle" type="button"><%= media.isFavorite ? 'お気に入り解除' : 'お気に入り追加' %></button>
+                        <button class="button secondary js-queue-toggle" type="button"><%= media.isQueued ? 'あとで見る解除' : 'あとで見る追加' %></button>
+                      </div>
+                      <p class="status" aria-live="polite"></p>
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <nav class="card">
+          <div class="pagination">
+            <% pagination.items.forEach((item) => { %>
+              <% if (item === pagination.currentPage) { %>
+                <span class="page-current"><%= item %></span>
+              <% } else { %>
+                <% const params = new URLSearchParams(); %>
+                <% params.set('queuePage', String(item)); %>
+                <% params.set('sort', currentConditions.sort); %>
+                <a class="page-link" href="/screen/queue?<%= params.toString() %>"><%= item %></a>
+              <% } %>
+            <% }) %>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
+      (() => {
+        const sortSelect = document.getElementById('sort');
+        if (sortSelect?.form) {
+          sortSelect.addEventListener('change', () => sortSelect.form.submit());
+        }
+
+        const request = async ({ path, method, successMessage, failureMessage, statusElement }) => {
+          statusElement.textContent = '通信中です...';
+          try {
+            const response = await fetch(path, { method, headers: { Accept: 'application/json', 'X-CSRF-Token': window.__csrfToken || '' } });
+            if (!response.ok) {
+              statusElement.textContent = `${failureMessage} (${response.status})`;
+              return false;
+            }
+            statusElement.textContent = successMessage;
+            return true;
+          } catch (_error) {
+            statusElement.textContent = failureMessage;
+            return false;
+          }
+        };
+
+        const applyState = (card, state) => {
+          card.dataset.isFavorite = String(state.isFavorite);
+          card.dataset.isQueued = String(state.isQueued);
+          card.querySelector('.js-favorite-toggle').textContent = state.isFavorite ? 'お気に入り解除' : 'お気に入り追加';
+          card.querySelector('.js-queue-toggle').textContent = state.isQueued ? 'あとで見る解除' : 'あとで見る追加';
+        };
+
+        document.querySelectorAll('[data-media-id]').forEach(card => {
+          const statusElement = card.querySelector('.status');
+          const state = {
+            isFavorite: card.dataset.isFavorite === 'true',
+            isQueued: card.dataset.isQueued === 'true',
+          };
+          const favoriteButton = card.querySelector('.js-favorite-toggle');
+          const queueButton = card.querySelector('.js-queue-toggle');
+
+          applyState(card, state);
+
+          favoriteButton.addEventListener('click', async () => {
+            const nextIsFavorite = !state.isFavorite;
+            const succeeded = await request({
+              path: nextIsFavorite ? card.dataset.favoritePutPath : card.dataset.favoriteDeletePath,
+              method: nextIsFavorite ? 'PUT' : 'DELETE',
+              successMessage: nextIsFavorite ? 'お気に入りに追加しました' : 'お気に入りから削除しました',
+              failureMessage: nextIsFavorite ? 'お気に入りへの追加に失敗しました' : 'お気に入りからの削除に失敗しました',
+              statusElement,
+            });
+            if (!succeeded) return;
+            state.isFavorite = nextIsFavorite;
+            applyState(card, state);
+          });
+
+          queueButton.addEventListener('click', async () => {
+            const nextIsQueued = !state.isQueued;
+            const succeeded = await request({
+              path: nextIsQueued ? card.dataset.queuePutPath : card.dataset.queueDeletePath,
+              method: nextIsQueued ? 'PUT' : 'DELETE',
+              successMessage: nextIsQueued ? 'あとで見るに追加しました' : 'あとで見るから削除しました',
+              failureMessage: nextIsQueued ? 'あとで見るへの追加に失敗しました' : 'あとで見るからの削除に失敗しました',
+              statusElement,
+            });
+            if (!succeeded) return;
+            state.isQueued = nextIsQueued;
+            applyState(card, state);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+@startuml
+
+title get /login
+
+
+participant クライアント
+participant サーバー
+database データベース
+
+クライアント -> サーバー: リクエスト
+クライアント <-- サーバー: ログイン画面HTML
+
+@enduml

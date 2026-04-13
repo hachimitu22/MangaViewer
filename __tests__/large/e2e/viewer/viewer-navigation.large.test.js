@@ -1,0 +1,222 @@
+const fs = require('fs/promises');
+const { test, expect } = require('@playwright/test');
+
+let page;
+
+const Media = require('../../../../src/domain/media/media');
+const MediaId = require('../../../../src/domain/media/mediaId');
+const MediaTitle = require('../../../../src/domain/media/mediaTitle');
+const ContentId = require('../../../../src/domain/media/contentId');
+const Tag = require('../../../../src/domain/media/tag');
+const Category = require('../../../../src/domain/media/category');
+const Label = require('../../../../src/domain/media/label');
+const { toPublicContentPath } = require('../../../../src/controller/screen/publicContentPath');
+const { bootstrapE2eApp } = require('../helpers/bootstrapE2eApp');
+
+const createViewerSeedMedia = ({ mediaId, title, contentIds }) => new Media(
+  new MediaId(mediaId),
+  new MediaTitle(title),
+  contentIds.map(contentId => new ContentId(contentId)),
+  [
+    new Tag(new Category('カテゴリ'), new Label('ラベル')),
+  ],
+  [new Category('カテゴリ')],
+);
+
+const toExpectedPublicPath = contentId => toPublicContentPath(contentId);
+
+test.describe('large e2e: viewer ナビゲーション', () => {
+  const seedMediaId = 'media-seed-viewer-navigation-1';
+  const seedTitle = 'ビューアー遷移確認用タイトル';
+  const seedContentIds = [
+    '11111111111111111111111111111111',
+    '22222222222222222222222222222222',
+    '33333333333333333333333333333333',
+  ];
+  const seedVideoMediaId = 'media-seed-viewer-navigation-video-1';
+  const seedVideoTitle = 'ビューアー動画確認用タイトル';
+  const seedVideoContentId = '0123456789abcdef0123456789abcdef';
+
+  let context;
+
+  test.beforeEach(async ({ page: currentPage }) => {
+    page = currentPage;
+    context = await bootstrapE2eApp({
+      prefix: 'mangaviewer-e2e-viewer-',
+      seed: async ({ app, tempContentDirectory, path }) => {
+        await app.locals.dependencies.unitOfWork.run(async () => {
+          await app.locals.dependencies.mediaRepository.save(createViewerSeedMedia({
+            mediaId: seedMediaId,
+            title: seedTitle,
+            contentIds: seedContentIds,
+          }));
+          await app.locals.dependencies.mediaRepository.save(createViewerSeedMedia({
+            mediaId: seedVideoMediaId,
+            title: seedVideoTitle,
+            contentIds: [seedVideoContentId],
+          }));
+        });
+
+        await app.locals.dependencies.sequelize.models.content.update(
+          { content_type: 'video/mp4' },
+          { where: { content_id: seedVideoContentId } }
+        );
+
+        await Promise.all(seedContentIds.map(contentId => {
+          const imageDirectory = path.join(
+            tempContentDirectory,
+            contentId.slice(0, 2),
+            contentId.slice(2, 4),
+            contentId.slice(4, 6),
+            contentId.slice(6, 8),
+          );
+          return fs.mkdir(imageDirectory, { recursive: true })
+            .then(() => fs.writeFile(path.join(imageDirectory, contentId), 'dummy', { encoding: 'utf8' }));
+        }));
+        const shardedSegments = [
+          seedVideoContentId.slice(0, 2),
+          seedVideoContentId.slice(2, 4),
+          seedVideoContentId.slice(4, 6),
+          seedVideoContentId.slice(6, 8),
+        ];
+        const videoDirectory = path.join(tempContentDirectory, ...shardedSegments);
+        await fs.mkdir(videoDirectory, { recursive: true });
+        await fs.writeFile(path.join(videoDirectory, seedVideoContentId), 'dummy-video', { encoding: 'utf8' });
+      },
+    });
+  });
+
+  test.afterEach(async () => {
+    if (context?.teardown) {
+      await context.teardown();
+    }
+    context = null;
+  });
+
+  const login = async ({ page, baseUrl }) => {
+    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
+
+    await page.type('#username', 'admin');
+    await page.type('#password', 'admin');
+
+    const loginResponsePromise = page.waitForResponse(response => {
+      return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
+    });
+
+    await Promise.all([
+      page.waitForURL(`${baseUrl}/screen/summary`, { waitUntil: 'networkidle' }),
+      page.click('button[type="submit"]'),
+    ]);
+
+    const loginResponse = await loginResponsePromise;
+    expect(loginResponse.status()).toBe(200);
+    expect(page.url()).toBe(`${baseUrl}/screen/summary`);
+  };
+
+  const assertViewerState = async ({ page, baseUrl, mediaId, mediaPage, expectedContentId }) => {
+    expect(page.url()).toBe(`${baseUrl}/screen/viewer/${mediaId}/${mediaPage}`);
+
+    const metaText = await page.$eval('.meta-chip', element => element.textContent.trim());
+    expect(metaText).toContain(`mediaId: ${mediaId}`);
+    expect(metaText).toContain(`page: ${mediaPage}`);
+
+    const imageState = await page.$eval('.stage img', element => ({
+      src: element.getAttribute('src'),
+      alt: element.getAttribute('alt'),
+    }));
+
+    expect(imageState.src).toBe(toExpectedPublicPath(expectedContentId));
+    expect(imageState.alt).toBe(`${mediaId} の ${mediaPage} ページ`);
+  };
+
+  test('一覧から viewer へ遷移し、前後ページ移動と境界ナビゲーション制御が正しく表示される', async () => {
+    const { baseUrl } = context;
+
+    await login({ page, baseUrl });
+
+    const viewerEntryHref = `/screen/viewer/${seedMediaId}/1`;
+    await page.waitForSelector(`a[href="${viewerEntryHref}"]`);
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
+      page.click(`a[href="${viewerEntryHref}"]`),
+    ]);
+
+    await assertViewerState({
+      page,
+      baseUrl,
+      mediaId: seedMediaId,
+      mediaPage: 1,
+      expectedContentId: seedContentIds[0],
+    });
+
+    expect(await page.$(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/0"]`)).toBeNull();
+    const previousDisabledTextAtFirstPage = await page.$eval('nav.footer-nav span.disabled', element => element.textContent.trim());
+    expect(previousDisabledTextAtFirstPage).toBe('前ページなし');
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
+      page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/2"]`),
+    ]);
+
+    await assertViewerState({
+      page,
+      baseUrl,
+      mediaId: seedMediaId,
+      mediaPage: 2,
+      expectedContentId: seedContentIds[1],
+    });
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
+      page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/1"]`),
+    ]);
+
+    await assertViewerState({
+      page,
+      baseUrl,
+      mediaId: seedMediaId,
+      mediaPage: 1,
+      expectedContentId: seedContentIds[0],
+    });
+
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
+      page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/2"]`),
+    ]);
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle' }),
+      page.click(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/3"]`),
+    ]);
+
+    await assertViewerState({
+      page,
+      baseUrl,
+      mediaId: seedMediaId,
+      mediaPage: 3,
+      expectedContentId: seedContentIds[2],
+    });
+
+    expect(await page.$(`nav.footer-nav a[href="/screen/viewer/${seedMediaId}/4"]`)).toBeNull();
+    const footerTextsAtLastPage = await page.$$eval('nav.footer-nav span.disabled', elements => {
+      return elements.map(element => element.textContent.trim());
+    });
+    expect(footerTextsAtLastPage).toContain('次ページなし');
+  });
+
+  test('contentType=video が保存されたコンテンツは viewer で <video> として描画される', async () => {
+    const { baseUrl } = context;
+    await login({ page, baseUrl });
+
+    await page.goto(`${baseUrl}/screen/viewer/${seedVideoMediaId}/1`, { waitUntil: 'networkidle' });
+
+    await page.waitForSelector('.stage video');
+    expect(await page.$('.stage img')).toBeNull();
+    const videoState = await page.$eval('.stage video', element => ({
+      src: element.getAttribute('src'),
+      controls: element.hasAttribute('controls'),
+    }));
+    expect(videoState.src).toBe(toExpectedPublicPath(seedVideoContentId));
+    expect(videoState.controls).toBe(true);
+  });
+});

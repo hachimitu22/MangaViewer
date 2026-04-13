@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f5f6f8; }
+      a { color: #2563eb; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .page { max-width: 1120px; margin: 0 auto; padding: 32px 16px 64px; }
+      .stack { display: grid; gap: 24px; }
+      .card {
+        background: #fff; border: 1px solid #d1d5db; border-radius: 16px; padding: 24px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      }
+      h1 { margin: 0; font-size: 32px; }
+      h2 { margin: 0 0 16px; font-size: 20px; }
+      .hero { display: grid; gap: 16px; }
+      .hero-meta { display: flex; gap: 12px; flex-wrap: wrap; color: #475569; }
+      .label { font-weight: 700; color: #334155; }
+      .chip-list, .action-list { display: flex; gap: 12px; flex-wrap: wrap; }
+      .chip { background: #eff6ff; color: #1d4ed8; border-radius: 999px; padding: 6px 12px; font-size: 14px; display: inline-flex; }
+      .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+      .content-card { display: grid; gap: 8px; }
+      .thumbnail {
+        display:flex; align-items:center; justify-content:center; width: 100%; aspect-ratio: 4 / 3;
+        border-radius: 12px; overflow: hidden; background: #dbeafe; border: 1px solid #bfdbfe; color: #1d4ed8;
+      }
+      .thumbnail img { width:100%; height:100%; object-fit:cover; }
+      .thumbnail-placeholder { font-size: 13px; font-weight: 700; text-align: center; padding: 12px; }
+      .content-meta { color: #475569; font-size: 14px; word-break: break-all; }
+      .link-button, .api-button {
+        border: 0; border-radius: 10px; padding: 12px 18px; font-size: 14px; font-weight: 700;
+        cursor: pointer; background: #2563eb; color: #fff; display: inline-flex; align-items: center;
+      }
+      .api-button.secondary { background: #475569; }
+      .status { min-height: 24px; color: #475569; font-size: 14px; }
+      .empty { color: #64748b; }
+      @media (max-width: 720px) {
+        .content-grid { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 520px) {
+        .content-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('../partials/topNavigator', { currentPath: typeof currentPath === 'string' ? currentPath : '', currentUserId: typeof currentUserId === 'string' ? currentUserId : null }) %>
+    <main class="page">
+      <div class="stack">
+        <section class="card hero">
+          <h1><%= mediaDetail.title %></h1>
+          <div class="hero-meta">
+            <span>メディアID: <%= mediaDetail.id %></span>
+            <span><span class="label">登録日:</span> <%= mediaDetail.registeredAt || '未取得' %></span>
+            <span>コンテンツ数: <%= mediaDetail.contents.length %></span>
+            <span>タグ数: <%= mediaDetail.tags.length %></span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>コンテンツ一覧</h2>
+          <% if (mediaDetail.contents.length === 0) { %>
+            <p class="empty">コンテンツはありません。</p>
+          <% } else { %>
+            <div class="content-grid">
+              <% mediaDetail.contents.forEach((content) => { %>
+                <article class="content-card">
+                  <a class="thumbnail" href="/screen/viewer/<%= mediaDetail.id %>/<%= content.position %>">
+                    <% if (content.thumbnail) { %>
+                      <img src="<%= content.thumbnail %>" alt="<%= mediaDetail.title %> <%= content.position %> 枚目のサムネイル" />
+                    <% } else { %>
+                      <span class="thumbnail-placeholder">サムネイル未設定</span>
+                    <% } %>
+                  </a>
+                  <div class="content-meta">
+                    <div><span class="label">ページ:</span> <%= content.position %></div>
+                    <div><span class="label">コンテンツID:</span> <%= content.id || '未設定' %></div>
+                  </div>
+                </article>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>カテゴリー一覧</h2>
+          <% if (mediaDetail.categories.length === 0) { %>
+            <p class="empty">カテゴリーはありません。</p>
+          <% } else { %>
+            <div class="chip-list">
+              <% mediaDetail.categories.forEach((category) => { %>
+                <span class="chip"><%= category %></span>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>タグ一覧</h2>
+          <% if (mediaDetail.tags.length === 0) { %>
+            <p class="empty">タグはありません。</p>
+          <% } else { %>
+            <div class="chip-list">
+              <% mediaDetail.tags.forEach((tag) => { %>
+                <a class="chip" href="/screen/summary?summaryPage=1&sort=date_asc&tags=<%= encodeURIComponent(`${tag.category}:${tag.label}`) %>"><%= tag.category %>:<%= tag.label %></a>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>優先カテゴリ一覧</h2>
+          <% if (mediaDetail.priorityCategories.length === 0) { %>
+            <p class="empty">優先カテゴリはありません。</p>
+          <% } else { %>
+            <div class="chip-list">
+              <% mediaDetail.priorityCategories.forEach((category) => { %>
+                <span class="chip"><%= category %></span>
+              <% }) %>
+            </div>
+          <% } %>
+        </section>
+
+        <section class="card">
+          <h2>導線</h2>
+          <div class="action-list">
+            <a class="link-button" href="/screen/viewer/<%= mediaDetail.id %>/1">ビューアーへ</a>
+            <a class="link-button" href="/screen/edit/<%= mediaDetail.id %>">編集画面へ</a>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>ユーザー操作</h2>
+          <div class="action-list">
+            <button id="favorite-add" class="api-button" type="button">お気に入り追加</button>
+            <button id="favorite-remove" class="api-button secondary" type="button">お気に入り解除</button>
+            <button id="queue-add" class="api-button" type="button">あとで見る追加</button>
+            <button id="queue-remove" class="api-button secondary" type="button">あとで見る解除</button>
+          </div>
+          <p id="request-status" class="status" aria-live="polite"></p>
+        </section>
+      </div>
+    </main>
+
+    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
+      (() => {
+        const mediaId = <%- JSON.stringify(mediaDetail.id) %>;
+        const status = document.getElementById('request-status');
+
+        const request = async (path, method, successMessage) => {
+          status.textContent = '通信中です...';
+          try {
+            const response = await fetch(path, {
+              method,
+              headers: {
+                Accept: 'application/json',
+                'X-CSRF-Token': window.__csrfToken || '',
+              },
+            });
+            if (!response.ok) {
+              status.textContent = `${successMessage}に失敗しました (${response.status})`;
+              return;
+            }
+
+            status.textContent = successMessage;
+          } catch (_error) {
+            status.textContent = `${successMessage}に失敗しました`;
+          }
+        };
+
+        document.getElementById('favorite-add').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'PUT', 'お気に入りに追加しました'));
+        document.getElementById('favorite-remove').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'DELETE', 'お気に入りから削除しました'));
+        document.getElementById('queue-add').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'PUT', 'あとで見るに追加しました'));
+        document.getElementById('queue-remove').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'DELETE', 'あとで見るから削除しました'));
+      })();
+    </script>
+  </body>
+</html>

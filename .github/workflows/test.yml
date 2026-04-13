@@ -1,0 +1,60 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - '__tests__/**'
+      - 'src/**'
+      - '.github/workflows/test.yml'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '__tests__/**'
+      - 'src/**'
+      - '.github/workflows/test.yml'
+
+  workflow_dispatch:
+
+jobs:
+  ci-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      - name: Clean install if cache miss
+        shell: bash
+        run: |
+          if [ "${{ steps.npm-cache.outputs.cache-hit }}" = "true" ]; then
+            echo "skip npm ci"
+          else
+            npm ci
+          fi
+
+      - name: Run small tests
+        run: npm run test:small
+
+      - name: Run medium tests
+        run: npm run test:medium
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run large tests
+        run: npm run test:large

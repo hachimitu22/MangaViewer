@@ -1,0 +1,155 @@
+const express = require('express');
+const request = require('supertest');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { Sequelize } = require('sequelize');
+
+const setupMiddleware = require('../../../../../src/app/setupMiddleware');
+const setRouterApiLogin = require('../../../../../src/controller/router/user/setRouterApiLogin');
+const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
+const SessionStateRegistrar = require('../../../../../src/infrastructure/SessionStateRegistrar');
+const InMemorySessionStateStore = require('../../../../../src/infrastructure/InMemorySessionStateStore');
+const InMemoryLoginAttemptStore = require('../../../../../src/infrastructure/InMemoryLoginAttemptStore');
+const StaticLoginAuthenticator = require('../../../../../src/infrastructure/StaticLoginAuthenticator');
+const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
+const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
+const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
+const { LoginService } = require('../../../../../src/application/user/command/LoginService');
+
+const extractCsrfToken = cookies => {
+  const cookie = (cookies || []).find(entry => entry.startsWith('csrf_token='));
+  if (!cookie) {
+    return '';
+  }
+  return cookie.split(';')[0].split('=')[1] || '';
+};
+
+class FixedMediaIdValueGenerator {
+  generate() {
+    return 'abcdefabcdefabcdefabcdefabcdefab';
+  }
+}
+
+describe('Cookie認証での /api/media 回帰テスト (medium)', () => {
+  const createCsrfReadyAgent = async app => {
+    const agent = request.agent(app);
+    const bootstrapResponse = await agent
+      .get('/screen/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1');
+    return {
+      agent,
+      csrfToken: extractCsrfToken(bootstrapResponse.headers['set-cookie']),
+    };
+  };
+
+  const createJpegBuffer = () => Buffer.from([
+    0xff, 0xd8, 0xff, 0xdb,
+    0x00, 0x43, 0x00, 0x08,
+    0x06, 0x06, 0x07, 0x06,
+  ]);
+
+  let sequelize;
+  let unitOfWork;
+  let mediaRepository;
+  let rootDirectory;
+
+  beforeEach(async () => {
+    rootDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'router-media-cookie-auth-'));
+    sequelize = new Sequelize('sqlite::memory:', { logging: false });
+    unitOfWork = new SequelizeUnitOfWork({ sequelize });
+    mediaRepository = new SequelizeMediaRepository({
+      sequelize,
+      unitOfWorkContext: unitOfWork,
+    });
+    await mediaRepository.sync();
+  });
+
+  afterEach(async () => {
+    fs.rmSync(rootDirectory, { recursive: true, force: true });
+    await sequelize.close();
+  });
+
+  const createApp = () => {
+    const app = express();
+    const router = express.Router();
+    const sessionStateStore = new InMemorySessionStateStore();
+    const loginAttemptStore = new InMemoryLoginAttemptStore();
+
+    setupMiddleware(app, { env: {}, dependencies: {} });
+
+    setRouterApiLogin({
+      router,
+      loginService: new LoginService({
+        loginAuthenticator: new StaticLoginAuthenticator({
+          username: 'admin',
+          password: 'secret',
+          userId: 'user-001',
+        }),
+        sessionStateRegistrar: new SessionStateRegistrar({ sessionStateStore }),
+        sessionTtlMs: 60_000,
+      }),
+      loginAttemptStore,
+    });
+
+    const authResolver = {
+      execute: jest.fn(async sessionToken => sessionStateStore.findUserIdBySessionToken(sessionToken) ?? null),
+    };
+
+    setRouterApiMediaPost({
+      router,
+      authResolver,
+      saveAdapter: new MulterDiskStorageContentUploadAdapter({ rootDirectory }),
+      mediaIdValueGenerator: new FixedMediaIdValueGenerator(),
+      mediaRepository,
+      unitOfWork,
+    });
+
+    app.use(router);
+
+    return {
+      app,
+      authResolver,
+    };
+  };
+
+  test('ログイン後は Cookie + CSRF ヘッダで /api/media に成功する', async () => {
+    const { app, authResolver } = createApp();
+    const { agent, csrfToken } = await createCsrfReadyAgent(app);
+
+    const loginResponse = await agent
+      .post('/api/login')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
+      .type('form')
+      .send({ username: 'admin', password: 'secret' });
+
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.body).toEqual({ code: 0 });
+    expect(loginResponse.headers['set-cookie']).toBeDefined();
+
+    const validJpegHeader = Buffer.from([0xff, 0xd8, 0xff, 0xdb]);
+
+    const response = await agent
+      .post('/api/media')
+      .set('origin', 'http://127.0.0.1')
+      .set('host', '127.0.0.1')
+      .set('x-csrf-token', csrfToken)
+      .field('title', 'cookie-auth-title')
+      .field('tags[0][category]', '作者')
+      .field('tags[0][label]', '山田')
+      .field('contents[0][position]', '1')
+      .attach('contents[0][file]', validJpegHeader, { filename: 'first.jpg', contentType: 'image/jpeg' });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      code: 0,
+      mediaId: 'abcdefabcdefabcdefabcdefabcdefab',
+    });
+
+    expect(authResolver.execute).toHaveBeenCalledTimes(1);
+    expect(authResolver.execute.mock.calls[0][0]).toMatch(/^[0-9a-f]{32}$/);
+  });
+});

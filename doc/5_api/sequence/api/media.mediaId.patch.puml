@@ -1,0 +1,32 @@
+@startuml
+
+title patch /api/media/{mediaId}
+
+participant Client
+box Controller Layer
+    participant Controller
+    participant Resolver
+end box
+box Infrastructure Layer
+    participant Infrastructure
+end box
+box Application Service Layer
+    participant Application
+end box
+
+Client -> Controller: リクエスト
+
+Controller -> Controller: リクエストバリデーションチェック
+
+Controller -> Resolver: コンテンツ保存
+Resolver -> Infrastructure: コンテンツ保存
+Resolver <-- Infrastructure: コンテンツID
+Controller <-- Resolver: コンテンツID
+
+Controller -> Application: メディア更新処理
+
+Controller -> Controller: レスポンス作成
+
+Client <-- Controller: 200 レスポンス
+
+@enduml

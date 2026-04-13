@@ -1,0 +1,13 @@
+@startuml
+
+participant クライアント
+box "サーバー" #LightSkyBlue
+    participant Controller
+    participant "Application\nService" AS Service
+    participant "Domain"
+    participant Repository
+    participant infrastructure
+end box
+database データベース
+
+@enduml

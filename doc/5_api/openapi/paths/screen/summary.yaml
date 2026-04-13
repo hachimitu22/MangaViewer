@@ -1,0 +1,67 @@
+# /summary
+get:
+  summary: メディア一覧画面
+  security:
+    - cookieAuth: []
+  parameters:
+    - name: summaryPage
+      description: メディア一覧ページ番号
+      in: query
+      schema:
+        type: integer
+      example: 1
+    - name: title
+      description: タイトルを部分一致で検索する文字列
+      in: query
+      schema:
+        type: string
+      example: ジョジョの奇妙な
+    - name: tags
+      description: 検索するタグ
+      in: query
+      schema:
+        type: array
+        items:
+          type: string
+      style: form
+      explode: true
+      examples:
+        single_category_and_single_tag:
+          summary: 1カテゴリーのタグを1つ指定
+          value: [作者名:荒木飛呂彦]
+        single_category_and_multi_tag:
+          summary: 1カテゴリーからタグを2つ指定
+          value: [ジャンル:バトル, ジャンル:アクション]
+        multi_category:
+          summary: 2カテゴリーからタグを1つずつ指定
+          value: [作者名:荒木飛呂彦, ジャンル:アクション]
+    - name: sort
+      description: メディアの並び順
+      in: query
+      schema:
+        type: string
+      examples:
+        date_asc:
+          summary: 登録の新しい順
+          value: date_asc
+        date_desc:
+          summary: 登録の古い順
+          value: date_desc
+        title_asc:
+          summary: タイトル名の昇順
+          value: title_asc
+        title_desc:
+          summary: タイトル名の降順
+          value: title_desc
+        random:
+          summary: ランダム
+          value: random
+  responses:
+    "200":
+      description: メディア一覧HTML
+      content:
+        text/html:
+          schema:
+            type: string
+    "301":
+      $ref: '../../openapi.yaml#/components/responses/RedirectError'

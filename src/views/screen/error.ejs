@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Hiragino Sans", "Yu Gothic UI", sans-serif;
+        background: #f5f6f8;
+        color: #1f2937;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        padding: 24px 24px 64px;
+        background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+      }
+      .page {
+        min-height: calc(100vh - 88px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .card {
+        width: min(100%, 720px);
+        background: #ffffff;
+        border: 1px solid #d1d5db;
+        border-radius: 20px;
+        padding: 40px 32px;
+        box-shadow: 0 18px 48px rgba(15, 23, 42, 0.1);
+      }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 9999px;
+        background: #fee2e2;
+        color: #b91c1c;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      h1 {
+        margin: 16px 0 12px;
+        font-size: clamp(30px, 4vw, 40px);
+      }
+      p {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.8;
+        color: #475569;
+      }
+      .navigation {
+        margin-top: 28px;
+        display: grid;
+        gap: 12px;
+      }
+      .navigation a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 48px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 700;
+        color: #1d4ed8;
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+      }
+      .navigation a:hover {
+        background: #dbeafe;
+      }
+      .subtext {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body>
+    <%- include('../partials/topNavigator', { currentPath: typeof currentPath === 'string' ? currentPath : '', currentUserId: typeof currentUserId === 'string' ? currentUserId : null }) %>
+    <div class="page">
+      <main class="card">
+        <span class="eyebrow">Error</span>
+        <h1><%= errorTitle %></h1>
+        <p><%= errorMessage %></p>
+        <nav class="navigation" aria-label="戻り先の候補">
+          <% navigationLinks.forEach((link) => { %>
+            <a href="<%= link.href %>"><%= link.label %></a>
+          <% }) %>
+          <a href="/screen/login">ログイン画面へ遷移する</a>
+        </nav>
+        <p class="subtext">認証失敗、対象データ未存在、予期しないエラーのいずれでも利用できる共通の案内ページです。</p>
+      </main>
+    </div>
+  </body>
+</html>

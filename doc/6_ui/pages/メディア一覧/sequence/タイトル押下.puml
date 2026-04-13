@@ -1,0 +1,14 @@
+@startuml
+
+title タイトル押下
+
+actor ユーザー
+participant ブラウザ
+participant サーバー
+
+ユーザー -> ブラウザ: タイトル押下
+ブラウザ -> サーバー: メディア一覧画面取得\nget /detail/{mediaId}
+ブラウザ <-- サーバー: メディア詳細画面HTML
+ユーザー <- ブラウザ: メディア詳細画面を表示
+
+@enduml

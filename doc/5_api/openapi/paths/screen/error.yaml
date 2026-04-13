@@ -1,0 +1,10 @@
+# /error
+get:
+  summary: エラー画面
+  responses:
+    "200":
+      description: エラー画面HTML
+      content:
+        text/html:
+          schema:
+            type: string
