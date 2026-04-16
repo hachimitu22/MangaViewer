@@ -6,6 +6,7 @@
   - [RegisterMediaService](./media/command/RegisterMediaService/readme.md)
   - [UpdateMediaService](./media/command/UpdateMediaService/readme.md)
   - [DeleteMediaService](./media/command/DeleteMediaService/readme.md)
+  - [ImportZipsService](./media/command/ImportZipsService/readme.md)
 - query
   - [SearchMediaService](./media/query/SearchMediaService/readme.md)
   - [GetMediaDetailService](./media/query/GetMediaDetailService/readme.md)
