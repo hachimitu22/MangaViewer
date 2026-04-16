@@ -63,6 +63,46 @@
 - 固定セッションの優先順位は `x-session-token` → `session_token` Cookie → 開発用固定セッションであり、その実行仕様自体は [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md) を参照する。
 - 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
 
+
+## 運用CLI仕様: `npm run import -- <dir>`
+
+### コマンド形式と引数
+- 実行形式: `npm run import -- <dir>`
+- `<dir>`: 取り込み対象 zip を格納したディレクトリのパス（必須）。
+- `<dir>` は絶対パス/相対パスのどちらも受け付ける。相対パスは実行時カレントディレクトリ基準で解決する。
+
+### 実行前検証
+- 実処理開始前に、以下を順に検証する。
+  1. 引数 `<dir>` が指定されていること。
+  2. `<dir>` が存在すること。
+  3. `<dir>` がディレクトリであること。
+  4. `<dir>` に対して読み取り権限があること。
+- 上記のいずれかを満たさない場合、zip 走査・登録処理は実行せずに異常終了する。
+
+### 終了コード規約
+- `0`: 正常終了（対象 zip がすべて成功、または対象 zip が 0 件）。
+- `1`: 処理実行は完了したが、1件以上の zip が失敗。
+- `2`: 実行前検証エラー（引数不正、フォルダ不存在、権限不足など）により未実行終了。
+
+### 実行ログ仕様（人間可読 + JSONL）
+- ログは同一実行で **人間可読ログ** と **JSONLログ** の 2 系統を出力する。
+- 人間可読ログ:
+  - 標準出力/標準エラーに、開始・進捗・zip単位結果・最終集計・終了コードを出力する。
+  - 運用者が CLI 画面だけで状態判断できる粒度で記録する。
+- JSONLログ:
+  - 1行1JSON の形式で出力する。
+  - 少なくとも `event`, `timestamp`, `zipName`, `status`, `reason`, `mediaId`（成功時）, `ignoredFiles`, `summary`（集計時）を含める。
+  - `event` は `start` / `zip_result` / `summary` / `finish` を使い分ける。
+
+### 0件 zip 時の扱い
+- `<dir>` 配下に zip が 0 件の場合は、処理対象なしとして正常終了（終了コード `0`）する。
+- 人間可読ログと JSONLログの双方に「対象 0 件」である旨の集計を出力する。
+
+### 一部失敗時の扱い
+- ある zip が失敗しても、後続 zip の取り込みは継続実行する（fail-fast にしない）。
+- 実行終了時に失敗件数を最終集計へ反映し、失敗件数が 1 件以上の場合は終了コード `1` を返す。
+- 各 zip の成否は個別に記録し、どの zip が失敗したかを追跡可能にする。
+
 ## 関連ドキュメント
 - [createApp 設計書](/doc/4_application/app/createApp/readme.md)
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
