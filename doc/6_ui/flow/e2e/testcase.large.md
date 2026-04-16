@@ -139,12 +139,23 @@
   - `/screen/queue` で `PUT/DELETE /api/favorite/{mediaId}` と `PUT/DELETE /api/queue/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
   - ナビゲーターから `POST /api/logout` が失敗した場合、表示中の画面にエラーメッセージを表示し、画面が操作不能にならない
 
+
+
+### TC-E2E-016: import 実行結果で成功分を一覧・詳細・ビューアーまで辿れる
+
+- 対応テスト: `__tests__/large/e2e/import/import-to-viewer.large.test.js`（新規追加対象）
+- 観点:
+  - import 実行後、成功したメディアが `/screen/summary` 一覧に表示され、`/screen/detail/:mediaId` と `/screen/viewer/:mediaId/:mediaPage` へ遷移できる
+  - 同名タイトルで複数メディア（例: 画像主体メディアと動画主体メディア）を同時に import した場合でも、一覧上で別メディアとして共存し、それぞれの詳細/ビューアー表示が崩れない
+  - import 対象の一部が失敗した場合でも、成功したメディアは一覧・詳細・ビューアーで閲覧可能なまま維持される
+
 ## 判定基準
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
 - `POST /api/login`, `POST /api/media`, `PATCH/DELETE /api/media/{mediaId}`, `PUT/DELETE /api/favorite/{mediaId}`, `PUT/DELETE /api/queue/{mediaId}`, `POST /api/logout` の異常系で、画面遷移ではなく画面内エラーメッセージ表示と再操作可能性が満たされること
 - セッション状態の開始/終了が期待どおりであること
 - 操作結果（お気に入り・あとで見る等）が画面表示に反映されること
+- import の部分成功時に、失敗対象のみがエラーとして扱われ、成功対象の閲覧導線（一覧→詳細→ビューアー）が維持されること
 
 ## メンテナンス方針
 
