@@ -100,6 +100,8 @@
   - zip 単位ログの必須キー（`zipName`, `status`, `ignoredFiles`）が常に存在する。
   - `status=SUCCESS` の行は `mediaId` を持ち、`reason` は未設定または空である。
   - `status=FAILED` の行は `reason` を持ち、`mediaId` は未設定である。
+  - `status=FAILED` の `reason` は `識別子` または `識別子: 任意詳細` の形式である。
+  - `reason` の識別子は大文字スネークケース（`[A-Z0-9_]+`）で、`NO_IMAGES` / `SIZE_LIMIT_EXCEEDED` / `INVALID_ZIP` / `IO_ERROR` の採用語彙に一致する。
   - 配列キー `ignoredFiles` は常に配列型である（空配列を許容）。
   - 集計値（成功/失敗件数）が zip 単位ログ件数と矛盾しない。
 
