@@ -58,7 +58,7 @@ struct ImportZipsSummary {
 struct ImportZipsOutput #pink {
     + zip単位結果一覧 : array<ImportZipResult>
     + 全体サマリ : ImportZipsSummary
-    + 実行結果種別 : enum(SUCCESS, PARTIAL_FAILURE, INVALID_INPUT)
+    + 実行結果種別 : enum(SUCCESS, PARTIAL_FAILURE, INVALID_INPUT, INVALID_INPUT_RUN_ZIP_COUNT_LIMIT_EXCEEDED)
 }
 
 ImportZipsOutput o- ImportZipResult
@@ -70,7 +70,8 @@ ImportZipsOutput o- ImportZipsSummary
 - 実行結果種別:
   - `SUCCESS`: 全 zip 成功、または対象 zip が 0 件。
   - `PARTIAL_FAILURE`: 1件以上の zip が失敗。
-  - `INVALID_INPUT`: 入力契約（対象フォルダ未指定、上限値不正など）を満たさず実行不可。
+  - `INVALID_INPUT`: 入力契約（対象フォルダ未指定、上限値不正、ログ出力先不正など）を満たさず実行不可。
+  - `INVALID_INPUT_RUN_ZIP_COUNT_LIMIT_EXCEEDED`: `1実行あたり最大zip処理件数` の上限超過により、実行全体を開始前に拒否。
 
 
 ## 対象 zip が 0 件のときの結果
@@ -83,7 +84,7 @@ ImportZipsOutput o- ImportZipsSummary
 - 画像以外のファイルは取り込み対象外として無視する。
 - 画像が 0 件の zip は取り込み失敗とする。
 - `1実行あたり最大zip処理件数` を超過した入力は**実行全体を拒否**し、zip 処理を開始しない。
-  - このとき `実行結果種別=INVALID_INPUT` とし、`zip単位結果一覧=[]` / `全体サマリ=0件` を返す。
+  - このとき `実行結果種別=INVALID_INPUT_RUN_ZIP_COUNT_LIMIT_EXCEEDED` とし、`zip単位結果一覧=[]` / `全体サマリ=0件` を返す。
 
 ## 並び順ルール
 - zip の処理順は、**zip ファイル名の自然順（Natural Sort）**で決定する（決定的順序）。
@@ -119,8 +120,7 @@ ImportZipsOutput o- ImportZipsSummary
 - `NO_IMAGES`: 画像ファイルが 0 件で取り込み不可。
 - `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED`: zipごとの最大画像数の上限超過。
 - `IMAGE_FILE_SIZE_LIMIT_EXCEEDED`: 画像ファイルサイズ上限超過。
-- `RUN_ZIP_COUNT_LIMIT_EXCEEDED`: 1実行あたり最大zip処理件数の上限超過。
 - `INVALID_ZIP`: zip 破損や非対応フォーマット等で展開不可。
 - `IO_ERROR`: ファイルシステム I/O 失敗（読取/書込/移動/削除など）。
 
-上記 6 つを **採用識別子** とし、今後の失敗理由は原則この分類規約に従って記録する。
+上記 5 つを **採用識別子** とし、今後の失敗理由は原則この分類規約に従って記録する。

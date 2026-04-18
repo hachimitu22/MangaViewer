@@ -105,7 +105,7 @@
   - `status=SUCCESS` の行は `mediaId` を持ち、`reason` は未設定または空である。
   - `status=FAILED` の行は `reason` を持ち、`mediaId` は未設定である。
   - `status=FAILED` の `reason` は `識別子` または `識別子: 任意詳細` の形式である。
-  - `reason` の識別子は大文字スネークケース（`[A-Z0-9_]+`）で、`NO_IMAGES` / `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` / `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` / `RUN_ZIP_COUNT_LIMIT_EXCEEDED` / `INVALID_ZIP` / `IO_ERROR` の採用語彙に一致する。
+  - `reason` の識別子は大文字スネークケース（`[A-Z0-9_]+`）で、`NO_IMAGES` / `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` / `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` / `INVALID_ZIP` / `IO_ERROR` の採用語彙に一致する。
   - 配列キー `ignoredFiles` は常に配列型である（空配列を許容）。
   - 集計値（成功/失敗件数）が zip 単位ログ件数と矛盾しない。
 
@@ -166,8 +166,7 @@
 - **結果**
   - ケースA/B は受理され、件数矛盾なく処理される。
   - ケースC は**実行全体を拒否**し、zip 処理を開始しない。
-  - `実行結果種別=INVALID_INPUT` / `zip単位結果一覧=[]` / `全体サマリ=0件` を返す。
-  - 拒否理由を記録する場合、`reason` 識別子は `RUN_ZIP_COUNT_LIMIT_EXCEEDED` と一致する。
+  - `実行結果種別=INVALID_INPUT_RUN_ZIP_COUNT_LIMIT_EXCEEDED` / `zip単位結果一覧=[]` / `全体サマリ=0件` を返す。
   - 拒否時に永続化・作業領域への副作用を残さない。
 
 ## medium テスト方針
