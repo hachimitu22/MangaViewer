@@ -53,7 +53,7 @@ struct ImportZipsSummary {
 struct ImportZipsOutput #pink {
     + zip単位結果一覧 : array<ImportZipResult>
     + 全体サマリ : ImportZipsSummary
-    + 終了コード : number
+    + 実行結果種別 : enum(SUCCESS, PARTIAL_FAILURE, INVALID_INPUT)
 }
 
 ImportZipsOutput o- ImportZipResult
@@ -62,9 +62,15 @@ ImportZipsOutput o- ImportZipsSummary
 
 - zip単位結果: 各 zip の成功/失敗、無視ファイル、失敗理由、mediaId を返す。
 - 全体サマリ: 実行全体の成功件数・失敗件数を返す。
-- 終了コード:
-  - `0`: 全 zip 成功
-  - `1`: 1件以上失敗
+- 実行結果種別:
+  - `SUCCESS`: 全 zip 成功、または対象 zip が 0 件。
+  - `PARTIAL_FAILURE`: 1件以上の zip が失敗。
+  - `INVALID_INPUT`: 入力契約（対象フォルダ未指定、上限値不正など）を満たさず実行不可。
+
+## 終了コード
+- `ImportZipsService` は数値終了コードを返さない。
+- 本サービスの責務はユースケース結果（`SUCCESS` / `PARTIAL_FAILURE` / `INVALID_INPUT`）の返却までとする。
+- 数値終了コードが必要な場合は、呼び出し側が本結果種別を用いて規約に従い判定する。
 
 ## 業務ルール
 - 同名タイトルは許容する（タイトル重複で失敗にしない）。
