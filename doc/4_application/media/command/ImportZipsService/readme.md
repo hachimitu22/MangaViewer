@@ -23,17 +23,17 @@ struct ImportZipsInput #pink {
     + zipごとの最大画像数 : number
     + 画像ファイルの最大バイト数 : number
     + 1実行あたり最大zip処理件数 : number
-    + ログ出力先 : string
+    + ログイベント出力ポート : ImportZipsEventLogger
 }
 ```
 
 - 対象フォルダ: 取り込み対象 zip を探索するディレクトリ。
   - 探索対象は**対象フォルダ直下のみ**とし、サブフォルダ配下の zip は取り込み対象外として無視する。
 - 各上限値: 異常な入力による過負荷を防ぐためのガード。
-- ログ出力先: zip ごとの成否および集計結果を出力する先。
+- ログイベント出力ポート: zip ごとの成否および集計結果などのイベントを通知する依存（例: `ImportZipsEventLogger`）。
 
 ### 入力契約の検証責務
-- 入力契約（対象フォルダ未指定、上限値不正、ログ出力先不正など）の検証は `ImportZipsService` の責務とする。
+- 入力契約（対象フォルダ未指定、上限値不正など）の検証は `ImportZipsService` の責務とする。
 - 入力契約違反時は zip 処理を開始せず、`実行結果種別=INVALID_INPUT` を返す。
 
 ## 出力
@@ -71,8 +71,13 @@ ImportZipsOutput o- ImportZipsSummary
 - 実行結果種別:
   - `SUCCESS`: 全 zip 成功、または対象 zip が 0 件。
   - `PARTIAL_FAILURE`: 1件以上の zip が失敗。
-  - `INVALID_INPUT`: 入力契約（対象フォルダ未指定、上限値不正、ログ出力先不正など）を満たさず実行不可。
+  - `INVALID_INPUT`: 入力契約（対象フォルダ未指定、上限値不正など）を満たさず実行不可。
   - `INVALID_INPUT_RUN_ZIP_COUNT_LIMIT_EXCEEDED`: `1実行あたり最大zip処理件数` の上限超過により、実行全体を開始前に拒否。
+
+### 出力責務の境界
+- `ImportZipsService` の `実行結果` は、業務上必要な値（`zip単位結果一覧`・`全体サマリ`・`実行結果種別`）に限定する。
+- JSONL 形式への変換やファイルパス解決・ファイル書き込みなどの I/O 仕様は、`src/controller` または `src/infrastructure` 側の責務とする。
+- そのためユースケース層では、ログ保存形式（JSONL など）や出力先パスを公開契約に含めない。
 
 
 ## 対象 zip が 0 件のときの結果
