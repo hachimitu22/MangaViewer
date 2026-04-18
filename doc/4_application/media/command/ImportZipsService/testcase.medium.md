@@ -8,7 +8,7 @@
 - [ログに zip 名・成否・無視ファイル一覧が出力される](#ログに-zip-名成否無視ファイル一覧が出力される)
 - [JSONL ログのキー整合性を満たす](#jsonl-ログのキー整合性を満たす)
 - [zipごとの最大画像数の境界値で失敗隔離とロールバックを満たす](#zipごとの最大画像数の境界値で失敗隔離とロールバックを満たす)
-- [画像ファイルの最大バイト数の境界値で reason 分類とログ整合を満たす](#画像ファイルの最大バイト数の境界値で-reason-分類とログ整合を満たす)
+- [画像ファイルの最大バイト数の境界値で reasonCode 分類とログ整合を満たす](#画像ファイルの最大バイト数の境界値で-reasoncode-分類とログ整合を満たす)
 - [1実行あたり最大zip処理件数の境界値で実行全体ポリシーを満たす](#1実行あたり最大zip処理件数の境界値で実行全体ポリシーを満たす)
 
 ---
@@ -102,10 +102,10 @@
   - ImportZipsService を実行し、出力された JSONL を1行ずつ JSON として読み込む。
 - **結果**
   - zip 単位ログの必須キー（`zipName`, `status`, `ignoredFiles`）が常に存在する。
-  - `status=SUCCESS` の行は `mediaId` を持ち、`reason` は未設定または空である。
-  - `status=FAILED` の行は `reason` を持ち、`mediaId` は未設定である。
-  - `status=FAILED` の `reason` は `識別子` または `識別子: 任意詳細` の形式である。
-  - `reason` の識別子は大文字スネークケース（`[A-Z0-9_]+`）で、`NO_IMAGES` / `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` / `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` / `INVALID_ZIP` / `IO_ERROR` の採用語彙に一致する。
+  - `status=SUCCESS` の行は `mediaId` を持ち、`reasonCode`/`reasonDetail` は未設定または空である。
+  - `status=FAILED` の行は `reasonCode` を持ち、`mediaId` は未設定である。
+  - `status=FAILED` の `reasonCode` は採用列挙値のいずれかに一致する。
+  - `reasonDetail` は任意項目とし、存在する場合は補助情報（対象ファイル名など）を含められる。
   - 配列キー `ignoredFiles` は常に配列型である（空配列を許容）。
   - 集計値（成功/失敗件数）が zip 単位ログ件数と矛盾しない。
 
@@ -127,12 +127,12 @@
   - ケースA/B は成功し、メディア永続化が完了する。
   - ケースC は失敗し、当該 zip の永続化は行われない（zip 単位原子性）。
   - ケースC に対応する一時展開物・中間生成物は残らない（ロールバック）。
-  - ケースC の `reason` は `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` で分類一致する。
+  - ケースC の `reasonCode` は `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` と完全一致する（`reasonDetail` は任意）。
   - ケースC の失敗があっても他 zip の処理継続性が保たれる。
 
 ---
 
-### 画像ファイルの最大バイト数の境界値で reason 分類とログ整合を満たす
+### 画像ファイルの最大バイト数の境界値で reasonCode 分類とログ整合を満たす
 
 - **前提**
   - `画像ファイルの最大バイト数=MAX_IMAGE_BYTES` を設定する。
@@ -145,9 +145,9 @@
   - ImportZipsService を実行し、zip 単位結果と JSONL を照合する。
 - **結果**
   - ケースA/B は成功し、`status=SUCCESS` と `mediaId` が記録される。
-  - ケースC は失敗し、`status=FAILED` と `reason` が記録される。
-  - ケースC の `reason` 識別子は `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` と一致する。
-  - `reason` は文字列部分一致ではなく分類識別子一致で検証する。
+  - ケースC は失敗し、`status=FAILED` と `reasonCode` が記録される（`reasonDetail` は任意）。
+  - ケースC の `reasonCode` は `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` と完全一致する。
+  - `reasonDetail` は補助文字列レベル（存在/非存在や部分一致）で検証する。
   - ケースC 失敗時もケースA/B の永続化結果は維持される（失敗隔離）。
 
 ---

@@ -63,7 +63,8 @@
 
 **期待結果**
 - その zip の結果は `FAILED` になる。
-- `理由` は文字列部分一致ではなく分類識別子で判定し、期待値は `NO_IMAGES` とする（任意詳細の有無は許容）。
+- `reasonCode` は `NO_IMAGES` と完全一致で判定する。
+- `reasonDetail` は存在/非存在の許容範囲で検証する（補助文字列の部分一致は任意）。
 - 失敗 zip に対する永続化は行われない（zip 単位原子性）。
 
 ### 6) 全成功時は `SUCCESS` を返す
@@ -136,8 +137,9 @@
 
 **期待結果**
 - `FAILED`（拒否）になる。
-- `reason` は分類識別子で `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` と一致する。
-- `reason` 判定はメッセージ本文の部分一致に依存しない。
+- `reasonCode` は `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` と完全一致する。
+- `reasonDetail` は存在/非存在の許容範囲で検証する（本文の完全一致は要求しない）。
+- `reasonDetail` 判定はメッセージ本文の完全一致に依存しない。
 
 ### 12) `画像ファイルの最大バイト数` が `上限-1` のとき許可される
 **前提**
@@ -173,8 +175,9 @@
 
 **期待結果**
 - `FAILED`（拒否）になる。
-- `reason` は分類識別子で `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` と一致する。
-- `reason` 判定はメッセージ本文の部分一致に依存しない。
+- `reasonCode` は `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` と完全一致する。
+- `reasonDetail` は存在/非存在の許容範囲で検証する（本文の完全一致は要求しない）。
+- `reasonDetail` 判定はメッセージ本文の完全一致に依存しない。
 
 ### 15) `1実行あたり最大zip処理件数` が `上限-1` のとき受理される
 **前提**

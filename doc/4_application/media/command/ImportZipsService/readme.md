@@ -46,7 +46,8 @@ struct ImportZipResult {
     + 成否 : enum(SUCCESS, FAILED)
     + mediaId : string?
     + 無視ファイル一覧 : array<string>
-    + 理由 : string?
+    + reasonCode : enum(NO_IMAGES, ZIP_IMAGE_COUNT_LIMIT_EXCEEDED, IMAGE_FILE_SIZE_LIMIT_EXCEEDED, INVALID_ZIP, IO_ERROR)
+    + reasonDetail : string?
 }
 
 struct ImportZipsSummary {
@@ -65,7 +66,7 @@ ImportZipsOutput o- ImportZipResult
 ImportZipsOutput o- ImportZipsSummary
 ```
 
-- zip単位結果: 各 zip の成功/失敗、無視ファイル、失敗理由、mediaId を返す。
+- zip単位結果: 各 zip の成功/失敗、無視ファイル、失敗理由コード（`reasonCode`）、任意詳細（`reasonDetail`）、mediaId を返す。
 - 全体サマリ: 実行全体の成功件数・失敗件数を返す。
 - 実行結果種別:
   - `SUCCESS`: 全 zip 成功、または対象 zip が 0 件。
@@ -105,22 +106,21 @@ ImportZipsOutput o- ImportZipsSummary
 - zip名
 - 成否
 - 無視ファイル一覧
-- 理由（失敗理由、または補足）
+- reasonCode（失敗理由の分類コード）
+- reasonDetail（失敗理由の補足。必要時のみ）
 - mediaId（成功時のみ）
 
-### `reason` の分類規約
-- `reason` は、**分類識別子（必須）** と **任意詳細（任意）** の 2 要素で表現する。
-- 形式は `識別子` または `識別子: 詳細` とする。
-  - 例: `NO_IMAGES`
-  - 例: `IMAGE_FILE_SIZE_LIMIT_EXCEEDED: page-001.png (12,345,678 bytes)`
-- 識別子は大文字スネークケース（`[A-Z0-9_]+`）を採用し、機械判定可能な固定語彙として扱う。
-- 詳細は人間向け補足として扱い、テストの主要期待値は識別子で判定する。
+### `reasonCode` / `reasonDetail` の規約
+- `reasonCode` は**必須**とし、失敗理由の分類識別子を保持する。
+- `reasonDetail` は**任意**とし、人間向け補足（対象ファイル名、超過値など）を保持する。
+- 表示用文言は `reasonDetail` または呼び出し側のメッセージマッピングで生成する。
+- テストの主要期待値は `reasonCode` の完全一致で判定する。
 
-#### 候補と採用識別子
+#### `reasonCode` の採用列挙値
 - `NO_IMAGES`: 画像ファイルが 0 件で取り込み不可。
 - `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED`: zipごとの最大画像数の上限超過。
 - `IMAGE_FILE_SIZE_LIMIT_EXCEEDED`: 画像ファイルサイズ上限超過。
 - `INVALID_ZIP`: zip 破損や非対応フォーマット等で展開不可。
 - `IO_ERROR`: ファイルシステム I/O 失敗（読取/書込/移動/削除など）。
 
-上記 5 つを **採用識別子** とし、今後の失敗理由は原則この分類規約に従って記録する。
+上記 5 つを `reasonCode` の採用列挙値とし、今後の失敗理由は原則この分類規約に従って記録する。
