@@ -19,6 +19,7 @@
 
 - **前提**
   - 実ファイル I/O で空の対象フォルダを用意する。
+  - 対象フォルダ直下には zip を置かず、サブフォルダ配下には zip を配置しておく。
   - ログ出力先（JSONL）を指定する。
 - **操作**
   - ImportZipsService を実行する。
@@ -27,6 +28,7 @@
   - `zip単位結果一覧=[]` が返る。
   - `全体サマリ` は `対象zip件数=0 / 成功件数=0 / 失敗件数=0` が返る。
   - `実行結果種別=SUCCESS` が返る。
+  - サブフォルダ配下の zip は探索対象外として無視される。
   - ログファイルは作成される（ヘッダ不要、必要行のみ）。
 
 ---
@@ -103,7 +105,7 @@
   - `status=SUCCESS` の行は `mediaId` を持ち、`reason` は未設定または空である。
   - `status=FAILED` の行は `reason` を持ち、`mediaId` は未設定である。
   - `status=FAILED` の `reason` は `識別子` または `識別子: 任意詳細` の形式である。
-  - `reason` の識別子は大文字スネークケース（`[A-Z0-9_]+`）で、`NO_IMAGES` / `SIZE_LIMIT_EXCEEDED` / `INVALID_ZIP` / `IO_ERROR` の採用語彙に一致する。
+  - `reason` の識別子は大文字スネークケース（`[A-Z0-9_]+`）で、`NO_IMAGES` / `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` / `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` / `RUN_ZIP_COUNT_LIMIT_EXCEEDED` / `INVALID_ZIP` / `IO_ERROR` の採用語彙に一致する。
   - 配列キー `ignoredFiles` は常に配列型である（空配列を許容）。
   - 集計値（成功/失敗件数）が zip 単位ログ件数と矛盾しない。
 
@@ -125,7 +127,7 @@
   - ケースA/B は成功し、メディア永続化が完了する。
   - ケースC は失敗し、当該 zip の永続化は行われない（zip 単位原子性）。
   - ケースC に対応する一時展開物・中間生成物は残らない（ロールバック）。
-  - ケースC の `reason` は `SIZE_LIMIT_EXCEEDED` で分類一致する。
+  - ケースC の `reason` は `ZIP_IMAGE_COUNT_LIMIT_EXCEEDED` で分類一致する。
   - ケースC の失敗があっても他 zip の処理継続性が保たれる。
 
 ---
@@ -144,7 +146,7 @@
 - **結果**
   - ケースA/B は成功し、`status=SUCCESS` と `mediaId` が記録される。
   - ケースC は失敗し、`status=FAILED` と `reason` が記録される。
-  - ケースC の `reason` 識別子は `SIZE_LIMIT_EXCEEDED` と一致する。
+  - ケースC の `reason` 識別子は `IMAGE_FILE_SIZE_LIMIT_EXCEEDED` と一致する。
   - `reason` は文字列部分一致ではなく分類識別子一致で検証する。
   - ケースC 失敗時もケースA/B の永続化結果は維持される（失敗隔離）。
 
@@ -165,7 +167,7 @@
   - ケースA/B は受理され、件数矛盾なく処理される。
   - ケースC は**実行全体を拒否**し、zip 処理を開始しない。
   - `実行結果種別=INVALID_INPUT` / `zip単位結果一覧=[]` / `全体サマリ=0件` を返す。
-  - 拒否理由を記録する場合、`reason` 識別子は `SIZE_LIMIT_EXCEEDED` で統一する。
+  - 拒否理由を記録する場合、`reason` 識別子は `RUN_ZIP_COUNT_LIMIT_EXCEEDED` と一致する。
   - 拒否時に永続化・作業領域への副作用を残さない。
 
 ## medium テスト方針
