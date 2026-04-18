@@ -67,6 +67,13 @@ ImportZipsOutput o- ImportZipsSummary
   - `PARTIAL_FAILURE`: 1件以上の zip が失敗。
   - `INVALID_INPUT`: 入力契約（対象フォルダ未指定、上限値不正など）を満たさず実行不可。
 
+
+## 対象 zip が 0 件のときの結果
+- `zip単位結果一覧`: `[]`（空配列）。
+- `全体サマリ`: `対象zip件数=0 / 成功件数=0 / 失敗件数=0`。
+- `実行結果種別`: `SUCCESS`。
+- `終了コード`: 本サービスは数値終了コードを返さないため `該当なし`（必要な場合は呼び出し側が `SUCCESS` を受けて規約に従い判定する）。
+
 ## 終了コード
 - `ImportZipsService` は数値終了コードを返さない。
 - 本サービスの責務はユースケース結果（`SUCCESS` / `PARTIAL_FAILURE` / `INVALID_INPUT`）の返却までとする。
