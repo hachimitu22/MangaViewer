@@ -81,8 +81,9 @@
 
 ### 実行ログ仕様（人間可読 + JSONL）
 - ログは同一実行で **人間可読ログ** と **JSONLログ** の 2 系統を出力する。
-- CLI は `ImportZipsService` へログイベント出力ポート実装（例: JSONL writer を実装した `ImportZipsEventLogger`）を注入する。
-- ユースケース層はログイベントをポートへ通知し、JSONL 形式への整形・出力先ファイルパスの解決・書き込みは `src/controller` または `src/infrastructure` が担う。
+- `ImportZipsService` は業務結果（`zip単位結果一覧`・`全体サマリ`・`実行結果種別`）のみを返却する。
+- CLI は戻り値を受け取り、`AppLogger` を用いてログ出力を行う。
+- JSONL 形式への整形・出力先ファイルパスの解決・ファイル書き込みは `src/controller` または `src/infrastructure` が担う。
 - 人間可読ログ:
   - 標準出力/標準エラーに、開始・進捗・zip単位結果・最終集計・終了コードを出力する。
   - 運用者が CLI 画面だけで状態判断できる粒度で記録する。
