@@ -23,14 +23,12 @@ struct ImportZipsInput #pink {
     + zipごとの最大画像数 : number
     + 画像ファイルの最大バイト数 : number
     + 1実行あたり最大zip処理件数 : number
-    + ログイベント出力ポート : ImportZipsEventLogger
 }
 ```
 
 - 対象フォルダ: 取り込み対象 zip を探索するディレクトリ。
   - 探索対象は**対象フォルダ直下のみ**とし、サブフォルダ配下の zip は取り込み対象外として無視する。
 - 各上限値: 異常な入力による過負荷を防ぐためのガード。
-- ログイベント出力ポート: zip ごとの成否および集計結果などのイベントを通知する依存（例: `ImportZipsEventLogger`）。
 
 ### 入力契約の検証責務
 - 入力契約（対象フォルダ未指定、上限値不正など）の検証は `ImportZipsService` の責務とする。
@@ -76,8 +74,9 @@ ImportZipsOutput o- ImportZipsSummary
 
 ### 出力責務の境界
 - `ImportZipsService` の `実行結果` は、業務上必要な値（`zip単位結果一覧`・`全体サマリ`・`実行結果種別`）に限定する。
+- CLI は戻り値を受け取り、`AppLogger` を用いて人間可読ログおよび JSONL ログへ整形・出力する。
 - JSONL 形式への変換やファイルパス解決・ファイル書き込みなどの I/O 仕様は、`src/controller` または `src/infrastructure` 側の責務とする。
-- そのためユースケース層では、ログ保存形式（JSONL など）や出力先パスを公開契約に含めない。
+- そのためユースケース層では、ログ保存形式（JSONL など）や出力先パス、ロガー依存を公開契約に含めない。
 
 
 ## 対象 zip が 0 件のときの結果
