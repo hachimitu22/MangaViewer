@@ -27,6 +27,10 @@
   - [GetFavoriteSummariesService](./user/query/GetFavoriteSummariesService/readme.md)
   - [GetQueueService](./user/query/GetQueueService/readme.md)
 
+
+### アプリ実行
+- [ImportZips](./app/ImportZips/readme.md)
+
 ## 実行コンテキスト設計方針
 - 境界は Application Service の `execute` で開始する。
 - Repository は実行コンテキストを引数で受け取らず、コンテキストオブジェクトから取得する。
