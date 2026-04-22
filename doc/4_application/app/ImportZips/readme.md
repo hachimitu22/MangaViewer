@@ -9,10 +9,13 @@
 - `scripts/ImportZips.js`
 - `package.json` (`import` script 追加)
 - 必要に応じて `src/app/createDependencies.js` から利用可能な依存オブジェクトを参照する。
+- `src/application/app/importZips/ImportZipsPolicy.js`（公開判定ロジック）
 
 ## 設計方針
 - **ImportZipsService は新設しない**。
   - 理由: 本ユースケースの中核は「zip の検証・抽出・並び替え・ログ出力」という CLI 固有オーケストレーションであり、既存 `RegisterMediaService` の責務（1メディア登録）を再利用すれば十分なため。
+- small テストで検証する判定ロジックは、公開関数として `ImportZipsPolicy` へ切り出す。
+  - `scripts/ImportZips.js` は I/O・依存呼び出し・ログ出力に専念し、判定/計算ロジックを委譲する。
 - DB 操作は既存 `UnitOfWork` を利用し、zip 単位で登録を完了/失敗として扱う。
 - zip ごとの失敗は処理継続し、全体終了時にサマリを出力する。
 - `<dir>` の読取不能・不存在は全体即時失敗とする。
@@ -26,6 +29,7 @@
 ### 事前チェック
 - `<dir>` 未指定: usage を表示して終了コード3。
 - `<dir>` が存在しない / 読取不可: エラーログを出力して終了コード3。
+- `<dir>` がファイル（ディレクトリではない）: エラーログを出力して終了コード4。
 
 ### 探索対象
 - `<dir>` **直下のみ**を走査する（再帰なし）。
@@ -38,8 +42,8 @@
 - 解凍ライブラリがエラーを返した場合は失敗。
 - 暗号化 zip は非対応として失敗（暗号化であることをログ出力）。
 - zip 内の対象は **直下エントリのみ**（zip 内ディレクトリ配下は対象外）。
-- 画像拡張子判定のみで画像判定を行う。
-  - 許可拡張子: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`, `.bmp`, `.avif`, およびブラウザ表示可能拡張子。
+- 画像判定は拡張子で行う（大文字小文字は区別しない）。
+  - 許可拡張子: `.jpe`, `.jpeg`, `.png`, `.gif`, `.webp`, `.bmp`。
 - 画像以外のエントリは無視し、**ファイルごとに 1 行**ログを出力する。
 - 有効画像が 1 枚もなければ失敗。
 - 画像の破損チェックは ImportZips 側で実施し、1 枚でも破損があれば zip 全体を失敗。
@@ -70,10 +74,11 @@
   - `error`: 読み取り失敗、保存失敗、予期せぬ例外
 
 ### 5. 全体終了コード
-- 全件成功: 0
+- 全件成功: 0（zipが0件の場合も含む）
 - 一部成功: 1
 - 全件失敗: 2
 - 事前チェック失敗（引数不正 / 対象dir読取不可）: 3
+- 事前チェック失敗（対象がディレクトリではない）: 4
 
 ## シーケンス図
 
@@ -89,9 +94,12 @@ participant "Logger" as logger
 
 cli -> script: npm run import -- <dir>
 script -> fs: <dir> を検証
-alt <dir> 不正
+alt <dir> 未指定 / 不存在 / 読取不可
   script -> logger: error(usage / read error)
   script --> cli: exit 3
+else <dir> がファイル
+  script -> logger: error(ディレクトリではない)
+  script --> cli: exit 4
 else <dir> 正常
   script -> fs: 直下エントリ列挙
   loop 各エントリ
@@ -114,7 +122,7 @@ else <dir> 正常
     end
   end
   script -> logger: info(総件数/成功件数/失敗件数)
-  script --> cli: exit(全件成功=0 / 一部成功=1 / 全件失敗=2 / 事前チェック失敗=3)
+  script --> cli: exit(全件成功=0 / 一部成功=1 / 全件失敗=2 / 事前チェック失敗=3 / 対象がファイル=4)
 end
 @enduml
 ```
@@ -122,3 +130,4 @@ end
 ## 関連ドキュメント
 - [RegisterMediaService 設計書](/doc/4_application/media/command/RegisterMediaService/readme.md)
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
+- [ImportZipsPolicy 設計書](/doc/4_application/app/ImportZipsPolicy/readme.md)
