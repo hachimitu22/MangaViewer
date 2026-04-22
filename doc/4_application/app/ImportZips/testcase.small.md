@@ -15,6 +15,23 @@
 
 ---
 
+## smallテストの実装方針（公開API）
+- smallテストは `scripts/ImportZips.js` の内部（プライベート）関数を直接テストしない。
+- `ImportZips` の判定ロジックは、公開モジュール（例: `src/application/app/importZips/ImportZipsPolicy.js`）へ分離し、
+  その **公開関数** を small テスト対象にする。
+- `scripts/ImportZips.js` は I/O とオーケストレーションに専念し、判定ロジックは `ImportZipsPolicy` に委譲する。
+- medium/e2e では従来どおり CLI 全体の振る舞いを検証し、small と責務分担する。
+
+### 公開関数（想定）
+- `isSupportedImageExtension(filename: string): boolean`
+- `isTargetZipFilename(filename: string): boolean`
+- `isDirectZipEntry(entryName: string): boolean`
+- `sortEntryNamesByNaturalBasename(entryNames: string[]): string[]`
+- `decideExitCode({ successCount, failureCount }): 0 | 1 | 2`
+- `validateImportTarget({ hasArg, exists, readable, isDirectory }): { ok: boolean, exitCode?: 3 | 4, reason?: string }`
+
+---
+
 ## テストケース一覧
 - [S-EXT-01: `.jpe` は画像として受理する](#s-ext-01-jpe-は画像として受理する)
 - [S-EXT-02: `.jpeg` は画像として受理する](#s-ext-02-jpeg-は画像として受理する)
@@ -45,47 +62,47 @@
 
 ### S-EXT-01: `.jpe` は画像として受理する
 - **前提**: `sample.jpe`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-EXT-02: `.jpeg` は画像として受理する
 - **前提**: `sample.jpeg`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-EXT-03: `.png` は画像として受理する
 - **前提**: `sample.png`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-EXT-04: `.gif` は画像として受理する
 - **前提**: `sample.gif`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-EXT-05: `.webp` は画像として受理する
 - **前提**: `sample.webp`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-EXT-06: `.bmp` は画像として受理する
 - **前提**: `sample.bmp`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-EXT-07: 許可拡張子は大文字小文字を区別せず受理する
 - **前提**: `A.JPE`, `B.JPEG`, `C.PnG`, `D.GIF`, `E.WeBp`, `F.BMP`
-- **操作**: 各ファイル名を画像判定関数に入力する。
+- **操作**: 各ファイル名で `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: すべて `true` を返す。
 
 ### S-EXT-08: 許可外拡張子は画像として扱わない
 - **前提**: `sample.jpg`, `sample.avif`, `sample.txt`
-- **操作**: 各ファイル名を画像判定関数に入力する。
+- **操作**: 各ファイル名で `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: すべて `false` を返す。
 
 ### S-EXT-09: 拡張子なしは画像として扱わない
 - **前提**: `sample`
-- **操作**: 画像判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `false` を返す。
 
 ---
@@ -94,27 +111,27 @@
 
 ### S-ZIP-01: `.zip` は対象zipとして受理する
 - **前提**: `book.zip`
-- **操作**: zip判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isTargetZipFilename(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
 ### S-ZIP-02: `.ZIP` など大文字混在も対象zipとして受理する
 - **前提**: `A.ZIP`, `B.ZiP`
-- **操作**: zip判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isTargetZipFilename(filename)` を呼び出す。
 - **期待結果**: いずれも `true` を返す。
 
 ### S-ZIP-03: `.zipx` は対象zipとして扱わない
 - **前提**: `book.zipx`
-- **操作**: zip判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isTargetZipFilename(filename)` を呼び出す。
 - **期待結果**: `false` を返す。
 
 ### S-ENTRY-01: zip内の直下ファイルは処理対象に含める
 - **前提**: zipエントリ名 `1.jpeg`
-- **操作**: zip内対象判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isDirectZipEntry(entryName)` を呼び出す。
 - **期待結果**: 直下エントリとして対象扱いになる。
 
 ### S-ENTRY-02: zip内ディレクトリ配下ファイルは処理対象から除外する
 - **前提**: zipエントリ名 `pages/1.jpeg`
-- **操作**: zip内対象判定関数に入力する。
+- **操作**: `ImportZipsPolicy.isDirectZipEntry(entryName)` を呼び出す。
 - **期待結果**: 非対象扱いになる。
 
 ---
@@ -123,7 +140,7 @@
 
 ### S-SORT-01: basename 自然順で `1,2,10` になる
 - **前提**: `10.jpeg`, `2.jpeg`, `1.jpeg`
-- **操作**: 登録順序決定関数に入力する。
+- **操作**: `ImportZipsPolicy.sortEntryNamesByNaturalBasename(entryNames)` を呼び出す。
 - **期待結果**: `1.jpeg`, `2.jpeg`, `10.jpeg` の順で返る。
 
 ---
@@ -132,22 +149,22 @@
 
 ### S-EXIT-01: 成功=0件・失敗=0件なら終了コード0
 - **前提**: 成功件数0、失敗件数0。
-- **操作**: 終了コード決定関数に入力する。
+- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
 - **期待結果**: `0` を返す（zip 0件時の全件成功扱い）。
 
 ### S-EXIT-02: 成功あり・失敗なしなら終了コード0
 - **前提**: 成功件数1以上、失敗件数0。
-- **操作**: 終了コード決定関数に入力する。
+- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
 - **期待結果**: `0` を返す。
 
 ### S-EXIT-03: 成功あり・失敗ありなら終了コード1
 - **前提**: 成功件数1以上、失敗件数1以上。
-- **操作**: 終了コード決定関数に入力する。
+- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
 - **期待結果**: `1` を返す。
 
 ### S-EXIT-04: 成功なし・失敗ありなら終了コード2
 - **前提**: 成功件数0、失敗件数1以上。
-- **操作**: 終了コード決定関数に入力する。
+- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
 - **期待結果**: `2` を返す。
 
 ---
@@ -156,15 +173,15 @@
 
 ### S-PRE-01: 引数未指定は事前チェック失敗3
 - **前提**: `<dir>` 未指定。
-- **操作**: 事前チェック関数を実行する。
+- **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
 - **期待結果**: 失敗区分「引数不正」として終了コード `3` を返す。
 
 ### S-PRE-02: 対象dir不存在/読取不可は事前チェック失敗3
 - **前提**: `<dir>` が不存在または読取不可。
-- **操作**: 事前チェック関数を実行する。
+- **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
 - **期待結果**: 失敗区分「対象dir読取不可」として終了コード `3` を返す。
 
 ### S-PRE-03: 対象がファイルなら事前チェック失敗4
 - **前提**: `<dir>` が存在するファイル（ディレクトリではない）。
-- **操作**: 事前チェック関数を実行する。
+- **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
 - **期待結果**: 失敗区分「対象がディレクトリではない」として終了コード `4` を返す。

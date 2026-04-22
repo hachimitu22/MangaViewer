@@ -9,10 +9,13 @@
 - `scripts/ImportZips.js`
 - `package.json` (`import` script 追加)
 - 必要に応じて `src/app/createDependencies.js` から利用可能な依存オブジェクトを参照する。
+- `src/application/app/importZips/ImportZipsPolicy.js`（公開判定ロジック）
 
 ## 設計方針
 - **ImportZipsService は新設しない**。
   - 理由: 本ユースケースの中核は「zip の検証・抽出・並び替え・ログ出力」という CLI 固有オーケストレーションであり、既存 `RegisterMediaService` の責務（1メディア登録）を再利用すれば十分なため。
+- small テストで検証する判定ロジックは、公開関数として `ImportZipsPolicy` へ切り出す。
+  - `scripts/ImportZips.js` は I/O・依存呼び出し・ログ出力に専念し、判定/計算ロジックを委譲する。
 - DB 操作は既存 `UnitOfWork` を利用し、zip 単位で登録を完了/失敗として扱う。
 - zip ごとの失敗は処理継続し、全体終了時にサマリを出力する。
 - `<dir>` の読取不能・不存在は全体即時失敗とする。
