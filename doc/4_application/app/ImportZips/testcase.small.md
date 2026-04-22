@@ -33,12 +33,12 @@
 ---
 
 ## テストケース一覧
-- [S-EXT-01: `.jpe` は画像として受理する](#s-ext-01-jpe-は画像として受理する)
+- [S-EXT-01: `.jpg` は画像として受理する](#s-ext-01-jpg-は画像として受理する)
 - [S-EXT-02: `.jpeg` は画像として受理する](#s-ext-02-jpeg-は画像として受理する)
 - [S-EXT-03: `.png` は画像として受理する](#s-ext-03-png-は画像として受理する)
 - [S-EXT-04: `.gif` は画像として受理する](#s-ext-04-gif-は画像として受理する)
 - [S-EXT-05: `.webp` は画像として受理する](#s-ext-05-webp-は画像として受理する)
-- [S-EXT-06: `.bmp` は画像として受理する](#s-ext-06-bmp-は画像として受理する)
+- [S-EXT-06: 許可外拡張子（`.bmp`）は画像として扱わない](#s-ext-06-許可外拡張子bmpは画像として扱わない)
 - [S-EXT-07: 許可拡張子は大文字小文字を区別せず受理する](#s-ext-07-許可拡張子は大文字小文字を区別せず受理する)
 - [S-EXT-08: 許可外拡張子は画像として扱わない](#s-ext-08-許可外拡張子は画像として扱わない)
 - [S-EXT-09: 拡張子なしは画像として扱わない](#s-ext-09-拡張子なしは画像として扱わない)
@@ -60,8 +60,8 @@
 
 ## 拡張子判定
 
-### S-EXT-01: `.jpe` は画像として受理する
-- **前提**: `sample.jpe`
+### S-EXT-01: `.jpg` は画像として受理する
+- **前提**: `sample.jpg`
 - **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
@@ -85,18 +85,18 @@
 - **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: `true` を返す。
 
-### S-EXT-06: `.bmp` は画像として受理する
+### S-EXT-06: 許可外拡張子（`.bmp`）は画像として扱わない
 - **前提**: `sample.bmp`
 - **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
+- **期待結果**: `false` を返す。
 
 ### S-EXT-07: 許可拡張子は大文字小文字を区別せず受理する
-- **前提**: `A.JPE`, `B.JPEG`, `C.PnG`, `D.GIF`, `E.WeBp`, `F.BMP`
+- **前提**: `A.JPG`, `B.JPEG`, `C.PnG`, `D.GIF`, `E.WeBp`
 - **操作**: 各ファイル名で `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: すべて `true` を返す。
 
 ### S-EXT-08: 許可外拡張子は画像として扱わない
-- **前提**: `sample.jpg`, `sample.avif`, `sample.txt`
+- **前提**: `sample.bmp`, `sample.avif`, `sample.txt`
 - **操作**: 各ファイル名で `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
 - **期待結果**: すべて `false` を返す。
 

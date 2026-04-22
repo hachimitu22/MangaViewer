@@ -5,8 +5,8 @@
 - 1ケース1振る舞いで、期待値は観測可能な戻り値として固定する。
 
 ## isSupportedImageExtension
-### P-EXT-01: `.jpe` を受理する
-- 前提: `sample.jpe`
+### P-EXT-01: `.jpg` を受理する
+- 前提: `sample.jpg`
 - 操作: `isSupportedImageExtension(filename)`
 - 期待結果: `true`
 
@@ -30,18 +30,18 @@
 - 操作: `isSupportedImageExtension(filename)`
 - 期待結果: `true`
 
-### P-EXT-06: `.bmp` を受理する
+### P-EXT-06: `.bmp` を拒否する
 - 前提: `sample.bmp`
 - 操作: `isSupportedImageExtension(filename)`
-- 期待結果: `true`
+- 期待結果: `false`
 
 ### P-EXT-07: 大文字小文字混在を受理する
-- 前提: `A.JPE`, `B.JPEG`, `C.PnG`, `D.GIF`, `E.WeBp`, `F.BMP`
+- 前提: `A.JPG`, `B.JPEG`, `C.PnG`, `D.GIF`, `E.WeBp`
 - 操作: 各入力で `isSupportedImageExtension(filename)`
 - 期待結果: すべて `true`
 
 ### P-EXT-08: 非許可拡張子を拒否する
-- 前提: `sample.jpg`, `sample.avif`, `sample.txt`, `sample`
+- 前提: `sample.bmp`, `sample.avif`, `sample.txt`, `sample`
 - 操作: 各入力で `isSupportedImageExtension(filename)`
 - 期待結果: すべて `false`
 

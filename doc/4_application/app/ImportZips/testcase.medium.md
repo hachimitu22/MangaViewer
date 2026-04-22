@@ -153,7 +153,7 @@
 
 ### 許可画像拡張子は大文字小文字を区別せず対象にする
 - **前提**
-  - zip内に `a.JPE`, `b.JPEG`, `c.PnG`, `d.GIF`, `e.WeBp`, `f.BMP` が存在する。
+  - zip内に `a.JPG`, `b.JPEG`, `c.PnG`, `d.GIF`, `e.WeBp` が存在する。
 - **操作**
   - import を実行する。
 - **結果**

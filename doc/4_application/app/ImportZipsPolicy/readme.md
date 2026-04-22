@@ -29,7 +29,7 @@
 - 入力: ファイル名文字列
 - 仕様:
   - 拡張子で判定する（大文字小文字は区別しない）。
-  - 許可拡張子: `.jpe`, `.jpeg`, `.png`, `.gif`, `.webp`, `.bmp`
+  - 許可拡張子: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`
 - 出力: `boolean`
 
 ### `isTargetZipFilename(filename)`
