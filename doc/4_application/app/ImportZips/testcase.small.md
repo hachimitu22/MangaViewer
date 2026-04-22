@@ -185,3 +185,10 @@
 - **前提**: `<dir>` が存在するファイル（ディレクトリではない）。
 - **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
 - **期待結果**: 失敗区分「対象がディレクトリではない」として終了コード `4` を返す。
+
+
+---
+
+## 関連ドキュメント
+- [ImportZipsPolicy 設計書](/doc/4_application/app/ImportZipsPolicy/readme.md)
+- [ImportZipsPolicy テストケース（small）](/doc/4_application/app/ImportZipsPolicy/testcase.small.md)

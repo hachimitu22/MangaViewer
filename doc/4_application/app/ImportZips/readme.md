@@ -29,6 +29,7 @@
 ### 事前チェック
 - `<dir>` 未指定: usage を表示して終了コード3。
 - `<dir>` が存在しない / 読取不可: エラーログを出力して終了コード3。
+- `<dir>` がファイル（ディレクトリではない）: エラーログを出力して終了コード4。
 
 ### 探索対象
 - `<dir>` **直下のみ**を走査する（再帰なし）。
@@ -73,10 +74,11 @@
   - `error`: 読み取り失敗、保存失敗、予期せぬ例外
 
 ### 5. 全体終了コード
-- 全件成功: 0
+- 全件成功: 0（zipが0件の場合も含む）
 - 一部成功: 1
 - 全件失敗: 2
 - 事前チェック失敗（引数不正 / 対象dir読取不可）: 3
+- 事前チェック失敗（対象がディレクトリではない）: 4
 
 ## シーケンス図
 
@@ -92,9 +94,12 @@ participant "Logger" as logger
 
 cli -> script: npm run import -- <dir>
 script -> fs: <dir> を検証
-alt <dir> 不正
+alt <dir> 未指定 / 不存在 / 読取不可
   script -> logger: error(usage / read error)
   script --> cli: exit 3
+else <dir> がファイル
+  script -> logger: error(ディレクトリではない)
+  script --> cli: exit 4
 else <dir> 正常
   script -> fs: 直下エントリ列挙
   loop 各エントリ
@@ -117,7 +122,7 @@ else <dir> 正常
     end
   end
   script -> logger: info(総件数/成功件数/失敗件数)
-  script --> cli: exit(全件成功=0 / 一部成功=1 / 全件失敗=2 / 事前チェック失敗=3)
+  script --> cli: exit(全件成功=0 / 一部成功=1 / 全件失敗=2 / 事前チェック失敗=3 / 対象がファイル=4)
 end
 @enduml
 ```
@@ -125,3 +130,4 @@ end
 ## 関連ドキュメント
 - [RegisterMediaService 設計書](/doc/4_application/media/command/RegisterMediaService/readme.md)
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
+- [ImportZipsPolicy 設計書](/doc/4_application/app/ImportZipsPolicy/readme.md)

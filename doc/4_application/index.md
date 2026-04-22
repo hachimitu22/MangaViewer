@@ -30,6 +30,7 @@
 
 ### アプリ実行
 - [ImportZips](./app/ImportZips/readme.md)
+- [ImportZipsPolicy](./app/ImportZipsPolicy/readme.md)
 
 ## 実行コンテキスト設計方針
 - 境界は Application Service の `execute` で開始する。
