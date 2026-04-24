@@ -79,5 +79,9 @@
 
 ## 関連ドキュメント
 - [ImportZips 設計書](/doc/4_application/app/ImportZips/readme.md)
-- [ImportZips small テストケース](/doc/4_application/app/ImportZips/testcase.small.md)
-- [ImportZipsPolicy small テストケース](/doc/4_application/app/ImportZipsPolicy/testcase.small.md)
+- [ImportZips テストケース（small）](/doc/4_application/app/ImportZips/testcase.small.md)
+- [ImportZips テストケース（medium）](/doc/4_application/app/ImportZips/testcase.medium.md)
+- [ImportZips テストケース（large）](/doc/4_application/app/ImportZips/testcase.large.md)
+- [ImportZipsPolicy テストケース（small）](/doc/4_application/app/ImportZipsPolicy/testcase.small.md)
+- [ImportZipsPolicy テストケース（medium）](/doc/4_application/app/ImportZipsPolicy/testcase.medium.md)
+- [ImportZipsPolicy テストケース（large）](/doc/4_application/app/ImportZipsPolicy/testcase.large.md)

@@ -130,4 +130,7 @@ end
 ## 関連ドキュメント
 - [RegisterMediaService 設計書](/doc/4_application/media/command/RegisterMediaService/readme.md)
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
+- [ImportZips テストケース（small）](/doc/4_application/app/ImportZips/testcase.small.md)
+- [ImportZips テストケース（medium）](/doc/4_application/app/ImportZips/testcase.medium.md)
+- [ImportZips テストケース（large）](/doc/4_application/app/ImportZips/testcase.large.md)
 - [ImportZipsPolicy 設計書](/doc/4_application/app/ImportZipsPolicy/readme.md)
