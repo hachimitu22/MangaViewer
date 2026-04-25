@@ -1,194 +1,85 @@
 # ImportZips テストケース（small）
 
 ## 目的
-- ImportZips の pure logic に近い判定ロジックを small で高速に検証し、
-  medium/e2e でしか検知できない不具合の混入を防ぐ。
-- t-wada の観点（1テスト1振る舞い、観測可能な期待値、失敗時に原因が特定しやすい粒度）で
-  テストケースを分解する。
+- `ImportZips` のオーケストレーションロジックを small で高速に検証し、
+  medium/e2e でしか検出できない回帰の混入を防ぐ。
+- 依存（`fileAccess` / `zipHandler` / `contentStorage` / `registerMediaService` / `logger`）をモック化し、
+  1テスト1振る舞いで終了コード・呼び出し契約・継続制御を観測可能にする。
 
 ## 対象
-- 拡張子判定（画像/zip）
-- zipエントリの対象判定（直下のみ）
-- 登録順序の決定（basename 自然順）
-- 全体終了コードの決定
-- 事前チェックの判定結果
-
----
-
-## smallテストの実装方針（公開API）
-- smallテストは `scripts/ImportZips.js` の内部（プライベート）関数を直接テストしない。
-- `ImportZips` の判定ロジックは、公開モジュール（例: `src/application/app/importZips/ImportZipsPolicy.js`）へ分離し、
-  その **公開関数** を small テスト対象にする。
-- `scripts/ImportZips.js` は I/O とオーケストレーションに専念し、判定ロジックは `ImportZipsPolicy` に委譲する。
-- medium/e2e では従来どおり CLI 全体の振る舞いを検証し、small と責務分担する。
-
-### 公開関数（想定）
-- `isSupportedImageExtension(filename: string): boolean`
-- `isTargetZipFilename(filename: string): boolean`
-- `isDirectZipEntry(entryName: string): boolean`
-- `sortEntryNamesByNaturalBasename(entryNames: string[]): string[]`
-- `decideExitCode({ successCount, failureCount }): 0 | 1 | 2`
-- `validateImportTarget({ hasArg, exists, readable, isDirectory }): { ok: boolean, exitCode?: 3 | 4, reason?: string }`
+- 事前チェック失敗時の即時終了
+- zip 0件時の正常終了
+- zip内画像の抽出と basename 自然順登録
+- 画像0件zipの失敗継続
+- zip処理例外時の失敗継続
 
 ---
 
 ## テストケース一覧
-- [S-EXT-01: `.jpg` は画像として受理する](#s-ext-01-jpg-は画像として受理する)
-- [S-EXT-02: `.jpeg` は画像として受理する](#s-ext-02-jpeg-は画像として受理する)
-- [S-EXT-03: `.png` は画像として受理する](#s-ext-03-png-は画像として受理する)
-- [S-EXT-04: `.gif` は画像として受理する](#s-ext-04-gif-は画像として受理する)
-- [S-EXT-05: `.webp` は画像として受理する](#s-ext-05-webp-は画像として受理する)
-- [S-EXT-06: 許可外拡張子（`.bmp`）は画像として扱わない](#s-ext-06-許可外拡張子bmpは画像として扱わない)
-- [S-EXT-07: 許可拡張子は大文字小文字を区別せず受理する](#s-ext-07-許可拡張子は大文字小文字を区別せず受理する)
-- [S-EXT-08: 許可外拡張子は画像として扱わない](#s-ext-08-許可外拡張子は画像として扱わない)
-- [S-EXT-09: 拡張子なしは画像として扱わない](#s-ext-09-拡張子なしは画像として扱わない)
-- [S-ZIP-01: `.zip` は対象zipとして受理する](#s-zip-01-zip-は対象zipとして受理する)
-- [S-ZIP-02: `.ZIP` など大文字混在も対象zipとして受理する](#s-zip-02-zip-など大文字混在も対象zipとして受理する)
-- [S-ZIP-03: `.zipx` は対象zipとして扱わない](#s-zip-03-zipx-は対象zipとして扱わない)
-- [S-ENTRY-01: zip内の直下ファイルは処理対象に含める](#s-entry-01-zip内の直下ファイルは処理対象に含める)
-- [S-ENTRY-02: zip内ディレクトリ配下ファイルは処理対象から除外する](#s-entry-02-zip内ディレクトリ配下ファイルは処理対象から除外する)
-- [S-SORT-01: basename 自然順で `1,2,10` になる](#s-sort-01-basename-自然順で-1210-になる)
-- [S-EXIT-01: 成功=0件・失敗=0件なら終了コード0](#s-exit-01-成功0件失敗0件なら終了コード0)
-- [S-EXIT-02: 成功あり・失敗なしなら終了コード0](#s-exit-02-成功あり失敗なしなら終了コード0)
-- [S-EXIT-03: 成功あり・失敗ありなら終了コード1](#s-exit-03-成功あり失敗ありなら終了コード1)
-- [S-EXIT-04: 成功なし・失敗ありなら終了コード2](#s-exit-04-成功なし失敗ありなら終了コード2)
-- [S-PRE-01: 引数未指定は事前チェック失敗3](#s-pre-01-引数未指定は事前チェック失敗3)
-- [S-PRE-02: 対象dir不存在/読取不可は事前チェック失敗3](#s-pre-02-対象dir不存在読取不可は事前チェック失敗3)
-- [S-PRE-03: 対象がファイルなら事前チェック失敗4](#s-pre-03-対象がファイルなら事前チェック失敗4)
+- [S-IMP-01: 事前チェック失敗時は終了コード3/4を返しzip処理を開始しない](#s-imp-01-事前チェック失敗時は終了コード34を返しzip処理を開始しない)
+- [S-IMP-02: zipが0件なら終了コード0を返す](#s-imp-02-zipが0件なら終了コード0を返す)
+- [S-IMP-03: zip内の有効画像をbasename自然順で登録し成功をカウントする](#s-imp-03-zip内の有効画像をbasename自然順で登録し成功をカウントする)
+- [S-IMP-04: 有効画像が0件のzipは失敗として継続する](#s-imp-04-有効画像が0件のzipは失敗として継続する)
+- [S-IMP-05: zip処理で例外が発生しても失敗として継続する](#s-imp-05-zip処理で例外が発生しても失敗として継続する)
 
 ---
 
-## 拡張子判定
+## ケース詳細
 
-### S-EXT-01: `.jpg` は画像として受理する
-- **前提**: `sample.jpg`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
+### S-IMP-01: 事前チェック失敗時は終了コード3/4を返しzip処理を開始しない
+- **前提**
+  - `inspectTarget` が `{ ok: false }` 相当（例: `missing-arg`）を返す状態。
+- **操作**
+  - `ImportZips.execute(new Query({ targetDir }))` を実行する。
+- **期待結果**
+  - 終了コード `3`（または条件に応じて `4`）を返す。
+  - `listDirectEntries` は呼び出されない。
+  - 事前チェック失敗ログが出力される。
 
-### S-EXT-02: `.jpeg` は画像として受理する
-- **前提**: `sample.jpeg`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
+### S-IMP-02: zipが0件なら終了コード0を返す
+- **前提**
+  - 直下エントリが非zipのみ（例: `README.md`, ディレクトリ）。
+- **操作**
+  - `ImportZips.execute(...)` を実行する。
+- **期待結果**
+  - 終了コード `0` を返す。
+  - `successCount=0`, `failureCount=0`, `totalZipCount=0`。
+  - 非zipスキップログが出力される。
 
-### S-EXT-03: `.png` は画像として受理する
-- **前提**: `sample.png`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
+### S-IMP-03: zip内の有効画像をbasename自然順で登録し成功をカウントする
+- **前提**
+  - `my.book.v1.zip` に `10.jpeg`, `2.jpeg`, `1.jpeg`（直下画像）と非対象エントリが混在する。
+- **操作**
+  - `ImportZips.execute(...)` を実行する。
+- **期待結果**
+  - `contentStorage.saveFromZipEntries` が `['1.jpeg','2.jpeg','10.jpeg']` の順で呼ばれる。
+  - `registerMediaService.execute` の title が `my.book.v1` になる。
+  - 処理結果は `successCount=1`, `failureCount=0`, `exitCode=0`。
 
-### S-EXT-04: `.gif` は画像として受理する
-- **前提**: `sample.gif`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
+### S-IMP-04: 有効画像が0件のzipは失敗として継続する
+- **前提**
+  - 先頭zipは非画像のみ、後続zipは成功可能な画像を含む。
+- **操作**
+  - `ImportZips.execute(...)` を実行する。
+- **期待結果**
+  - 先頭zipは失敗として `failureCount` が増える。
+  - 後続zipの処理は継続される。
+  - 全体結果は一部成功（`exitCode=1`）となる。
 
-### S-EXT-05: `.webp` は画像として受理する
-- **前提**: `sample.webp`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
-
-### S-EXT-06: 許可外拡張子（`.bmp`）は画像として扱わない
-- **前提**: `sample.bmp`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `false` を返す。
-
-### S-EXT-07: 許可拡張子は大文字小文字を区別せず受理する
-- **前提**: `A.JPG`, `B.JPEG`, `C.PnG`, `D.GIF`, `E.WeBp`
-- **操作**: 各ファイル名で `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: すべて `true` を返す。
-
-### S-EXT-08: 許可外拡張子は画像として扱わない
-- **前提**: `sample.bmp`, `sample.avif`, `sample.txt`
-- **操作**: 各ファイル名で `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: すべて `false` を返す。
-
-### S-EXT-09: 拡張子なしは画像として扱わない
-- **前提**: `sample`
-- **操作**: `ImportZipsPolicy.isSupportedImageExtension(filename)` を呼び出す。
-- **期待結果**: `false` を返す。
-
----
-
-## zip 判定 / zip 内エントリ判定
-
-### S-ZIP-01: `.zip` は対象zipとして受理する
-- **前提**: `book.zip`
-- **操作**: `ImportZipsPolicy.isTargetZipFilename(filename)` を呼び出す。
-- **期待結果**: `true` を返す。
-
-### S-ZIP-02: `.ZIP` など大文字混在も対象zipとして受理する
-- **前提**: `A.ZIP`, `B.ZiP`
-- **操作**: `ImportZipsPolicy.isTargetZipFilename(filename)` を呼び出す。
-- **期待結果**: いずれも `true` を返す。
-
-### S-ZIP-03: `.zipx` は対象zipとして扱わない
-- **前提**: `book.zipx`
-- **操作**: `ImportZipsPolicy.isTargetZipFilename(filename)` を呼び出す。
-- **期待結果**: `false` を返す。
-
-### S-ENTRY-01: zip内の直下ファイルは処理対象に含める
-- **前提**: zipエントリ名 `1.jpeg`
-- **操作**: `ImportZipsPolicy.isDirectZipEntry(entryName)` を呼び出す。
-- **期待結果**: 直下エントリとして対象扱いになる。
-
-### S-ENTRY-02: zip内ディレクトリ配下ファイルは処理対象から除外する
-- **前提**: zipエントリ名 `pages/1.jpeg`
-- **操作**: `ImportZipsPolicy.isDirectZipEntry(entryName)` を呼び出す。
-- **期待結果**: 非対象扱いになる。
-
----
-
-## 順序決定
-
-### S-SORT-01: basename 自然順で `1,2,10` になる
-- **前提**: `10.jpeg`, `2.jpeg`, `1.jpeg`
-- **操作**: `ImportZipsPolicy.sortEntryNamesByNaturalBasename(entryNames)` を呼び出す。
-- **期待結果**: `1.jpeg`, `2.jpeg`, `10.jpeg` の順で返る。
-
----
-
-## 終了コード決定
-
-### S-EXIT-01: 成功=0件・失敗=0件なら終了コード0
-- **前提**: 成功件数0、失敗件数0。
-- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
-- **期待結果**: `0` を返す（zip 0件時の全件成功扱い）。
-
-### S-EXIT-02: 成功あり・失敗なしなら終了コード0
-- **前提**: 成功件数1以上、失敗件数0。
-- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
-- **期待結果**: `0` を返す。
-
-### S-EXIT-03: 成功あり・失敗ありなら終了コード1
-- **前提**: 成功件数1以上、失敗件数1以上。
-- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
-- **期待結果**: `1` を返す。
-
-### S-EXIT-04: 成功なし・失敗ありなら終了コード2
-- **前提**: 成功件数0、失敗件数1以上。
-- **操作**: `ImportZipsPolicy.decideExitCode({ successCount, failureCount })` を呼び出す。
-- **期待結果**: `2` を返す。
-
----
-
-## 事前チェック判定
-
-### S-PRE-01: 引数未指定は事前チェック失敗3
-- **前提**: `<dir>` 未指定。
-- **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
-- **期待結果**: 失敗区分「引数不正」として終了コード `3` を返す。
-
-### S-PRE-02: 対象dir不存在/読取不可は事前チェック失敗3
-- **前提**: `<dir>` が不存在または読取不可。
-- **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
-- **期待結果**: 失敗区分「対象dir読取不可」として終了コード `3` を返す。
-
-### S-PRE-03: 対象がファイルなら事前チェック失敗4
-- **前提**: `<dir>` が存在するファイル（ディレクトリではない）。
-- **操作**: `ImportZipsPolicy.validateImportTarget({ hasArg, exists, readable, isDirectory })` を呼び出す。
-- **期待結果**: 失敗区分「対象がディレクトリではない」として終了コード `4` を返す。
-
+### S-IMP-05: zip処理で例外が発生しても失敗として継続する
+- **前提**
+  - 先頭zipで `zipHandler.listEntries` が例外を投げ、後続zipは成功可能。
+- **操作**
+  - `ImportZips.execute(...)` を実行する。
+- **期待結果**
+  - 例外zipは失敗カウントされ、エラーログが出力される。
+  - 後続zipは継続実行される。
+  - 全体結果は一部成功（`exitCode=1`）となる。
 
 ---
 
 ## 関連ドキュメント
+- [ImportZips 設計書](/doc/4_application/app/ImportZips/readme.md)
 - [ImportZipsPolicy 設計書](/doc/4_application/app/ImportZipsPolicy/readme.md)
-- [ImportZipsPolicy テストケース（small）](/doc/4_application/app/ImportZipsPolicy/testcase.small.md)
+- [ImportZips テストケース（medium）](/doc/4_application/app/ImportZips/testcase.medium.md)
+- [ImportZips テストケース（large）](/doc/4_application/app/ImportZips/testcase.large.md)
