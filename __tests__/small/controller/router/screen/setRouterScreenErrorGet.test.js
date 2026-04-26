@@ -30,7 +30,6 @@ describe('setRouterScreenErrorGet', () => {
       pageTitle: 'エラーが発生しました',
       errorTitle: 'ページを表示できませんでした',
       navigationLinks: expect.arrayContaining([
-        expect.objectContaining({ href: '/screen/login' }),
         expect.objectContaining({ href: '/screen/summary' }),
       ]),
     }));

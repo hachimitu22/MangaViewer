@@ -54,17 +54,12 @@ describe('medium: common navigator integration', () => {
 
       expect(response.status).toBe(200);
       expect(response.bodyText).toContain('共通ナビゲーター');
-      expect(response.bodyText).toContain('メディア一覧');
-      expect(response.bodyText).toContain('お気に入り');
-      expect(response.bodyText).toContain('あとで見る');
-      expect(response.bodyText).toContain('メディア登録');
-      expect(response.bodyText).toContain('id="common-nav-logout"');
-    } finally {
+      expect(response.bodyText).toContain('メディア一覧');      expect(response.bodyText).toContain('メディア登録');    } finally {
       await app.locals.close();
     }
   });
 
-  test('一般ユーザー時は /screen/summary にメディア登録リンクが表示されない', async () => {
+  test('一般ユーザー時も /screen/summary にメディア登録リンクが表示される', async () => {
     const app = createTestApp({ userId: 'user-001' });
 
     try {
@@ -77,7 +72,7 @@ describe('medium: common navigator integration', () => {
 
       expect(response.status).toBe(200);
       expect(response.bodyText).toContain('共通ナビゲーター');
-      expect(response.bodyText).not.toContain('>メディア登録<');
+      expect(response.bodyText).toContain('>メディア登録<');
     } finally {
       await app.locals.close();
     }

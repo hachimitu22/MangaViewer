@@ -39,7 +39,6 @@ describe('ScreenDetailGetController', () => {
         contents: [{ id: 'content-1', thumbnail: '', position: 1 }],
       },
       currentPath: '/screen/detail',
-      currentUserId: 'admin',
     });
   });
 

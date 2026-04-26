@@ -44,7 +44,6 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
             シリーズ: ['第1部', '短編集'],
           },
           currentPath: '/screen/edit',
-          currentUserId: req.context?.userId || null,
         });
       } catch (error) {
         logger?.error('screen.edit.error', {
