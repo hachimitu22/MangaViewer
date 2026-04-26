@@ -66,57 +66,10 @@ describe('createApp', () => {
     });
   });
 
-  test('固定セッション設定が無効な場合は対象パスでも自動補完されず認証エラーになる', async () => {
+  test('/screen/entry, /screen/search, /screen/summary は匿名で表示できる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
-      devSessionToken: '',
-      devSessionUserId: 'admin-dev',
-      devSessionTtlMs: 60_000,
-      devSessionPaths: ['/screen/entry', '/api/media'],
-    });
-
-    await app.locals.ready;
-
-    const screenResponse = await request(app).get('/screen/entry');
-    expect(screenResponse.status).toBe(401);
-    expect(screenResponse.body).toEqual({
-      message: '認証に失敗しました',
-    });
-
-    const csrfCookie = (screenResponse.headers['set-cookie'] || [])
-      .find(cookie => cookie.startsWith('csrf_token='));
-    const csrfToken = csrfCookie
-      ? csrfCookie.split(';')[0].split('=')[1]
-      : '';
-
-    const mediaResponse = await request(app)
-      .post('/api/media')
-      .set('origin', 'http://127.0.0.1')
-      .set('host', '127.0.0.1')
-      .set('x-csrf-token', csrfToken)
-      .set('cookie', csrfCookie ? [csrfCookie] : [])
-      .field('title', 'sample title')
-      .field('tags[0][category]', '作者')
-      .field('tags[0][label]', '山田')
-      .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg');
-
-    expect(mediaResponse.status).toBe(401);
-    expect(mediaResponse.body).toEqual({
-      message: '認証に失敗しました',
-    });
-  });
-
-  test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary で認証を補完できる', async () => {
-    app = createApp({
-      databaseStoragePath: databasePath,
-      contentRootDirectory,
-      enableDevSession: 'true',
-      devSessionToken: 'dev-token',
-      devSessionUserId: 'admin-dev',
-      devSessionTtlMs: 60_000,
-      devSessionPaths: ['/screen/entry', '/screen/search', '/screen/summary'],
     });
 
     await app.locals.ready;
@@ -131,12 +84,9 @@ describe('createApp', () => {
     expect(searchResponse.type).toBe('text/html');
     expect(searchResponse.text).toContain('<title>メディア検索</title>');
 
-
     const summaryResponse = await request(app).get('/screen/summary');
     expect(summaryResponse.status).toBe(200);
     expect(summaryResponse.type).toBe('text/html');
     expect(summaryResponse.text).toContain('<title>メディア一覧</title>');
-
   });
-
 });

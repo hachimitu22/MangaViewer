@@ -3,12 +3,6 @@ const crypto = require('crypto');
 const express = require('express');
 const { ALLOWED_CONTENT_EXTENSIONS } = require('../shared/contentMimeTypes');
 
-const {
-  isDevelopmentSessionExplicitlyEnabled,
-  shouldApplyDevelopmentSession,
-  resolveDevelopmentSessionApplication,
-} = require('./developmentSession');
-
 const parseCookieHeader = cookieHeader => {
   if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
     return {};
@@ -34,14 +28,6 @@ const parseCookieHeader = cookieHeader => {
       return cookies;
     }, {});
 };
-
-const resolveAuditHost = req => (
-  req.header('host')
-  || req.hostname
-  || req.ip
-  || req.socket?.remoteAddress
-  || ''
-);
 
 const attachSessionHelpers = req => {
   req.session = req.session ?? {};
@@ -214,41 +200,6 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     });
 
     const cookies = parseCookieHeader(req.header('cookie'));
-    const legacySessionToken = req.header('x-session-token');
-
-    if (typeof cookies.session_token === 'string' && cookies.session_token.length > 0) {
-      req.session.session_token = cookies.session_token;
-    } else {
-      const auditHost = resolveAuditHost(req);
-      const developmentSessionDecision = resolveDevelopmentSessionApplication({
-        env,
-        requestPath: req.path,
-      });
-      logger?.info('auth.development_session.audit.before_apply', {
-        enabled: developmentSessionDecision.enabled,
-        reason: developmentSessionDecision.reason,
-        path: req.path,
-        host: auditHost,
-        bind_host: env.host || '',
-      });
-
-      if (
-        isDevelopmentSessionExplicitlyEnabled(env)
-        && shouldApplyDevelopmentSession({ env, requestPath: req.path })
-      ) {
-        req.session.session_token = env.devSessionToken;
-      }
-
-      logger?.info('auth.development_session.audit.after_apply', {
-        enabled: typeof req.session.session_token === 'string'
-          && req.session.session_token === env.devSessionToken,
-        reason: developmentSessionDecision.reason,
-        path: req.path,
-        host: auditHost,
-        bind_host: env.host || '',
-      });
-    }
-
     if (typeof cookies.csrf_token === 'string' && cookies.csrf_token.length > 0) {
       req.session.csrf_token = cookies.csrf_token;
     } else {
@@ -264,13 +215,6 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
 
     res.locals.csrfToken = req.session.csrf_token;
 
-    if (typeof legacySessionToken === 'string' && legacySessionToken.length > 0) {
-      logger?.warn('auth.legacy_session_token_header.detected', {
-        count: 1,
-        source_ip: req.ip || req.socket?.remoteAddress || null,
-        user_agent: req.header('user-agent') || '',
-      });
-    }
     const startedAt = Date.now();
     const requestId = req.header('x-request-id') || crypto.randomUUID();
     req.context.requestId = requestId;
@@ -282,7 +226,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
       request_id: requestId,
       method: req.method,
       path: req.originalUrl,
-      user_id: req.context?.userId || 'anonymous',
+      actor: 'anonymous/screen',
     });
 
     if (typeof res.on === 'function') {
@@ -294,7 +238,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
           path: req.originalUrl,
           status: res.statusCode,
           duration_ms: durationMs,
-          user_id: req.context?.userId || 'anonymous',
+          actor: 'anonymous/screen',
         });
       });
     }

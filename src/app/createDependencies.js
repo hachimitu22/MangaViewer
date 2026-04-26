@@ -93,11 +93,6 @@ const createDependencies = (env = {}) => {
     updateMediaService,
     deleteMediaService,
     logger,
-    authResolver: {
-      async execute() {
-        return 'admin';
-      },
-    },
     saveAdapter: new MulterDiskStorageContentUploadAdapter({
       rootDirectory: env.contentRootDirectory,
     }),

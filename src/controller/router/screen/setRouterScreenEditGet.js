@@ -1,12 +1,8 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const { Input } = require('../../../application/media/query/GetMediaDetailService');
 const { toPublicContentPath } = require('../../screen/publicContentPath');
 
-const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
-
+const setRouterScreenEditGet = ({ router, getMediaDetailService }) => {
   router.get('/screen/edit/:mediaId', ...[
-    auth.execute.bind(auth),
     async (req, res, next) => {
       const logger = req.app?.locals?.dependencies?.logger;
       try {
@@ -48,7 +44,6 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
       } catch (error) {
         logger?.error('screen.edit.error', {
           request_id: req.context?.requestId,
-          user_id: req.context?.userId || 'anonymous',
           target_id: req.params?.mediaId,
           message: error?.message,
           error,
