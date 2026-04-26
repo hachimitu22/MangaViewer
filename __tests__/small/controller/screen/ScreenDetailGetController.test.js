@@ -25,7 +25,7 @@ describe('ScreenDetailGetController', () => {
       execute: jest.fn().mockResolvedValue({ mediaDetail }),
     };
     const controller = new ScreenDetailGetController({ getMediaDetailService });
-    const req = { params: { mediaId: 'media-1' }, context: { userId: 'admin' } };
+    const req = { params: { mediaId: 'media-1' } };
     const res = createRes();
 
     await controller.execute(req, res);

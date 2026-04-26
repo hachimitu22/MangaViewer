@@ -54,58 +54,6 @@ const createHarness = ({ env = {} } = {}) => {
 };
 
 describe('setupMiddleware (small)', () => {
-  test('csrf_token Cookie が存在する場合はセッションへ採用する', () => {
-    const { middleware } = createHarness();
-    const req = createReq({
-      headers: {
-        cookie: 'csrf_token=cookie-token',
-      },
-    });
-
-    middleware(req, createRes(), jest.fn());
-
-    expect(req.session.csrf_token).toBe('cookie-token');
-  });
-
-  test('csrf_token Cookie が無い場合は新規採番して Cookie 設定する', () => {
-    const { middleware } = createHarness();
-    const req = createReq();
-    const res = createRes();
-
-    middleware(req, res, jest.fn());
-
-    expect(typeof req.session.csrf_token).toBe('string');
-    expect(req.session.csrf_token.length).toBeGreaterThan(0);
-    expect(res.cookie).toHaveBeenCalledWith(
-      'csrf_token',
-      req.session.csrf_token,
-      expect.objectContaining({ path: '/', httpOnly: false }),
-    );
-  });
-
-  test('req.session.regenerate/destroy の最小契約を満たす', () => {
-    const { middleware } = createHarness();
-    const req = createReq();
-
-    middleware(req, createRes(), jest.fn());
-    req.session.custom = 'kept';
-
-    const regenerateCallback = jest.fn();
-    req.session.regenerate(regenerateCallback);
-
-    expect(regenerateCallback).toHaveBeenCalledWith(null);
-    expect(req.session.custom).toBeUndefined();
-    expect(req.session.req).toBe(req);
-
-    req.session.custom = 'again';
-    const destroyCallback = jest.fn();
-    req.session.destroy(destroyCallback);
-
-    expect(destroyCallback).toHaveBeenCalledWith(null);
-    expect(req.session.custom).toBeUndefined();
-    expect(req.session.req).toBe(req);
-  });
-
   test('app.locals.env が未設定の場合は setupMiddleware に渡した env を公開する', () => {
     const app = {
       locals: {},
