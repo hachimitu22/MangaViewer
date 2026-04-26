@@ -14,7 +14,7 @@
 
 ### TC-E2E-001: ログイン後にメディア一覧へ遷移できる
 
-- 対応テスト: `__tests__/large/e2e/auth/login-to-summary.large.test.js`
+- 対応テスト: `__tests__/large/e2e/auth/auth-to-summary.large.test.js`
 - 観点:
   - ログイン画面の表示
   - 認証成功後の `/screen/summary` 遷移
@@ -30,7 +30,7 @@
 
 ### TC-E2E-003: 詳細画面でお気に入り/あとで見る操作ができる
 
-- 対応テスト: `__tests__/large/e2e/detail/detail-favorite-queue-actions.large.test.js`
+- 対応テスト: `__tests__/large/e2e/detail/detail-preference-watchlist-actions.large.test.js`
 - 観点:
   - 詳細画面表示
   - お気に入り追加/解除
@@ -38,7 +38,7 @@
 
 ### TC-E2E-004: 画面ナビゲーションとログアウトが機能する
 
-- 対応テスト: `__tests__/large/e2e/navigation/navigation-and-logout.large.test.js`
+- 対応テスト: `__tests__/large/e2e/navigation/navigation-and-exit.large.test.js`
 - 観点:
   - ナビゲーションリンク遷移
   - 保護画面へのアクセス制御
@@ -48,8 +48,8 @@
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard.large.test.js`
 - 観点:
-  - 未ログインで保護画面（`/screen/summary`, `/screen/detail/:mediaId`, `/screen/favorite`, `/screen/queue`, `/screen/entry`, `/screen/edit/:mediaId`）へ直接アクセスした際の統一的な拒否（401）
-  - 未ログインで保護 API（`PUT /api/favorite/:mediaId`, `PUT /api/queue/:mediaId`, `PATCH /api/media/:mediaId`, `DELETE /api/media/:mediaId`）を呼んだ際の拒否
+  - 未ログインで保護画面（`/screen/summary`, `/screen/detail/:mediaId`, `/screen/preference`, `/screen/watchlist`, `/screen/entry`, `/screen/edit/:mediaId`）へ直接アクセスした際の統一的な拒否（401）
+  - 未ログインで保護 API（`PUT /api/preference/:mediaId`, `PUT /api/watchlist/:mediaId`, `PATCH /api/media/:mediaId`, `DELETE /api/media/:mediaId`）を呼んだ際の拒否
   - ログイン後に同一 API / 画面アクセスが許可されること
 
 ### TC-E2E-006: ビューアーのページ遷移と URL パラメータ整合が機能する
@@ -104,45 +104,45 @@
 
 ### TC-E2E-012: お気に入り・あとで見る一覧の並び替えとページングが機能する
 
-- 対応テスト: `__tests__/large/e2e/favorite-queue/favorite-queue-sort-pagination.large.test.js`
+- 対応テスト: `__tests__/large/e2e/preference-watchlist/preference-watchlist-sort-pagination.large.test.js`
 - 観点:
-  - 複数件データで `/screen/favorite` と `/screen/queue` のページング UI が機能する
+  - 複数件データで `/screen/preference` と `/screen/watchlist` のページング UI が機能する
   - sort クエリ変更で表示順（date/title, asc/desc）が切り替わる
-  - 一覧上の解除操作（`DELETE /api/favorite/:mediaId`, `DELETE /api/queue/:mediaId`）後に件数とページ表示が整合する
+  - 一覧上の解除操作（`DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId`）後に件数とページ表示が整合する
 
 ### TC-E2E-013: ログイン失敗時に遷移せずエラーメッセージを表示する
 
-- 対応テスト: `__tests__/large/e2e/auth/login-failure.large.test.js`
+- 対応テスト: `__tests__/large/e2e/auth/auth-failure.large.test.js`
 - 観点:
-  - 誤った認証情報で `POST /api/login` を送信した際に失敗コード（`code: 1`）を受け取る
-  - `/screen/login` に留まり、`/screen/summary` へ遷移しない
+  - 誤った認証情報で `POST /api/auth` を送信した際に失敗コード（`code: 1`）を受け取る
+  - `/screen/auth` に留まり、`/screen/summary` へ遷移しない
   - ログイン画面に失敗メッセージが表示され、再入力可能な状態を維持する
 
 
-### TC-E2E-014: 認可境界の未カバー導線（viewer/search と API post/logout）を検証する
+### TC-E2E-014: 認可境界の未カバー導線（viewer/search と API post/exit）を検証する
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard-uncovered-routes.large.test.js`
 - 観点:
   - 未ログインで `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
-  - 未ログインで `POST /api/media`, `POST /api/logout`, `DELETE /api/favorite/:mediaId`, `DELETE /api/queue/:mediaId` を実行した際に `401` で拒否される
+  - 未ログインで `POST /api/media`, `POST /api/navigation-exit`, `DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId` を実行した際に `401` で拒否される
   - ログイン後は同一導線が許可される
 
 ### TC-E2E-015: 画面で利用する各APIの異常系で画面内メッセージ表示と再操作ができる
 
 - 対応テスト: `__tests__/large/e2e/error/api-error-message-and-retry.large.test.js`（新規追加対象）
 - 観点:
-  - `/screen/login` で `POST /api/login` が失敗した場合、遷移せずエラーメッセージを表示して再入力・再実行できる
+  - `/screen/auth` で `POST /api/auth` が失敗した場合、遷移せずエラーメッセージを表示して再入力・再実行できる
   - `/screen/entry` で `POST /api/media` が失敗した場合、入力値を保持したままエラーメッセージを表示し再実行できる
   - `/screen/edit/:mediaId` で `PATCH /api/media/{mediaId}` または `DELETE /api/media/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再実行できる
-  - `/screen/detail/:mediaId` で `PUT/DELETE /api/favorite/{mediaId}` と `PUT/DELETE /api/queue/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
-  - `/screen/favorite` で `DELETE /api/favorite/{mediaId}` または `PUT /api/queue/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
-  - `/screen/queue` で `PUT/DELETE /api/favorite/{mediaId}` と `PUT/DELETE /api/queue/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
-  - ナビゲーターから `POST /api/logout` が失敗した場合、表示中の画面にエラーメッセージを表示し、画面が操作不能にならない
+  - `/screen/detail/:mediaId` で `PUT/DELETE /api/preference/{mediaId}` と `PUT/DELETE /api/watchlist/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
+  - `/screen/preference` で `DELETE /api/preference/{mediaId}` または `PUT /api/watchlist/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
+  - `/screen/watchlist` で `PUT/DELETE /api/preference/{mediaId}` と `PUT/DELETE /api/watchlist/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
+  - ナビゲーターから `POST /api/navigation-exit` が失敗した場合、表示中の画面にエラーメッセージを表示し、画面が操作不能にならない
 
 ## 判定基準
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
-- `POST /api/login`, `POST /api/media`, `PATCH/DELETE /api/media/{mediaId}`, `PUT/DELETE /api/favorite/{mediaId}`, `PUT/DELETE /api/queue/{mediaId}`, `POST /api/logout` の異常系で、画面遷移ではなく画面内エラーメッセージ表示と再操作可能性が満たされること
+- `POST /api/auth`, `POST /api/media`, `PATCH/DELETE /api/media/{mediaId}`, `PUT/DELETE /api/preference/{mediaId}`, `PUT/DELETE /api/watchlist/{mediaId}`, `POST /api/navigation-exit` の異常系で、画面遷移ではなく画面内エラーメッセージ表示と再操作可能性が満たされること
 - セッション状態の開始/終了が期待どおりであること
 - 操作結果（お気に入り・あとで見る等）が画面表示に反映されること
 
