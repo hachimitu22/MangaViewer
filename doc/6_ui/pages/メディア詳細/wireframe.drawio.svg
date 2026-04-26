@@ -247,13 +247,13 @@
                                         <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 298px; margin-left: 891px;">
                                             <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
                                                 <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                    お気に入り
+                                                    -
                                                 </div>
                                             </div>
                                         </div>
                                     </foreignObject>
                                     <text x="930" y="301" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                                        お気に入り
+                                        -
                                     </text>
                                 </switch>
                             </g>
@@ -290,13 +290,13 @@
                                         <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 78px; height: 1px; padding-top: 343px; margin-left: 891px;">
                                             <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #999999; ">
                                                 <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#999999, #6a6a6a); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                    あとで見る
+                                                    -
                                                 </div>
                                             </div>
                                         </div>
                                     </foreignObject>
                                     <text x="930" y="347" fill="#999999" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                                        あとで見る
+                                        -
                                     </text>
                                 </switch>
                             </g>
