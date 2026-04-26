@@ -18,7 +18,6 @@ const MulterDiskStorageContentUploadAdapter = require('../infrastructure/MulterD
 const SequelizeMediaRepository = require('../infrastructure/SequelizeMediaRepository');
 const SequelizeMediaQueryRepository = require('../infrastructure/SequelizeMediaQueryRepository');
 const SequelizeUnitOfWork = require('../infrastructure/SequelizeUnitOfWork');
-const SessionStateAuthAdapter = require('../infrastructure/SessionStateAuthAdapter');
 const UUIDMediaIdValueGenerator = require('../infrastructure/UUIDMediaIdValueGenerator');
 const { SearchMediaService } = require('../application/media/query/SearchMediaService');
 const { GetMediaDetailService } = require('../application/media/query/GetMediaDetailService');
@@ -49,71 +48,6 @@ const assertRequiredSecurityConfiguration = env => {
     throw error;
   }
 };
-
-const resolveLoginHashOptions = env => ({
-  memoryCost: env.loginHashMemoryCost,
-  iterations: env.loginHashIterations,
-  parallelism: env.loginHashParallelism,
-  timeCost: env.loginHashTimeCost,
-});
-
-const resolveLoginAuthConfig = env => {
-  const isProduction = String(env.nodeEnv || '').toLowerCase() === 'production';
-  const isAllowedInsecureDefaultLogin = String(env.allowInsecureDefaultLogin || '').toLowerCase() === 'true';
-  if (isAllowedInsecureDefaultLogin) {
-    const error = new Error('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
-    error.code = 'INSECURE_DEFAULT_LOGIN_DISALLOWED';
-    throw error;
-  }
-
-  const rawConfig = {
-    username: String(env.loginUserId || '').trim(),
-    password: String(env.loginPassword || '').trim(),
-    passwordHash: String(env.loginPasswordHash || '').trim(),
-    userId: String(env.loginUserId || '').trim(),
-  };
-  const missingKeys = [
-    !isConfiguredValue(rawConfig.userId) ? 'userId' : null,
-    !isConfiguredValue(rawConfig.password) && !isConfiguredValue(rawConfig.passwordHash)
-      ? 'password/passwordHash'
-      : null,
-  ].filter(Boolean);
-
-  if (!isAllowedInsecureDefaultLogin && missingKeys.length > 0) {
-    throw new Error([
-      'ログイン認証設定が不足しています',
-      `missing=${missingKeys.join(',')}`,
-      '必要な設定: LOGIN_USER_ID(or FIXED_LOGIN_USER_ID), LOGIN_PASSWORDまたはLOGIN_PASSWORD_HASH',
-    ].join(': '));
-  }
-
-  if (isProduction && isConfiguredValue(rawConfig.password)) {
-    const weakPasswords = new Set([
-      'admin',
-      'password',
-      'password123',
-      '123456',
-      '12345678',
-      'qwerty',
-    ]);
-    const lowerUsername = rawConfig.username.toLowerCase();
-    const lowerPassword = rawConfig.password.toLowerCase();
-    const isWeakPassword = weakPasswords.has(lowerPassword) || lowerPassword === lowerUsername;
-    if (isWeakPassword) {
-      throw new Error('ログイン認証設定が脆弱です: 既知の弱いパスワードは使用できません');
-    }
-  }
-
-  return {
-    username: rawConfig.username,
-    password: rawConfig.password,
-    passwordHash: rawConfig.passwordHash,
-    userId: rawConfig.userId,
-    isUsingDefaultCredentials: false,
-    isInsecureDefaultLoginEnabled: false,
-  };
-};
-
 
 const createSequelize = env => new Sequelize({
   dialect: 'sqlite',
@@ -159,13 +93,11 @@ const createDependencies = (env = {}) => {
     updateMediaService,
     deleteMediaService,
     logger,
-    authResolver: new SessionStateAuthAdapter({
-      sessionStateStore: {
-        async findUserIdBySessionToken() {
-          return 'admin';
-        },
+    authResolver: {
+      async execute() {
+        return 'admin';
       },
-    }),
+    },
     saveAdapter: new MulterDiskStorageContentUploadAdapter({
       rootDirectory: env.contentRootDirectory,
     }),
@@ -197,5 +129,4 @@ const createDependencies = (env = {}) => {
 };
 
 module.exports = createDependencies;
-module.exports.resolveLoginAuthConfig = resolveLoginAuthConfig;
 module.exports.assertRequiredSecurityConfiguration = assertRequiredSecurityConfiguration;

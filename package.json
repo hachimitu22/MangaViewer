@@ -15,9 +15,7 @@
     "test:all:coverage": "cross-env NODE_ENV=test LOG_OUTPUTS=memory jest __tests__/ --coverage",
     "make-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -o ./doc/5_api/openapi/openapi.html",
     "watch-api": "node ./node_modules/aglio/bin/aglio.js -i ./doc/5_api/openapi/openapi.yaml -s",
-    "dev:entry": "npm run dev",
-    "seed:user": "node ./scripts/seed-fixed-user.js",
-    "start:seeded": "npm run seed:user && npm run start"
+    "dev:entry": "npm run dev"
   },
   "author": "",
   "license": "MIT",
