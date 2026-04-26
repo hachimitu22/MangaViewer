@@ -15,9 +15,6 @@
 | --- | --- | --- |
 | `databaseStoragePath` | 必須 | SQLite ファイルの保存先。親ディレクトリを自動生成する。 |
 | `contentRootDirectory` | 必須 | メディアコンテンツ保存先。ディレクトリを自動生成する。 |
-| `loginPassword` | 任意 | `StaticLoginAuthenticator` のパスワード。未指定時は `admin`。 |
-| `loginUserId` | 任意 | ログイン成功時の主体 ID。未指定時は `admin`。 |
-| `loginSessionTtlMs` | 任意 | 通常ログインセッションの TTL。未指定時は `86400000`。 |
 | `devSessionToken` | 条件付き | 開発用固定セッションのトークン。 |
 | `devSessionUserId` | 条件付き | 開発用固定セッションの主体 ID。 |
 | `devSessionTtlMs` | 条件付き | 開発用固定セッションの TTL。正の整数時のみ有効。 |
@@ -31,7 +28,6 @@
 - `SequelizeMediaRepository` / `SequelizeMediaQueryRepository` / `SequelizeUserRepository` を生成する。
 - `InMemorySessionStateStore` を生成する。
 - `MulterDiskStorageContentUploadAdapter` と `UUIDMediaIdValueGenerator` を生成する。
-- `StaticLoginAuthenticator` を `env.loginUserId` / `env.loginPassword` から生成する。
 - `SessionStateRegistrar` / `SessionTerminator` / `SessionStateAuthAdapter` を生成する。
 
 ### アプリケーションサービスの生成
