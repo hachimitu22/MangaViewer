@@ -7,17 +7,17 @@
 ## 前提条件
 
 - テスト実行前にアプリケーションが起動できること
-- セッション機能が有効であること
+- 管理者APIトークンを利用できること
 - テストデータ投入/クリーンアップ手段が利用可能であること
 
 ## テストケース一覧
 
-### TC-E2E-001: ログイン後にメディア一覧へ遷移できる
+### TC-E2E-001: 初期画面からメディア一覧へ遷移できる
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-to-summary.large.test.js`
 - 観点:
-  - ログイン画面の表示
-  - 認証成功後の `/screen/summary` 遷移
+  - 初期画面の表示
+  - 初期導線から `/screen/summary` へ遷移できること
   - 一覧画面の主要要素表示
 
 ### TC-E2E-002: 一覧画面で検索・並び替え・ページングが機能する
@@ -36,27 +36,27 @@
   - お気に入り追加/解除
   - あとで見る追加/解除
 
-### TC-E2E-004: 画面ナビゲーションとログアウトが機能する
+### TC-E2E-004: 画面ナビゲーションが機能する
 
 - 対応テスト: `__tests__/large/e2e/navigation/navigation-and-exit.large.test.js`
 - 観点:
   - ナビゲーションリンク遷移
   - 保護画面へのアクセス制御
-  - ログアウト後の遷移/再アクセス制御
+  - 画面間の遷移整合
 
-### TC-E2E-005: 認可境界で未認証拒否と認証後許可が切り替わる
+### TC-E2E-005: 認可境界で拒否と許可が切り替わる
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard.large.test.js`
 - 観点:
-  - 未ログインで保護画面（`/screen/summary`, `/screen/detail/:mediaId`, `/screen/preference`, `/screen/watchlist`, `/screen/entry`, `/screen/edit/:mediaId`）へ直接アクセスした際の統一的な拒否（401）
-  - 未ログインで保護 API（`PUT /api/preference/:mediaId`, `PUT /api/watchlist/:mediaId`, `PATCH /api/media/:mediaId`, `DELETE /api/media/:mediaId`）を呼んだ際の拒否
-  - ログイン後に同一 API / 画面アクセスが許可されること
+  - 条件未充足で保護画面（`/screen/summary`, `/screen/detail/:mediaId`, `/screen/preference`, `/screen/watchlist`, `/screen/entry`, `/screen/edit/:mediaId`）へ直接アクセスした際の統一的な拒否（401）
+  - 条件未充足で保護 API（`PUT /api/preference/:mediaId`, `PUT /api/watchlist/:mediaId`, `PATCH /api/media/:mediaId`, `DELETE /api/media/:mediaId`）を呼んだ際の拒否
+  - 条件充足後に同一 API / 画面アクセスが許可されること
 
 ### TC-E2E-006: ビューアーのページ遷移と URL パラメータ整合が機能する
 
 - 対応テスト: `__tests__/large/e2e/viewer/viewer-navigation.large.test.js`
 - 観点:
-  - ログイン後に一覧から `/screen/viewer/:mediaId/:mediaPage` へ遷移できる
+  - 一覧から `/screen/viewer/:mediaId/:mediaPage` へ遷移できる
   - `mediaPage=1` から次ページへ進み、前ページへ戻れる
   - 先頭ページで前ページ移動不可、末尾ページで次ページ移動不可の表示制御
   - URL パラメータ（mediaId, mediaPage）と画面表示（画像/ページ番号）の一致
@@ -110,22 +110,22 @@
   - sort クエリ変更で表示順（date/title, asc/desc）が切り替わる
   - 一覧上の解除操作（`DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId`）後に件数とページ表示が整合する
 
-### TC-E2E-013: ログイン失敗時に遷移せずエラーメッセージを表示する
+### TC-E2E-013: 初期導線失敗時に遷移せずエラーメッセージを表示する
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-failure.large.test.js`
 - 観点:
   - 誤った認証情報で `POST /api/auth` を送信した際に失敗コード（`code: 1`）を受け取る
   - `/screen/auth` に留まり、`/screen/summary` へ遷移しない
-  - ログイン画面に失敗メッセージが表示され、再入力可能な状態を維持する
+  - 初期画面に失敗メッセージが表示され、再入力可能な状態を維持する
 
 
 ### TC-E2E-014: 認可境界の未カバー導線（viewer/search と API post/exit）を検証する
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard-uncovered-routes.large.test.js`
 - 観点:
-  - 未ログインで `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
-  - 未ログインで `POST /api/media`, `POST /api/navigation-exit`, `DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId` を実行した際に `401` で拒否される
-  - ログイン後は同一導線が許可される
+  - 条件未充足で `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
+  - 条件未充足で `POST /api/media`, `POST /api/navigation-exit`, `DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId` を実行した際に `401` で拒否される
+  - 条件充足後は同一導線が許可される
 
 ### TC-E2E-015: 画面で利用する各APIの異常系で画面内メッセージ表示と再操作ができる
 
@@ -143,7 +143,7 @@
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
 - `POST /api/auth`, `POST /api/media`, `PATCH/DELETE /api/media/{mediaId}`, `PUT/DELETE /api/preference/{mediaId}`, `PUT/DELETE /api/watchlist/{mediaId}`, `POST /api/navigation-exit` の異常系で、画面遷移ではなく画面内エラーメッセージ表示と再操作可能性が満たされること
-- セッション状態の開始/終了が期待どおりであること
+- 画面状態の遷移が期待どおりであること
 - 操作結果（お気に入り・あとで見る等）が画面表示に反映されること
 
 ## メンテナンス方針

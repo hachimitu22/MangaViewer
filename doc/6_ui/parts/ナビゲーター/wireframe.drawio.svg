@@ -315,13 +315,13 @@
                                         <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 128px; height: 1px; padding-top: 140px; margin-left: 901px;">
                                             <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
                                                 <div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; font-weight: bold; white-space: normal; word-wrap: normal; ">
-                                                    ログアウト
+                                                    メニュー
                                                 </div>
                                             </div>
                                         </div>
                                     </foreignObject>
                                     <text x="965" y="145" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="16px" text-anchor="middle" font-weight="bold">
-                                        ログアウト
+                                        メニュー
                                     </text>
                                 </switch>
                             </g>
