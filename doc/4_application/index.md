@@ -15,18 +15,6 @@
   - [IMediaRepository](./media/port/IMediaRepository/readme.md)
   - [IMediaQueryRepository](./media/port/IMediaQueryRepository/readme.md)
 
-### ユーザー
-- command
-  - [AddFavorite](./user/command/AddFavorite/readme.md)
-  - [RemoveFavorite](./user/command/RemoveFavorite/readme.md)
-  - [AddQueue](./user/command/AddQueue/readme.md)
-  - [RemoveQueue](./user/command/RemoveQueue/readme.md)
-  - [LoginService](./user/command/LoginService/readme.md)
-  - [LogoutService](./user/command/LogoutService/readme.md)
-- query
-  - [GetFavoriteSummariesService](./user/query/GetFavoriteSummariesService/readme.md)
-  - [GetQueueService](./user/query/GetQueueService/readme.md)
-
 
 ### アプリ実行
 - [ImportZips](./app/ImportZips/readme.md)

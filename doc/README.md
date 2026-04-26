@@ -17,17 +17,14 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 - アプリケーションサービスを扱う設計書は、実装ファイル名に合わせて `GetQueueService` のように `Service` を含む名称で統一する。
 - 見出し・シーケンス図・参照リンク・テストケース名も basename に合わせて一括更新し、差分抽出時に名称ゆれを残さない。
 
-## 固定ユーザーseed運用
 
 ### 事前設定（環境変数）
-固定ユーザーの認証情報はコードに直書きせず、以下の環境変数から注入する。
 
 - 必須
   - `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）
   - `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）
 - 禁止事項
   - `ALLOW_INSECURE_DEFAULT_LOGIN=true` は **ローカル開発を含め常時禁止**。
-  - `admin/admin` のような弱いデフォルト認証を恒常運用しない。
 
 `.env.example` には変数名のみを置き、実値は安全な共有手段（シークレットマネージャーなど）で管理すること。
 
@@ -51,11 +48,7 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 - `npm run start:test`
   - `.env.test` を読み込んでテスト用にサーバー起動する。
   - `DEV_SESSION_*` はこの用途でのみ使用する。
-- `npm run seed:user`
-  - 固定ユーザー作成seedのみ実行する。
   - 開発・検証用途。`NODE_ENV=production` では即時失敗する。
-- `npm run start:seeded`
-  - `seed:user` を実行してから通常起動する。
   - 初期セットアップや手動確認用。
 
 ## 考慮不足
