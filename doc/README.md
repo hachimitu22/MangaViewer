@@ -17,59 +17,29 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 - アプリケーションサービスを扱う設計書は、実装ファイル名に合わせて `GetQueueService` のように `Service` を含む名称で統一する。
 - 見出し・シーケンス図・参照リンク・テストケース名も basename に合わせて一括更新し、差分抽出時に名称ゆれを残さない。
 
-## 固定ユーザーseed運用
+## 運用方針（管理者提供メディア閲覧サービス）
 
-### 事前設定（環境変数）
-固定ユーザーの認証情報はコードに直書きせず、以下の環境変数から注入する。
+本サービスは「管理者が登録したメディアを閲覧者が参照する」運用を前提とする。
+閲覧体験の中核はメディア一覧・詳細・ビューアーであり、ユーザー固有データ（固定ユーザーseed、個別ユーザー追加運用）には依存しない。
 
-- 必須
-  - `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）
-  - `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）
-- 禁止事項
-  - `ALLOW_INSECURE_DEFAULT_LOGIN=true` は **ローカル開発を含め常時禁止**。
-  - `admin/admin` のような弱いデフォルト認証を恒常運用しない。
-
-`.env.example` には変数名のみを置き、実値は安全な共有手段（シークレットマネージャーなど）で管理すること。
-
-### 初回起動時の必須設定手順
-1. `.env` または Secret に `FIXED_LOGIN_USER_ID`（または `LOGIN_USER_ID`）を設定する。
-2. `.env` または Secret に `FIXED_LOGIN_PASSWORD` または `FIXED_LOGIN_PASSWORD_HASH`（`LOGIN_*` 系でも可）を設定する。
-3. `APP_ORIGIN` を設定する（例: `http://127.0.0.1:3000`）。
-4. `ALLOW_INSECURE_DEFAULT_LOGIN` を設定しない（または `false` を明示）ことを確認する。
-5. `npm run start` で起動し、設定漏れや禁止設定があれば fail-close で起動失敗することを確認する。
-
-### 移行手順（既存運用向け）
-1. 既存の `.env` / Secret 設定に `*_LOGIN_USER_ID` / `*_LOGIN_PASSWORD or *_LOGIN_PASSWORD_HASH` を必ず追加する。
-2. `ALLOW_INSECURE_DEFAULT_LOGIN` を未設定（または `false`）にする。
-3. CI/CD で `npm run start` もしくは起動ヘルスチェックを実行し、設定漏れがあれば起動失敗で検知する。
+### 初期セットアップ
+1. `APP_ORIGIN` を設定する（例: `http://127.0.0.1:3000`）。
+2. 管理系更新 API 用に `ADMIN_API_TOKEN` を設定する。
+3. `npm run start` で起動し、管理者経由でメディア登録・更新・削除が実行できることを確認する。
 
 ### npm script の用途
 - `npm run start`
-  - `.env` を読み込んで通常起動（本番同等）する。seed処理は実行しない。
+  - `.env` を読み込んで通常起動（本番同等）する。
 - `npm run dev`
   - `.env.dev` を読み込んで開発起動する。
 - `npm run start:test`
   - `.env.test` を読み込んでテスト用にサーバー起動する。
-  - `DEV_SESSION_*` はこの用途でのみ使用する。
-- `npm run seed:user`
-  - 固定ユーザー作成seedのみ実行する。
-  - 開発・検証用途。`NODE_ENV=production` では即時失敗する。
-- `npm run start:seeded`
-  - `seed:user` を実行してから通常起動する。
-  - 初期セットアップや手動確認用。
-
-## 考慮不足
-
-- [ ] ユーザー、管理者はどうやって追加する？
 
 ## 改良案
 
 - [ ] 検索条件をメディア一覧で入力可能とする
 - [ ] サーバー側のログ出力機能を追加
 - [ ] しおり機能
-- [ ] あとで見るのメディアを最後まで見たら一覧から削除する
-- [ ] ビューアーからのお気に入り登録
-
 
 ## 管理系 API 認可ポリシー（暫定）
 - `/api/media` 系の更新系 API（POST/PATCH/DELETE）は、通常ユーザーセッション認証ではなく管理者向けの別認可を使う。
