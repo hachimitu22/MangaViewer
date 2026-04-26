@@ -10,9 +10,6 @@
 ## アクター
 - クライアント
 
-## 前提条件
-- 認証済みセッションであること。
-
 ## 入力
 - `Input` は `title` / `tags` / `sortType` / `start` / `size` を受け取る。
 - 詳細な型・制約・`sortType` の列挙値は [SearchCondition 設計書](/doc/4_application/media/port/SearchCondition/readme.md) を参照する。

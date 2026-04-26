@@ -1,6 +1,6 @@
 # createApp テストケース整理
 
-## medium: ルーティング統合・未定義ルート・開発用固定認証連携
+## medium: ルーティング統合・未定義ルート
 
 ### M-01: 既存 screen ルートは個別レスポンス、未定義 screen ルートは共通 404
 - 前提
@@ -27,33 +27,6 @@
   - `/screen/error/not-found` `/screen/entry/not-found` `/api/media/not-found` を実行する。
 - 期待結果
   - すべて `404` JSON `{ message: 'Not Found' }` を返す。
-
-### M-04: 開発用固定認証設定が無効な場合、`createDependencies` は事前登録しない
-- 前提
-  - 開発用固定認証を無効にして依存を生成する。
-- 操作
-  - `await dependencies.ready` 後、固定トークンで認可解決を実行する。
-- 期待結果
-  - 対象が見つからず `undefined` を返す。
-
-### M-05: 開発用固定認証設定が無効な場合、`setupMiddleware` は認証情報を補完しない
-- 前提
-  - `express()` に `setupMiddleware` を適用し、開発用固定認証を無効にして対象パスを指定する。
-- 操作
-  - `GET /screen/entry` を実行し、レスポンスで認証情報を観測する。
-- 期待結果
-  - 認証情報は `null` のまま（自動補完なし）。
-
-### M-06: server 初期化相当で開発用固定認証無効時は有効化ログを出力しない
-- 前提
-  - 固定認証を無効にする環境変数を設定する。
-  - `src/app` をモックして `server` 起動の最小経路を実行する。
-- 操作
-  - `require('../../../src/server')` を実行し、`console.log` / `console.error` / `process.exit` を監視する。
-- 期待結果
-  - `listen` は呼び出される。
-  - 「開発用固定認証を有効化しました」を含むログは出力されない。
-  - `console.error` と `process.exit` は呼び出されない。
 
 ## 参照
 - [createApp 設計書](/doc/4_application/app/createApp/readme.md)
