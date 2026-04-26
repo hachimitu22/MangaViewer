@@ -1,8 +1,0 @@
-' 認証ガード共通シーケンス（新仕様）
-' 各画面はセッション未認証時に /screen/summary へ遷移する
-
-alt セッション未認証
-  participant C as Controller
-  C --> B : 301 Redirect /screen/summary
-  return
-end

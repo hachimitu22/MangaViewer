@@ -7,7 +7,6 @@ participant サーバー
 database データベース
 
 クライアント -> サーバー: リクエスト
-!include ./auth_guard.puml
 
 サーバー -> データベース: メディアを検索
 サーバー <-- データベース: メディア一覧
