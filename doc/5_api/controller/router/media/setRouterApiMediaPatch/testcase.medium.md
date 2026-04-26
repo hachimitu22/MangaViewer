@@ -5,6 +5,6 @@
 - 登録済みハンドラーを順に実行すると認証・CSRF検証・保存・更新が連携する。
 
 ## 期待結果
-- ハンドラー順: `SessionAuthMiddleware` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPatchController`。
+- ハンドラー順: `認証ミドルウェア` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPatchController`。
 - 正常時は `200 + { code: 0 }`。
 - 入力不正時のレスポンス仕様は `MediaPatchController` の定義（`400 + Bad Request`）に従う。

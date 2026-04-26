@@ -28,7 +28,7 @@
 - **操作**
   - 登録済みの2ハンドラーを順に実行する。
 - **結果**
-  - 認証処理が `session_token` で呼ばれる。
+  - 認証処理が `auth_token` で呼ばれる。
   - ビューアー取得処理が `mediaId` / `mediaPage` を使って実行される。
   - `screen/viewer` が `content` / `previousPage` / `nextPage` を含む表示データで描画される。
   - `content.id` は `/contents/...` の公開パスとして描画モデルへ渡される。
@@ -44,7 +44,7 @@
   - `/screen/error` へのリダイレクトに委譲される。
 
 ## medium テストで担保する観点
-- `__tests__/medium/controller/router/screen/setRouterScreenViewerGet.test.js` では、Express アプリへ当該ルーターを登録した状態で `GET /screen/viewer/:mediaId/:mediaPage` を実行し、認証済みセッションから HTML を返せることを担保する。
+- `__tests__/medium/controller/router/screen/setRouterScreenViewerGet.test.js` では、Express アプリへ当該ルーターを登録した状態で `GET /screen/viewer/:mediaId/:mediaPage` を実行し、認証済み状態から HTML を返せることを担保する。
 - medium テストでは `FoundResult` を返した際に `screen/viewer` テンプレートが描画され、`pageTitle`、表示中コンテンツ、前後ページ導線がレスポンスへ反映されることを担保する。
 - medium テストでは先頭ページで `previousPage` が `null` になり、前ページ導線なしで描画されることを担保する。
 - medium テストでは `MediaNotFoundResult` と `ContentNotFoundResult` の双方で `/screen/error` へ `301` リダイレクトされることを担保する。

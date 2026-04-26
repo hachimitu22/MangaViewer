@@ -25,7 +25,6 @@
 - `getQueueService`
 - `searchMediaService`
 - `loginService`
-- `logoutService`
 - `saveAdapter`
 - `mediaIdValueGenerator`
 - `mediaRepository`
@@ -43,7 +42,7 @@
 - 画面ルートを登録する。
   - root(/) / entry / detail / edit / error / favorite / login / queue / search / summary / viewer
 - API ルートを登録する。
-  - login / logout / media post / media patch / media delete / favorite and queue
+  - media post / media patch / media delete
 - 各登録時に必要な依存だけを明示的に渡すことで、各 `setRouter...` の入力契約を固定する。
 
 ## 登録順序
@@ -58,12 +57,6 @@
 - レスポンスボディは JSON `{ "message": "Not Found" }` を返す。
 - 画面 URL と API URL を区別せず、未定義ルート時の共通フォールバックとして適用する。
 - 本ハンドラーは `setupRoutes` の責務に含まれ、個別 `setRouter...` モジュールでは扱わない。
-
-## `DevelopmentSession` との関係
-- `setupRoutes` 自体は `DevelopmentSession` を直接判定しない。
-- ただし、認証必須ルートに注入される `authResolver` は、`setupMiddleware` が補完した `req.session.session_token` を前提に動作する。
-- そのため、開発用固定セッションが有効な場合でも、各ルートは通常の認証フローと同じ経路で利用される。
-- 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
 
 ## 関連テスト
 - [small テスト観点](/doc/5_api/controller/router/setupRoutes/testcase.small.md)

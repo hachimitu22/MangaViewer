@@ -2,7 +2,7 @@
 
 ## 概要
 - `POST /api/media` のルーティング定義。
-- ハンドラー順: `SessionAuthMiddleware` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
+- ハンドラー順: `認証ミドルウェア` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
 
 ## エラーハンドリング
 - 認証失敗: `401`

@@ -2,18 +2,18 @@
 
 ## 概要
 - ビューアー画面表示用のルーティング定義を担当する。
-- セッション認証後にビューアー画面コントローラーを呼び出し、`screen/viewer` を描画する。
-- Node.js / Express の `router.get` に対して、`SessionAuthMiddleware` → `ScreenViewerGetController` の順でハンドラーを設定する。
+- 認証後にビューアー画面コントローラーを呼び出し、`screen/viewer` を描画する。
+- Node.js / Express の `router.get` に対して、`認証ミドルウェア` → `ScreenViewerGetController` の順でハンドラーを設定する。
 
 ## 対象
 - `GET /screen/viewer/:mediaId/:mediaPage`
 
 ## 認証
 - 必須。
-- `SessionAuthMiddleware` により `req.session.session_token` を検証し、`req.context.userId` を設定する。
+- `認証ミドルウェア` により `req.context.authToken` を検証し、`req.context.userId` を設定する。
 
 ## 依存
-- [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware/readme.md)
+- 認証ミドルウェア
 - [ScreenViewerGetController](/doc/5_api/controller/screen/ScreenViewerGetController/readme.md)
 - [GetMediaContentWithNavigationService](/doc/4_application/media/query/GetMediaContentWithNavigationService/readme.md)
 
@@ -22,15 +22,15 @@
   - Express Router。
   - `get(path, ...handlers)` を持つ。
 - `authResolver`
-  - セッショントークンから `userId` を解決するアダプタ。
+  - 認証トークンから `userId` を解決するアダプタ。
   - `execute(token)` を持つ。
 - `getMediaContentWithNavigationService`
   - 対象ページと前後ページのコンテンツを取得するアプリケーションサービス。
   - `execute(input)` を持つ。
 
 ## ルーティングフロー
-1. `SessionAuthMiddleware`
-   - `req.session.session_token` を検証し、`req.context.userId` を設定する。
+1. `認証ミドルウェア`
+   - `req.context.authToken` を検証し、`req.context.userId` を設定する。
 2. `ScreenViewerGetController`
    - `req.params.mediaId` / `req.params.mediaPage` を使って `GetMediaContentWithNavigationService` を実行する。
    - 正常時は `screen/viewer` を描画し、異常時は `/screen/error` へリダイレクトする。
@@ -50,7 +50,7 @@
   - メディア未存在・ページ未存在・予期しない例外時は `/screen/error` へ `301` リダイレクトする。
 
 ## エラーハンドリング
-- 認証失敗時は `401` を返す（SessionAuthMiddleware）。
+- 認証失敗時は `401` を返す（認証ミドルウェア）。
 - ビューアー表示処理中のエラー制御は `ScreenViewerGetController` 側に委譲する。
 
 ## 関連ドキュメント
