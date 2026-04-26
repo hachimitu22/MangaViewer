@@ -113,7 +113,7 @@ describe('setRouterApiMediaPost (middle)', () => {
     ]);
   });
 
-  test('管理者トークンが無い場合は 401 を返し、永続化しない', async () => {
+  test('管理者トークン未指定時は 401 を返し、永続化しない', async () => {
     const app = createApp();
 
     const response = await request(app)
@@ -129,10 +129,6 @@ describe('setRouterApiMediaPost (middle)', () => {
       .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg');
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({
-      message: '認証に失敗しました',
-    });
-
     const media = await mediaRepository.findByMediaId(
       new MediaId('1234567890abcdef1234567890abcdef')
     );

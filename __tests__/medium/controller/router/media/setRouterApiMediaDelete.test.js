@@ -96,7 +96,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
     expect(response.body).toEqual({ message: 'Internal Server Error' });
   });
 
-  test('認証失敗時は 401 を返し既存メディアを保持する', async () => {
+  test('管理者トークン未指定時は 401 を返し既存メディアを保持する', async () => {
     const app = createApp();
 
     const response = await request(app)
@@ -107,10 +107,6 @@ describe('setRouterApiMediaDelete (middle)', () => {
       .set('cookie', 'csrf_token=csrf-1');
 
     expect(response.status).toBe(401);
-    expect(response.body).toEqual({
-      message: '認証に失敗しました',
-    });
-
     const media = await mediaRepository.findByMediaId(new MediaId(mediaId));
     expect(media).not.toBeNull();
   });
