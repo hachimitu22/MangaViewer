@@ -16,10 +16,10 @@
 | `databaseStoragePath` | 必須 | SQLite ファイルの保存先。親ディレクトリを自動生成する。 |
 | `contentRootDirectory` | 必須 | メディアコンテンツ保存先。ディレクトリを自動生成する。 |
 | `loginPassword` | 任意 | `StaticLoginAuthenticator` のパスワード。未指定時は `admin`。 |
-| `loginUserId` | 任意 | ログイン成功時の利用者 ID。未指定時は `admin`。 |
+| `loginUserId` | 任意 | ログイン成功時の主体 ID。未指定時は `admin`。 |
 | `loginSessionTtlMs` | 任意 | 通常ログインセッションの TTL。未指定時は `86400000`。 |
 | `devSessionToken` | 条件付き | 開発用固定セッションのトークン。 |
-| `devSessionUserId` | 条件付き | 開発用固定セッションの利用者 ID。 |
+| `devSessionUserId` | 条件付き | 開発用固定セッションの主体 ID。 |
 | `devSessionTtlMs` | 条件付き | 開発用固定セッションの TTL。正の整数時のみ有効。 |
 | `devSessionPaths` | 任意 | 開発用固定セッションの適用対象パス一覧。生成処理では判定に使わず、他モジュールが参照する。 |
 
@@ -41,13 +41,7 @@
   - `GetMediaContentWithNavigationService`
   - `UpdateMediaService`
   - `DeleteMediaService`
-- ユーザー系
-  - `GetFavoriteSummariesService`
-  - `GetQueueService`
-  - `AddFavoriteService`
-  - `RemoveFavoriteService`
-  - `AddQueueService`
-  - `RemoveQueueService`
+- 認証・セッション系
   - `LoginService`
   - `LogoutService`
 
@@ -65,7 +59,7 @@
 - `hasDevelopmentSession(env)` が `true` の場合のみ、起動直後に `sessionStateStore.save(...)` を 1 回実行する。
 - 登録内容は以下の通り。
   - `sessionToken: env.devSessionToken`
-  - `userId: env.devSessionUserId`
+  - `principalId: env.devSessionUserId`（実装側の識別子キーへ格納）
   - `ttlMs: env.devSessionTtlMs`
 - この事前登録により、`setupMiddleware` が注入した固定トークンを `SessionStateAuthAdapter` が通常セッションと同様に解決できる。
 - 開発用固定セッションの有効条件そのものは [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
