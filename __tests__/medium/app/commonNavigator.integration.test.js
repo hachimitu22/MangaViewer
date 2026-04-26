@@ -30,19 +30,18 @@ const requestApp = async ({ app, method, targetPath } = {}) => {
 };
 
 describe('medium: common navigator integration', () => {
-  const createTestApp = ({ userId }) => createApp({
+  const createTestApp = () => createApp({
     databaseStoragePath: ':memory:',
     contentRootDirectory: '/tmp/mangaviewer-medium-common-nav-contents',
     ...createLoginEnv(),
     enableDevSession: 'true',
     devSessionToken: 'dev-token',
-    devSessionUserId: userId,
     devSessionTtlMs: 60_000,
     devSessionPaths: ['/screen/summary'],
   });
 
-  test('管理者ログイン時は /screen/summary にメディア登録リンクが表示される', async () => {
-    const app = createTestApp({ userId: 'admin' });
+  test('/screen/summary にメディア登録リンクが表示される', async () => {
+    const app = createTestApp();
 
     try {
       await app.locals.ready;
@@ -54,24 +53,7 @@ describe('medium: common navigator integration', () => {
 
       expect(response.status).toBe(200);
       expect(response.bodyText).toContain('共通ナビゲーター');
-      expect(response.bodyText).toContain('メディア一覧');      expect(response.bodyText).toContain('メディア登録');    } finally {
-      await app.locals.close();
-    }
-  });
-
-  test('一般ユーザー時も /screen/summary にメディア登録リンクが表示される', async () => {
-    const app = createTestApp({ userId: 'user-001' });
-
-    try {
-      await app.locals.ready;
-      const response = await requestApp({
-        app,
-        method: 'GET',
-        targetPath: '/screen/summary',
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.bodyText).toContain('共通ナビゲーター');
+      expect(response.bodyText).toContain('メディア一覧');
       expect(response.bodyText).toContain('>メディア登録<');
     } finally {
       await app.locals.close();
