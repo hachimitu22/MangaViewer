@@ -5,11 +5,9 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
 
   dependencies.routeSetters.setRouterRootGet({
     router,
-    authResolver: dependencies.authResolver,
   });
   dependencies.routeSetters.setRouterScreenEntryGet({
     router,
-    authResolver: dependencies.authResolver,
   });
   dependencies.routeSetters.setRouterScreenDetailGet({
     router,
@@ -17,7 +15,6 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
   });
   dependencies.routeSetters.setRouterScreenEditGet({
     router,
-    authResolver: dependencies.authResolver,
     getMediaDetailService: dependencies.getMediaDetailService,
   });
 

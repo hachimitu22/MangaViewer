@@ -147,7 +147,6 @@ const setRouterScreenSummaryGet = ({ router, searchMediaService }) => {
       } catch (error) {
         logger?.error('screen.summary.error', {
           request_id: req.context?.requestId,
-          user_id: req.context?.userId || 'anonymous',
           message: error?.message,
           error,
         });
