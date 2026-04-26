@@ -1,11 +1,11 @@
 @startuml
 left to right direction
-actor "閲覧者" as Viewer
-actor "管理者提供コンテンツ利用者" as Manager
+actor "利用者" as Viewer
+actor "管理操作利用者" as Manager
 
 note bottom of Manager
-    閲覧者と
-    同じユースケースも
+    利用者向け操作に加えて
+    管理操作も
     実行可能
 end note
 
