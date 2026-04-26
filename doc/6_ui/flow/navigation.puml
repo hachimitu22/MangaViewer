@@ -1,6 +1,6 @@
 @startuml
 
-state "ログイン済" as Signin {
+state "利用中" as InUse {
     summary : メディア一覧
     search : メディア検索
     navigation : ナビゲーション
@@ -11,8 +11,8 @@ state "ログイン済" as Signin {
 }
 
 ' 共通
-Signin.navigation --> Signin.summary : トップ
-Signin.navigation --> Signin.search : メディア検索を選択
-Signin.navigation --> Signin.Admin.entry : メディア登録を選択
+InUse.navigation --> InUse.summary : トップ
+InUse.navigation --> InUse.search : メディア検索を選択
+InUse.navigation --> InUse.Admin.entry : メディア登録を選択
 
 @enduml
