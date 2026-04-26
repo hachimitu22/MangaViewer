@@ -29,7 +29,7 @@
 - 上記を満たさない場合は `LoginService` を呼び出さず、失敗レスポンスを返す。
 
 ## 依存する application service
-- [LoginService](/doc/4_application/user/command/LoginService/readme.md)
+- LoginService（アプリケーション層の認証サービス実装を参照）
   - `Query`: `username` / `password` / `session` を保持する入力DTO。
   - `LoginSucceededResult`: 成功時結果。`sessionToken` と `code: 0` を持つ。
   - 失敗時結果: `code: 1` を持つ結果オブジェクト。

@@ -10,7 +10,7 @@
 
 ## 依存
 - [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware/readme.md)
-- [GetFavoriteSummariesService](/doc/4_application/user/query/GetFavoriteSummariesService/readme.md)
+- GetFavoriteSummariesService（お気に入り一覧取得サービス実装を参照）
 
 ## 依存注入
 - `router`

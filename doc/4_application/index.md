@@ -15,18 +15,6 @@
   - [IMediaRepository](./media/port/IMediaRepository/readme.md)
   - [IMediaQueryRepository](./media/port/IMediaQueryRepository/readme.md)
 
-### ユーザー
-- command
-  - [AddFavorite](./user/command/AddFavorite/readme.md)
-  - [RemoveFavorite](./user/command/RemoveFavorite/readme.md)
-  - [AddQueue](./user/command/AddQueue/readme.md)
-  - [RemoveQueue](./user/command/RemoveQueue/readme.md)
-  - [LoginService](./user/command/LoginService/readme.md)
-  - [LogoutService](./user/command/LogoutService/readme.md)
-- query
-  - [GetFavoriteSummariesService](./user/query/GetFavoriteSummariesService/readme.md)
-  - [GetQueueService](./user/query/GetQueueService/readme.md)
-
 ## 実行コンテキスト設計方針
 - 境界は Application Service の `execute` で開始する。
 - Repository は実行コンテキストを引数で受け取らず、コンテキストオブジェクトから取得する。
