@@ -37,7 +37,7 @@ Service -> infrastructure: コンテンツ削除
 infrastructure -> ストレージ: コンテンツ削除
 note over Service, ストレージ
     コンテンツの削除に失敗してもメディア削除の失敗として扱わない。
-    コンテンツが残っていても利用主体から参照されることは無いため問題ない。
+    コンテンツが残っていても外部インターフェースから参照されることは無いため問題ない。
 end note
 Controller <-- Service: メディア削除成功
 クライアント <-- Controller: 200 成功
