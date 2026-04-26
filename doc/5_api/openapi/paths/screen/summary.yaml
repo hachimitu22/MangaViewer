@@ -1,8 +1,6 @@
 # /summary
 get:
   summary: メディア一覧画面
-  security:
-    - cookieAuth: []
   parameters:
     - name: summaryPage
       description: メディア一覧ページ番号

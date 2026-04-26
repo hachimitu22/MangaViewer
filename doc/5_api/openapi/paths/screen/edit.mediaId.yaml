@@ -1,8 +1,6 @@
 # /edit/{mediaId}
 get:
   summary: メディア編集画面
-  security:
-    - cookieAuth: []
   parameters:
     - name: mediaId
       in: path
