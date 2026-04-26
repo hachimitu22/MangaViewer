@@ -2,7 +2,7 @@
 
 ## 概要
 - `DELETE /api/media/:mediaId` を受け取り、`DeleteMediaService` へ委譲する。
-- 認証・CSRF検証は前段ミドルウェアで完了している前提。
+- CSRF検証は前段ミドルウェアで完了している前提。
 
 ## バリデーション
 - `mediaId`: 非空 `string`

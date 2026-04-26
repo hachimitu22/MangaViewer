@@ -6,6 +6,6 @@
 - `saveAdapter` が不正な場合は初期化時に例外となる。
 
 ## 期待結果
-- ハンドラー順: `認証ミドルウェア` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
-- リクエストにはルーターで要求される認証情報とCSRF検証情報を付与する。
+- ハンドラー順: `GuardMiddleware` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
+- リクエストにはルーターで要求されるヘッダー情報とCSRF検証情報を付与する。
 - 正常時は `200 + { code: 0, mediaId }`。

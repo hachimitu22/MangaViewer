@@ -7,7 +7,7 @@ title delete /media/{mediaId}
 クライアント -> Controller: リクエスト
 
 note over Controller, データベース
-    認証チェック
+    前段ミドルウェアチェック
 end note
 
 Controller -> Service: メディア削除処理

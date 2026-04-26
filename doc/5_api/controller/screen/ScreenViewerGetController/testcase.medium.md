@@ -62,5 +62,5 @@
   - controller が想定外結果を例外化し、最終的に `res.redirect(301, '/screen/error')` を呼び出す。
 
 ## テスト責務の境界
-- 認証ミドルウェアや route 登録の正しさは router テストで担保する。
+- route 登録の正しさは router テストで担保する。
 - controller 単体では service 戻り値の分岐と viewer 描画モデル生成に限定して確認する。

@@ -2,10 +2,10 @@
 
 ## 概要
 - `DELETE /api/media/:mediaId` のルーティング定義。
-- ハンドラー順: `認証ミドルウェア` → `CsrfProtectionMiddleware` → `MediaDeleteController`。
+- ハンドラー順: `GuardMiddleware` → `CsrfProtectionMiddleware` → `MediaDeleteController`。
 
 ## エラーハンドリング
-- 認証失敗: `401`
+- 前段ガード失敗: `401`
 - CSRF不一致 / Origin不一致: `403`
 - 入力不正: `400`
 - 想定外例外: `500`
