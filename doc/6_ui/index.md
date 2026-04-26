@@ -6,7 +6,7 @@
 
 ## APIエラー時の画面方針
 
-- 各画面で実際に使用しているAPI（`POST /api/media`, `PATCH /api/media/{mediaId}`, `DELETE /api/media/{mediaId}`）がエラー系レスポンスを返した場合、画面上にエラーメッセージを表示し、ユーザーに再度実行を促す。
+- 各画面で実際に使用しているAPI（`POST /api/media`, `PATCH /api/media/{mediaId}`, `DELETE /api/media/{mediaId}`）がエラー系レスポンスを返した場合、画面上にエラーメッセージを表示し、閲覧者に再度実行を促す。
 - エラー時の表示内容（文言・表示位置・再操作導線）は各画面仕様に従う。
 
 ## 画面一覧
