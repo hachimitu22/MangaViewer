@@ -25,19 +25,6 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
   dependencies.routeSetters.setRouterScreenErrorGet({
     router,
   });
-  dependencies.routeSetters.setRouterScreenFavoriteGet({
-    router,
-    authResolver: dependencies.authResolver,
-    getFavoriteSummariesService: dependencies.getFavoriteSummariesService,
-  });
-  dependencies.routeSetters.setRouterScreenLoginGet({
-    router,
-  });
-  dependencies.routeSetters.setRouterScreenQueueGet({
-    router,
-    authResolver: dependencies.authResolver,
-    getQueueService: dependencies.getQueueService,
-  });
   dependencies.routeSetters.setRouterScreenSearchGet({
     router,
     authResolver: dependencies.authResolver,
@@ -51,19 +38,6 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
     router,
     authResolver: dependencies.authResolver,
     getMediaContentWithNavigationService: dependencies.getMediaContentWithNavigationService,
-  });
-
-  dependencies.routeSetters.setRouterApiLogin({
-    router,
-    loginService: dependencies.loginService,
-    loginAttemptStore: dependencies.loginAttemptStore,
-    allowedOrigin: env.appOrigin,
-  });
-  dependencies.routeSetters.setRouterApiLogout({
-    router,
-    authResolver: dependencies.authResolver,
-    logoutService: dependencies.logoutService,
-    allowedOrigin: env.appOrigin,
   });
 
   dependencies.routeSetters.setRouterApiMediaPost({
@@ -88,16 +62,6 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
     deleteMediaService: dependencies.deleteMediaService,
     allowedOrigin: env.appOrigin,
   });
-  dependencies.routeSetters.setRouterApiFavoriteAndQueue({
-    router,
-    authResolver: dependencies.authResolver,
-    addFavoriteService: dependencies.addFavoriteService,
-    removeFavoriteService: dependencies.removeFavoriteService,
-    addQueueService: dependencies.addQueueService,
-    removeQueueService: dependencies.removeQueueService,
-    allowedOrigin: env.appOrigin,
-  });
-
   app.use(router);
 
   app.use((_req, res) => {
@@ -111,7 +75,7 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
       request_id: req.context?.requestId,
       method: req.method,
       path: req.originalUrl,
-      user_id: req.context?.userId || 'anonymous',
+      actor: 'admin/system',
       message: error?.message,
       error,
     });
