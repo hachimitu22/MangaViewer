@@ -14,7 +14,7 @@
 
 ## 依存
 - [SessionAuthMiddleware](/doc/5_api/controller/middleware/SessionAuthMiddleware/readme.md)
-- [GetQueueService](/doc/4_application/user/query/GetQueueService/readme.md)
+- GetQueueService（あとで見る一覧取得サービス実装を参照）
 
 ## 依存注入
 - `router`
