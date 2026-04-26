@@ -54,7 +54,6 @@ describe('medium: ScreenDetailGetController', () => {
           contents: [{ id: 'content-001', thumbnail: '', position: 1 }],
         },
         currentPath: '/screen/detail',
-        currentUserId: null,
       },
     });
   });
@@ -103,7 +102,6 @@ describe('medium: ScreenViewerGetController', () => {
         mediaId: 'media-001',
         mediaPage: 2,
         currentPath: '/screen/viewer',
-        currentUserId: null,
         content: {
           id: '/contents/page-2.jpg',
           hasRenderableContent: true,
