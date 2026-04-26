@@ -11,7 +11,7 @@
   - ハンドラーが `screen/error` に対してページタイトル・案内文言・主要導線を描画データとして渡すことを確認する。
 - **medium**
   - Express アプリへ実際にルーターを組み込み、`GET /screen/error` で HTTP 200 / `text/html` を返すことを確認する。
-  - `src/views/screen/error.ejs` が実際に描画され、案内文言と主要導線 (`/screen/login`、`/screen/summary`、`/screen/entry`) が HTML 応答本文へ出力されることを確認する。
+  - `src/views/screen/error.ejs` が実際に描画され、案内文言と主要導線 (`/screen/summary`、`/screen/entry`) が HTML 応答本文へ出力されることを確認する。
 
 ---
 
@@ -46,4 +46,4 @@
 - **結果**
   - HTTP ステータスが `200` である。
   - `text/html` のレスポンスとして `src/views/screen/error.ejs` を描画した HTML が返る。
-  - 応答本文に案内文言と主要導線 (`/screen/login`、`/screen/summary`、`/screen/entry`) が含まれる。
+  - 応答本文に案内文言と主要導線 (`/screen/summary`、`/screen/entry`) が含まれる。
