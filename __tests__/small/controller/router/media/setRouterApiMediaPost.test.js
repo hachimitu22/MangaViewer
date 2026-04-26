@@ -11,12 +11,10 @@ describe('setRouterApiMediaPost', () => {
   };
 
   const createReq = () => ({
-    session: {
-            csrf_token: 'csrf-1',
-    },
     protocol: 'http',
     get: name => ({
       'x-csrf-token': 'csrf-1',
+      cookie: 'csrf_token=csrf-1',
       'x-admin-token': 'admin-token',
       origin: 'http://localhost',
       host: 'localhost',

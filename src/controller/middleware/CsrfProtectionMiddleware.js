@@ -17,10 +17,10 @@ class CsrfProtectionMiddleware {
     }
 
     const logger = req.app?.locals?.dependencies?.logger;
-    const sessionToken = req?.session?.csrf_token;
+    const cookieToken = this.#resolveCsrfTokenFromCookie(req);
     const headerToken = req.get('x-csrf-token');
 
-    if (!this.#isNonEmptyString(sessionToken) || headerToken !== sessionToken) {
+    if (!this.#isNonEmptyString(cookieToken) || headerToken !== cookieToken) {
       logger?.warn('security.csrf.validation_failed', {
         request_id: req.context?.requestId,
         reason: 'csrf_token_mismatch',
@@ -119,6 +119,30 @@ class CsrfProtectionMiddleware {
     } catch (_error) {
       return false;
     }
+  }
+
+  #resolveCsrfTokenFromCookie(req) {
+    const cookieHeader = req.get('cookie');
+    if (!this.#isNonEmptyString(cookieHeader)) {
+      return null;
+    }
+
+    const csrfCookie = cookieHeader
+      .split(';')
+      .map(entry => entry.trim())
+      .find(entry => entry.startsWith('csrf_token='));
+
+    if (!this.#isNonEmptyString(csrfCookie)) {
+      return null;
+    }
+
+    const separatorIndex = csrfCookie.indexOf('=');
+    if (separatorIndex <= 0) {
+      return null;
+    }
+
+    const value = csrfCookie.slice(separatorIndex + 1).trim();
+    return this.#isNonEmptyString(value) ? value : null;
   }
 }
 

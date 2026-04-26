@@ -13,7 +13,7 @@ const createApp = () => {
 
   app.get('/protected', (req, res) => {
     res.status(200).json({
-      csrfToken: req.session.csrf_token,
+      csrfToken: res.locals.csrfToken,
       requestId: req.context.requestId,
     });
   });
