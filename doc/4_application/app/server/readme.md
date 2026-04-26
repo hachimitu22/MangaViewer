@@ -17,13 +17,13 @@
 | `DATABASE_STORAGE_PATH` | `databaseStoragePath` | `var/data/mangaviewer.sqlite` | SQLite 保存先 |
 | `CONTENT_ROOT_DIRECTORY` | `contentRootDirectory` | `public/contents` | コンテンツ保存先 |
 | `DEV_SESSION_TOKEN` | `devSessionToken` | 空文字 | 開発用固定セッショントークン |
-| `DEV_SESSION_USER_ID` | `devSessionUserId` | 空文字 | 開発用固定セッションの利用者ID |
+| `DEV_SESSION_USER_ID` | `devSessionUserId` | 空文字 | 開発用固定セッションの主体ID |
 | `DEV_SESSION_TTL_MS` | `devSessionTtlMs` | `parseInt(..., 10) || 0` | 開発用固定セッションの TTL |
 | `DEV_SESSION_PATHS` | `devSessionPaths` | カンマ区切り分解後の配列 | 固定セッションを適用するパス一覧 |
 | `ENABLE_DEV_SESSION` | `enableDevSession` | 空文字 | 開発用固定セッションの明示有効化フラグ（`true` のみ有効） |
 | `ALLOW_REMOTE_DEV_SESSION` | `allowRemoteDevSession` | 空文字 | 非 loopback bind で `ENABLE_DEV_SESSION=true` を強制許可する非常用フラグ（通常は禁止） |
 | `FIXED_LOGIN_PASSWORD` (`LOGIN_PASSWORD` 互換) | `loginPassword` | 空文字 | 固定ログイン認証のパスワード |
-| `FIXED_LOGIN_USER_ID` (`LOGIN_USER_ID` 互換) | `loginUserId` | 空文字 | ログイン成功時の利用者ID |
+| `FIXED_LOGIN_USER_ID` (`LOGIN_USER_ID` 互換) | `loginUserId` | 空文字 | ログイン成功時の主体ID |
 | `LOGIN_SESSION_TTL_MS` | `loginSessionTtlMs` | `parseInt(..., 10) || 86400000` | 通常ログインセッション TTL |
 
 ## `createEnv` の仕様

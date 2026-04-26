@@ -21,10 +21,10 @@
 | `databaseStoragePath` | SQLite ファイル格納先 | `createDependencies` |
 | `contentRootDirectory` | コンテンツ保存先ディレクトリ | `createDependencies` |
 | `loginPassword` | 固定ログイン認証のパスワード | `createDependencies` |
-| `loginUserId` | ログイン成功時に採用するユーザーID | `createDependencies` |
+| `loginUserId` | ログイン成功時に採用する利用主体ID | `createDependencies` |
 | `loginSessionTtlMs` | 通常ログインセッションの TTL | `createDependencies` |
 | `devSessionToken` | 開発用固定セッションのトークン | `createDependencies` / `setupMiddleware` |
-| `devSessionUserId` | 開発用固定セッションのユーザーID | `createDependencies` |
+| `devSessionUserId` | 開発用固定セッションの利用主体ID | `createDependencies` |
 | `devSessionTtlMs` | 開発用固定セッションの TTL | `createDependencies` |
 | `devSessionPaths` | 開発用固定セッションを自動適用するパス一覧 | `setupMiddleware` |
 

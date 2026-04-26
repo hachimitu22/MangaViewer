@@ -11,7 +11,7 @@
 
 **操作**
 1. `await dependencies.ready` で初期化完了を待つ。
-2. `Query`（username/password/session）を使って `dependencies.loginService.execute(...)` を実行する。
+2. `Query`（credential/session）を使って `dependencies.loginService.execute(...)` を実行する。
 3. 返却された `sessionToken` を `dependencies.authResolver.execute(sessionToken)` に渡す。
 
 **期待結果**
