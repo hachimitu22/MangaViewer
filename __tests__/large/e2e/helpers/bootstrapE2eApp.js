@@ -21,9 +21,6 @@ const resolveBaseUrl = server => {
 
 const bootstrapE2eApp = async ({
   prefix = 'mangaviewer-e2e-',
-  loginPassword = 'admin',
-  loginUserId = 'admin',
-  loginSessionTtlMs = 60_000,
   seed,
 } = {}) => {
   const tempRootDirectory = await createE2eTempDirectory(prefix);
@@ -33,9 +30,6 @@ const bootstrapE2eApp = async ({
   const app = createApp({
     databaseStoragePath: tempDatabasePath,
     contentRootDirectory: tempContentDirectory,
-    loginPassword,
-    loginUserId,
-    loginSessionTtlMs,
   });
 
   await app.locals.ready;
