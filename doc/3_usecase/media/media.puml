@@ -1,28 +1,28 @@
 @startuml
 left to right direction
-actor "ユーザー" as User
-actor "管理者" as Admin
+actor "閲覧者" as Viewer
+actor "管理者提供コンテンツ利用者" as Manager
 
-note bottom of Admin
-    ユーザーと
+note bottom of Manager
+    閲覧者と
     同じユースケースも
     実行可能
 end note
 
 package "MediaViewer" {
-    User <|- Admin
+    Viewer <|- Manager
     package "メディア参照" {
-        User --> (メディア一覧表示)
-        User --> (メディア検索)
+        Viewer --> (メディア一覧表示)
+        Viewer --> (メディア検索)
         (メディア検索) -> (メディア一覧表示)
         (メディア一覧表示) --> (メディア詳細表示)
         (メディア詳細表示) ..> (漫画閲覧) : 漫画のとき
         (メディア詳細表示) ..> (動画再生) : 動画のとき
     }
     package "管理者によるメディア管理" {
-        Admin --> (メディア登録)
-        Admin --> (メディア更新)
-        Admin --> (メディア削除)
+        Manager --> (メディア登録)
+        Manager --> (メディア更新)
+        Manager --> (メディア削除)
     }
 }
 @enduml
