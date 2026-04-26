@@ -17,13 +17,12 @@ class CsrfProtectionMiddleware {
     }
 
     const logger = req.app?.locals?.dependencies?.logger;
-    const sessionToken = req?.session?.csrf_token;
+    const stateToken = req?.state?.csrf_token;
     const headerToken = req.get('x-csrf-token');
 
-    if (!this.#isNonEmptyString(sessionToken) || headerToken !== sessionToken) {
+    if (!this.#isNonEmptyString(stateToken) || headerToken !== stateToken) {
       logger?.warn('security.csrf.validation_failed', {
         request_id: req.context?.requestId,
-        user_id: req.context?.userId || req.session?.user_id || 'anonymous',
         reason: 'csrf_token_mismatch',
       });
       return res.status(403).json({
@@ -37,7 +36,6 @@ class CsrfProtectionMiddleware {
     if (!this.#isNonEmptyString(expectedOrigin) || actualOrigin !== expectedOrigin) {
       logger?.warn('security.csrf.validation_failed', {
         request_id: req.context?.requestId,
-        user_id: req.context?.userId || req.session?.user_id || 'anonymous',
         reason: 'origin_mismatch',
         expected_origin: expectedOrigin,
         actual_origin: actualOrigin,

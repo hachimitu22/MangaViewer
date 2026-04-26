@@ -1,14 +1,8 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const ScreenViewerGetController = require('../../screen/ScreenViewerGetController');
 
-const setRouterScreenViewerGet = ({ router, authResolver, getMediaContentWithNavigationService }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
+const setRouterScreenViewerGet = ({ router, getMediaContentWithNavigationService }) => {
   const controller = new ScreenViewerGetController({ getMediaContentWithNavigationService });
-
-  router.get('/screen/viewer/:mediaId/:mediaPage', ...[
-    auth.execute.bind(auth),
-    controller.execute.bind(controller),
-  ]);
+  router.get('/screen/viewer/:mediaId/:mediaPage', controller.execute.bind(controller));
 };
 
 module.exports = setRouterScreenViewerGet;

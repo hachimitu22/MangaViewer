@@ -4,7 +4,6 @@ const path = require('path');
 const SENSITIVE_KEY_PATTERNS = [
   /password/i,
   /token/i,
-  /authorization/i,
   /cookie/i,
   /secret/i,
 ];

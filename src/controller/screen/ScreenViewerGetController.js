@@ -46,7 +46,7 @@ class ScreenViewerGetController {
         mediaId: req.params.mediaId,
         mediaPage,
         currentPath: '/screen/viewer',
-        currentUserId: req.context?.userId || null,
+        currentViewerId: null,
         content: {
           id: contentPath,
           hasRenderableContent: contentPath.length > 0,
