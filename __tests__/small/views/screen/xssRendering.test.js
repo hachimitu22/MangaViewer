@@ -94,7 +94,6 @@ describe('screen template XSS regression', () => {
         tagsByCategory: {},
         categoryOptions: [],
         currentPath: '/screen/entry',
-        currentUserId: 'admin',
       },
       elementIds: [
         'tag-list',
@@ -108,7 +107,6 @@ describe('screen template XSS regression', () => {
         'entry-form',
         'form-message',
         'title',
-        'common-nav-logout',
       ],
       formId: 'entry-form',
     },
@@ -121,7 +119,6 @@ describe('screen template XSS regression', () => {
         tagsByCategory: {},
         categoryOptions: [],
         currentPath: '/screen/edit/media-1',
-        currentUserId: 'admin',
       },
       elementIds: [
         'tag-list',
@@ -137,7 +134,6 @@ describe('screen template XSS regression', () => {
         'form-message',
         'delete-button',
         'title',
-        'common-nav-logout',
       ],
       formId: 'edit-form',
     },
@@ -153,7 +149,6 @@ describe('screen template XSS regression', () => {
         size: '10',
         sortOptions: [{ value: 'createdAtDesc', label: '新しい順' }],
         currentPath: '/screen/search',
-        currentUserId: 'admin',
       },
       elementIds: [
         'search-form',
@@ -168,7 +163,6 @@ describe('screen template XSS regression', () => {
         'tag-list',
         'add-tag-button',
         'form-message',
-        'common-nav-logout',
       ],
       formId: 'search-form',
     },

@@ -78,7 +78,6 @@ const createDocumentStub = () => {
     ['form-message', new ElementStub({ id: 'form-message' })],
     ['delete-button', new ElementStub({ id: 'delete-button' })],
     ['title', new ElementStub({ id: 'title', value: '作品タイトル' })],
-    ['common-nav-logout', new ElementStub({ id: 'common-nav-logout' })],
   ]);
 
   return {

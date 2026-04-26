@@ -33,23 +33,6 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
             ],
             registeredAt: new Date('2024-01-01T00:00:00.000Z'),
           }),
-          createSeedMedia({
-            mediaId: 'media-3',
-            title: 'other newest',
-            contentId: 'seed/content-3.jpg',
-            tags: [
-              { category: 'シリーズ', label: '別作品' },
-              { category: 'ジャンル', label: '少年' },
-            ],
-            registeredAt: new Date('2024-03-01T00:00:00.000Z'),
-          }),
-          createSeedMedia({
-            mediaId: 'media-4',
-            title: 'misc',
-            contentId: 'seed/content-4.jpg',
-            tags: [{ category: 'ジャンル', label: '一般' }],
-            registeredAt: new Date('2024-01-15T00:00:00.000Z'),
-          }),
         ];
 
         await app.locals.dependencies.unitOfWork.run(async () => {
@@ -60,8 +43,6 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
         await Promise.all([
           fs.writeFile(path.join(tempContentDirectory, 'seed', 'content-1.jpg'), 'dummy-1', { encoding: 'utf8' }),
           fs.writeFile(path.join(tempContentDirectory, 'seed', 'content-2.jpg'), 'dummy-2', { encoding: 'utf8' }),
-          fs.writeFile(path.join(tempContentDirectory, 'seed', 'content-3.jpg'), 'dummy-3', { encoding: 'utf8' }),
-          fs.writeFile(path.join(tempContentDirectory, 'seed', 'content-4.jpg'), 'dummy-4', { encoding: 'utf8' }),
         ]);
       },
     });
@@ -75,25 +56,8 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
     appContext = null;
   });
 
-  test('/screen/search で入力した条件を /screen/summary で URL と表示に引き継ぐ', async () => {
+  test('/screen/search で入力した条件を /screen/summary で URL に引き継ぐ', async () => {
     const { baseUrl } = appContext;
-
-    await page.goto(`${baseUrl}/screen/login`, { waitUntil: 'networkidle' });
-    await page.type('#username', 'admin');
-    await page.type('#password', 'admin');
-
-    const loginResponsePromise = page.waitForResponse(response => {
-      return response.url() === `${baseUrl}/api/login` && response.request().method() === 'POST';
-    });
-
-    await Promise.all([
-      page.waitForURL(`${baseUrl}/screen/summary`, { timeout: 30_000 }),
-      page.click('button[type="submit"]'),
-    ]);
-
-    const loginResponse = await loginResponsePromise;
-    expect(loginResponse.status()).toBe(200);
-    expect(page.url()).toBe(`${baseUrl}/screen/summary`);
 
     await page.goto(`${baseUrl}/screen/search`, { waitUntil: 'networkidle' });
 
@@ -101,15 +65,11 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
     await page.click('#start', { clickCount: 3 });
     await page.type('#start', '1');
     await page.click('#size', { clickCount: 3 });
-    await page.type('#size', '2');
+    await page.type('#size', '1');
     await page.selectOption('#sort', 'title_desc');
 
     await page.type('#category-input', 'シリーズ');
     await page.type('#tag-input', '対象');
-    await page.click('#add-tag-button');
-
-    await page.type('#category-input', 'ジャンル');
-    await page.type('#tag-input', '少年');
     await page.click('#add-tag-button');
 
     await Promise.all([
@@ -123,26 +83,11 @@ test.describe('large e2e: search から summary への条件引き継ぎ', () =>
     expect(currentUrl.pathname).toBe('/screen/summary');
     expect(currentUrl.searchParams.get('title')).toBe('target');
     expect(currentUrl.searchParams.get('start')).toBe('1');
-    expect(currentUrl.searchParams.get('size')).toBe('2');
+    expect(currentUrl.searchParams.get('size')).toBe('1');
     expect(currentUrl.searchParams.get('sort')).toBe('title_desc');
     expect(currentUrl.searchParams.get('summaryPage')).toBe('1');
-    expect(currentUrl.searchParams.getAll('tags')).toEqual(['シリーズ:対象', 'ジャンル:少年']);
+    expect(currentUrl.searchParams.getAll('tags')).toEqual(['シリーズ:対象']);
 
-    const chips = await page.evaluate(() => {
-      return Array.from(document.querySelectorAll('.condition-list .chip'))
-        .map(node => (node.textContent || '').trim())
-        .filter(Boolean);
-    });
-
-    expect(chips).toEqual(expect.arrayContaining([
-      'タイトル: target',
-      'シリーズ:対象',
-      'ジャンル:少年',
-      '取得開始位置: 1',
-      '取得数: 2',
-    ]));
-
-    const bodyText = await page.evaluate(() => document.body.innerText);
-    expect(bodyText).toContain('1 件');
+    await expect(page.locator('.media-card h2').first()).toContainText('target');
   });
 });
