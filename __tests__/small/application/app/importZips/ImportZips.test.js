@@ -1,4 +1,5 @@
 const { ImportZips, Query } = require('../../../../../src/application/app/importZips/ImportZips');
+const { RegisterMediaServiceInput } = require('../../../../../src/application/media/command/RegisterMediaService');
 
 const createDeps = () => ({
   fileAccess: {
@@ -93,9 +94,12 @@ describe('ImportZips (small)', () => {
       zipPath: '/tmp/my.book.v1.zip',
       entryNames: ['1.jpeg', '2.jpeg', '10.jpeg'],
     });
-    expect(deps.registerMediaService.execute).toHaveBeenCalledWith({
+    expect(deps.registerMediaService.execute).toHaveBeenCalledWith(expect.any(RegisterMediaServiceInput));
+    expect(deps.registerMediaService.execute.mock.calls[0][0]).toMatchObject({
       title: 'my.book.v1',
-      contentIds: ['c1', 'c2', 'c3'],
+      contents: ['c1', 'c2', 'c3'],
+      tags: [],
+      priorityCategories: [],
     });
     expect(result).toEqual({
       exitCode: 0,

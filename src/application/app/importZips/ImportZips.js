@@ -1,4 +1,5 @@
 const path = require('path');
+const { RegisterMediaServiceInput } = require('../../media/command/RegisterMediaService');
 const ImportZipsPolicy = require('./ImportZipsPolicy');
 
 class Query {
@@ -110,10 +111,13 @@ class ImportZips {
         });
 
         const title = path.basename(zipName, path.extname(zipName));
-        const registerResult = await this.#registerMediaService.execute({
+        const registerInput = new RegisterMediaServiceInput({
           title,
-          contentIds,
+          contents: contentIds,
+          tags: [],
+          priorityCategories: [],
         });
+        const registerResult = await this.#registerMediaService.execute(registerInput);
 
         successCount += 1;
         this.#logger.info('import_zips.success', {
