@@ -23,7 +23,7 @@ class CsrfProtectionMiddleware {
     if (!this.#isNonEmptyString(sessionToken) || headerToken !== sessionToken) {
       logger?.warn('security.csrf.validation_failed', {
         request_id: req.context?.requestId,
-        user_id: req.context?.userId || req.session?.user_id || 'anonymous',
+        actor_id: 'anonymous',
         reason: 'csrf_token_mismatch',
       });
       return res.status(403).json({
@@ -37,7 +37,7 @@ class CsrfProtectionMiddleware {
     if (!this.#isNonEmptyString(expectedOrigin) || actualOrigin !== expectedOrigin) {
       logger?.warn('security.csrf.validation_failed', {
         request_id: req.context?.requestId,
-        user_id: req.context?.userId || req.session?.user_id || 'anonymous',
+        actor_id: 'anonymous',
         reason: 'origin_mismatch',
         expected_origin: expectedOrigin,
         actual_origin: actualOrigin,

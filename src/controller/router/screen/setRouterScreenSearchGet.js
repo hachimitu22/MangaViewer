@@ -19,7 +19,7 @@ const setRouterScreenSearchGet = ({
           シリーズ: ['第1部', '短編集'],
         },
         currentPath: '/screen/search',
-        currentUserId: req.context?.userId || null,
+        currentActorId: null,
         sortOptions: [
           { value: 'date_desc', label: '登録の新しい順' },
           { value: 'date_asc', label: '登録の古い順' },

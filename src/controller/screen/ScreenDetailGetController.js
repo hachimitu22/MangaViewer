@@ -29,7 +29,7 @@ class ScreenDetailGetController {
         pageTitle: `${mediaDetail.title} の詳細`,
         mediaDetail,
         currentPath: '/screen/detail',
-        currentUserId: req.context?.userId || null,
+        currentActorId: null,
       });
     } catch (_error) {
       return res.redirect(301, '/screen/error');

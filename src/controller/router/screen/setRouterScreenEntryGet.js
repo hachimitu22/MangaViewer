@@ -12,7 +12,7 @@ const setRouterScreenEntryGet = ({
           シリーズ: ['第1部', '短編集'],
         },
         currentPath: '/screen/entry',
-        currentUserId: req.context?.userId || null,
+        currentActorId: null,
       });
   });
 };

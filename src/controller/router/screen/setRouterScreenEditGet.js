@@ -39,12 +39,12 @@ const setRouterScreenEditGet = ({ router, getMediaDetailService }) => {
             シリーズ: ['第1部', '短編集'],
           },
           currentPath: '/screen/edit',
-          currentUserId: req.context?.userId || null,
+          currentActorId: null,
         });
       } catch (error) {
         logger?.error('screen.edit.error', {
           request_id: req.context?.requestId,
-          user_id: req.context?.userId || 'anonymous',
+          actor_id: 'anonymous',
           target_id: req.params?.mediaId,
           message: error?.message,
           error,
