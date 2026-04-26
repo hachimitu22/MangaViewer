@@ -4,7 +4,6 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { Sequelize } = require('sequelize');
-const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
@@ -132,7 +131,7 @@ describe('setRouterApiMediaPost (middle)', () => {
     ]);
   });
 
-  test('不正なセッショントークンでは 401 を返し、永続化しない', async () => {
+  test('管理者トークンが無い場合は 401 を返し、永続化しない', async () => {
     const app = createApp();
 
     const response = await request(app)

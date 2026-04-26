@@ -61,7 +61,7 @@ describe('setupMiddleware (small)', () => {
       use: jest.fn(),
     };
     const env = {
-      loginSessionTtlMs: 60_000,
+      requestTimeoutMs: 60_000,
     };
 
     setupMiddleware(app, { env, dependencies: {} });
