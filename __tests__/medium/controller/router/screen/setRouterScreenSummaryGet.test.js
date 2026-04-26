@@ -3,18 +3,6 @@ const path = require('path');
 const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenSummaryGet = require('../../../../../src/controller/router/screen/setRouterScreenSummaryGet');
-const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
-
-class InMemorySessionStateStore {
-  constructor(entries = []) {
-    this.tokenToUserId = new Map(entries);
-  }
-
-  findUserIdBySessionToken(sessionToken) {
-    return this.tokenToUserId.get(sessionToken) ?? null;
-  }
-}
-
 const requestApp = async ({ app, targetPath, headers = {} }) => {
   const server = app.listen(0);
 
@@ -68,9 +56,6 @@ describe('setRouterScreenSummaryGet (middle)', () => {
 
     setRouterScreenSummaryGet({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user001']]),
-      }),
       searchMediaService: service,
     });
 

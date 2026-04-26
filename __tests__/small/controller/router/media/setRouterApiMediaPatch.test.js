@@ -12,12 +12,12 @@ describe('setRouterApiMediaPatch', () => {
 
   const createReq = () => ({
     session: {
-      session_token: 'token-1',
-      csrf_token: 'csrf-1',
+            csrf_token: 'csrf-1',
     },
     protocol: 'http',
     get: name => ({
       'x-csrf-token': 'csrf-1',
+      'x-admin-token': 'admin-token',
       origin: 'http://localhost',
       host: 'localhost',
     }[String(name).toLowerCase()] || undefined),
@@ -36,7 +36,6 @@ describe('setRouterApiMediaPatch', () => {
 
   it('PATCH /api/media/:mediaId に認証・保存・更新の順でハンドラーを登録できる', async () => {
     const router = { patch: jest.fn() };
-    const authResolver = { execute: jest.fn().mockResolvedValue('u1') };
     const saveAdapter = {
       execute: jest.fn((req, _res, cb) => {
         req.context.contentIds = ['c2', 'c1'];
@@ -47,7 +46,7 @@ describe('setRouterApiMediaPatch', () => {
 
     setRouterApiMediaPatch({
       router,
-      authResolver,
+      adminApiToken: 'admin-token',
       saveAdapter,
       updateMediaService,
     });
@@ -68,7 +67,6 @@ describe('setRouterApiMediaPatch', () => {
       });
     });
 
-    expect(authResolver.execute).toHaveBeenCalledWith('token-1');
     expect(saveAdapter.execute).toHaveBeenCalledWith(req, res, expect.any(Function));
     expect(updateMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       id: 'media-1',

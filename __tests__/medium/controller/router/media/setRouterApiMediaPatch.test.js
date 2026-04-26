@@ -4,10 +4,8 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { Sequelize } = require('sequelize');
-const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaPatch = require('../../../../../src/controller/router/media/setRouterApiMediaPatch');
-const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
 const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
@@ -34,16 +32,6 @@ const extractCsrfTokenFromCookie = cookieHeader => {
   const [, value = ''] = pair.split('=');
   return value || undefined;
 };
-
-class InMemorySessionStateStore {
-  constructor(entries = []) {
-    this.tokenToUserId = new Map(entries);
-  }
-
-  findUserIdBySessionToken(sessionToken) {
-    return this.tokenToUserId.get(sessionToken) ?? null;
-  }
-}
 
 describe('setRouterApiMediaPatch (middle)', () => {
   let sequelize;
@@ -86,7 +74,6 @@ describe('setRouterApiMediaPatch (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: extractSessionTokenFromCookie(req.header('cookie')),
         csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
@@ -95,9 +82,7 @@ describe('setRouterApiMediaPatch (middle)', () => {
 
     setRouterApiMediaPatch({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user-001']]),
-      }),
+      adminApiToken: 'admin-token',
       saveAdapter: new MulterDiskStorageContentUploadAdapter({ rootDirectory }),
       updateMediaService: new UpdateMediaService({ mediaRepository, unitOfWork }),
     });
@@ -114,7 +99,8 @@ describe('setRouterApiMediaPatch (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
+      .set('cookie', 'csrf_token=csrf-1')
+      .set('x-admin-token', 'admin-token')
       .field('title', 'after title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '新作者')
@@ -158,7 +144,8 @@ describe('setRouterApiMediaPatch (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
+      .set('cookie', 'csrf_token=csrf-1')
+      .set('x-admin-token', 'admin-token')
       .field('title', '')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '新作者')

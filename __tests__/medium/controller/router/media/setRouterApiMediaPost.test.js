@@ -7,7 +7,6 @@ const { Sequelize } = require('sequelize');
 const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaPost = require('../../../../../src/controller/router/media/setRouterApiMediaPost');
-const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
 const MediaId = require('../../../../../src/domain/media/mediaId');
@@ -27,16 +26,6 @@ const extractCsrfTokenFromCookie = cookieHeader => {
   const [, value = ''] = pair.split('=');
   return value || undefined;
 };
-
-class InMemorySessionStateStore {
-  constructor(entries = []) {
-    this.tokenToUserId = new Map(entries);
-  }
-
-  findUserIdBySessionToken(sessionToken) {
-    return this.tokenToUserId.get(sessionToken) ?? null;
-  }
-}
 
 class FixedMediaIdValueGenerator {
   generate() {
@@ -72,7 +61,6 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: extractSessionTokenFromCookie(req.header('cookie')),
         csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
@@ -81,11 +69,7 @@ describe('setRouterApiMediaPost (middle)', () => {
 
     setRouterApiMediaPost({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([
-          ['valid-token', 'user-001'],
-        ]),
-      }),
+      adminApiToken: 'admin-token',
       saveAdapter: new MulterDiskStorageContentUploadAdapter({ rootDirectory }),
       mediaIdValueGenerator: new FixedMediaIdValueGenerator(),
       mediaRepository,
@@ -104,7 +88,8 @@ describe('setRouterApiMediaPost (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1')
+      .set('cookie', 'csrf_token=csrf-1')
+      .set('x-admin-token', 'admin-token')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')
@@ -155,7 +140,7 @@ describe('setRouterApiMediaPost (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=invalid-token; csrf_token=csrf-1')
+      .set('cookie', 'csrf_token=csrf-1')
       .field('title', 'sample title')
       .field('tags[0][category]', '作者')
       .field('tags[0][label]', '山田')

@@ -78,11 +78,6 @@ describe('setRouterScreenViewerGet (middle)', () => {
 
     setRouterScreenViewerGet({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([
-          ['valid-token', 'user-001'],
-        ]),
-      }),
       getMediaContentWithNavigationService: {
         execute: jest.fn().mockResolvedValue(serviceResult),
       },

@@ -12,12 +12,12 @@ describe('setRouterApiMediaPost', () => {
 
   const createReq = () => ({
     session: {
-      session_token: 'token-1',
-      csrf_token: 'csrf-1',
+            csrf_token: 'csrf-1',
     },
     protocol: 'http',
     get: name => ({
       'x-csrf-token': 'csrf-1',
+      'x-admin-token': 'admin-token',
       origin: 'http://localhost',
       host: 'localhost',
     }[String(name).toLowerCase()] || undefined),
@@ -34,9 +34,6 @@ describe('setRouterApiMediaPost', () => {
   it('POST /api/media に認証・保存・登録の順でハンドラーを登録できる', async () => {
     const router = {
       post: jest.fn(),
-    };
-    const authResolver = {
-      execute: jest.fn().mockResolvedValue('u1'),
     };
     const saveAdapter = {
       execute: jest.fn((req, _res, cb) => {
@@ -56,7 +53,7 @@ describe('setRouterApiMediaPost', () => {
 
     setRouterApiMediaPost({
       router,
-      authResolver,
+      adminApiToken: 'admin-token',
       saveAdapter,
       mediaIdValueGenerator,
       mediaRepository,
@@ -79,10 +76,7 @@ describe('setRouterApiMediaPost', () => {
       });
     });
 
-    expect(authResolver.execute).toHaveBeenCalledTimes(1);
-    expect(authResolver.execute).toHaveBeenCalledWith('token-1');
-
-    expect(saveAdapter.execute).toHaveBeenCalledTimes(1);
+        expect(saveAdapter.execute).toHaveBeenCalledTimes(1);
     expect(saveAdapter.execute).toHaveBeenCalledWith(req, res, expect.any(Function));
 
     expect(mediaIdValueGenerator.generate).toHaveBeenCalledTimes(1);
@@ -95,21 +89,23 @@ describe('setRouterApiMediaPost', () => {
     });
   });
 
-  it('authResolverが不正な場合は初期化時に例外となる', () => {
+  it('adminApiToken未設定のfail-closeで401となる', async () => {
     const router = {
       post: jest.fn(),
     };
 
-    expect(() => {
-      setRouterApiMediaPost({
-        router,
-        authResolver: {},
-        saveAdapter: { execute: jest.fn() },
-        mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
-        mediaRepository: { save: jest.fn() },
-        unitOfWork: { run: jest.fn(async work => work()) },
-      });
-    }).toThrow();
+    setRouterApiMediaPost({
+      router,
+      adminApiToken: '',
+      saveAdapter: { execute: jest.fn() },
+      mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
+      mediaRepository: { save: jest.fn() },
+      unitOfWork: { run: jest.fn(async work => work()) },
+    });
+    const [, authHandler] = router.post.mock.calls[0];
+    const res = createRes();
+    await authHandler(createReq(), res, jest.fn());
+    expect(res.status).toHaveBeenCalledWith(401);
   });
 
   it('saveAdapterが不正な場合は初期化時に例外となる', () => {
@@ -120,7 +116,7 @@ describe('setRouterApiMediaPost', () => {
     expect(() => {
       setRouterApiMediaPost({
         router,
-        authResolver: { execute: jest.fn().mockResolvedValue('u1') },
+        adminApiToken: 'admin-token',
         saveAdapter: {},
         mediaIdValueGenerator: { generate: jest.fn().mockReturnValue('m1') },
         mediaRepository: { save: jest.fn() },

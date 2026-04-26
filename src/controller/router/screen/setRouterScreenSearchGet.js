@@ -1,17 +1,11 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
-
 const DEFAULT_SUMMARY_PAGE = 1;
 const DEFAULT_START = 1;
 const DEFAULT_SIZE = 20;
 
 const setRouterScreenSearchGet = ({
   router,
-  authResolver,
 }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
-
   router.get('/screen/search', ...[
-    auth.execute.bind(auth),
     (req, res) => {
       res.status(200).render('screen/search', {
         pageTitle: 'メディア検索',

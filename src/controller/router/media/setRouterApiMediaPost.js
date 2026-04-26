@@ -1,4 +1,4 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
+const AdminTokenAuthMiddleware = require('../../middleware/AdminTokenAuthMiddleware');
 const CsrfProtectionMiddleware = require('../../middleware/CsrfProtectionMiddleware');
 const ContentSaveMiddleware = require('../../middleware/ContentSaveMiddleware');
 const MediaPostController = require('../../api/MediaPostController');
@@ -8,14 +8,14 @@ const {
 
 const setRouterApiMediaPost = ({
   router,
-  authResolver,
+  adminApiToken,
   saveAdapter,
   mediaIdValueGenerator,
   mediaRepository,
   unitOfWork,
   allowedOrigin,
 }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
+  const auth = new AdminTokenAuthMiddleware({ expectedToken: adminApiToken });
   const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
 
   const save = new ContentSaveMiddleware({

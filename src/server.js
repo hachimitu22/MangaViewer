@@ -69,6 +69,7 @@ const createEnv = source => ({
   port: Number.parseInt(source.PORT, 10) || 3000,
   host: resolveServerHost(source),
   appOrigin: source.APP_ORIGIN || '',
+  adminApiToken: source.ADMIN_API_TOKEN || '',
   allowedHosts: parseSessionPaths(source.APP_ALLOWED_HOSTS || '127.0.0.1,localhost,::1'),
   databaseStoragePath: source.DATABASE_STORAGE_PATH
     || path.join(process.cwd(), 'var', 'data', 'mangaviewer.sqlite'),
