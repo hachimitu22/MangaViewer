@@ -2,15 +2,6 @@
 
 hide circle
 
-entity user {
-  *user_id : int <<PK>>
-  --
-  username : text
-  password_hash : text
-  created_at : datetime
-  updated_at : datetime
-}
-
 entity media {
   *media_id : int <<PK>>
   --
@@ -26,22 +17,6 @@ entity content {
   content_path : text
   thumbnail_path : text
   page : int
-}
-
-entity favorite {
-  *favorite_id : int <<PK>>
-  *user_id : int <<FK>>
-  *media_id : int <<FK>>
-  --
-  added_at : datetime
-}
-
-entity queue {
-  *queue_id : int <<PK>>
-  *user_id : int <<FK>>
-  *media_id : int <<FK>>
-  --
-  added_at : datetime
 }
 
 entity category {

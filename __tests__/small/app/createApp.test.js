@@ -5,10 +5,6 @@ const path = require('path');
 const request = require('supertest');
 
 const createApp = require('../../../src/app');
-const createLoginEnv = () => ({
-  loginPassword: 'test-password',
-  loginUserId: 'test-user-id',
-});
 
 const createTempPath = (prefix, leaf) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -47,7 +43,6 @@ describe('createApp', () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
-      ...createLoginEnv(),
     });
 
     await app.locals.ready;
@@ -75,7 +70,6 @@ describe('createApp', () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
-      ...createLoginEnv(),
       devSessionToken: '',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
@@ -114,16 +108,15 @@ describe('createApp', () => {
     });
   });
 
-  test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary と /api/media で認証を補完し、/screen/login を表示できる', async () => {
+  test('固定セッション設定がある場合は /screen/entry と /screen/search と /screen/summary で認証を補完できる', async () => {
     app = createApp({
       databaseStoragePath: databasePath,
       contentRootDirectory,
-      ...createLoginEnv(),
       enableDevSession: 'true',
       devSessionToken: 'dev-token',
       devSessionUserId: 'admin-dev',
       devSessionTtlMs: 60_000,
-      devSessionPaths: ['/screen/entry', '/screen/search', '/screen/summary', '/api/media'],
+      devSessionPaths: ['/screen/entry', '/screen/search', '/screen/summary'],
     });
 
     await app.locals.ready;
@@ -144,44 +137,6 @@ describe('createApp', () => {
     expect(summaryResponse.type).toBe('text/html');
     expect(summaryResponse.text).toContain('<title>メディア一覧</title>');
 
-    const loginResponse = await request(app).get('/screen/login');
-    expect(loginResponse.status).toBe(200);
-    expect(loginResponse.type).toBe('text/html');
-    expect(loginResponse.text).toContain('<title>ログイン</title>');
-    expect(loginResponse.text).toContain('action="/api/login"');
-
-    const csrfCookie = (screenResponse.headers['set-cookie'] || [])
-      .find(cookie => cookie.startsWith('csrf_token='));
-    const csrfToken = csrfCookie
-      ? csrfCookie.split(';')[0].split('=')[1]
-      : '';
-
-    const mediaResponse = await request(app)
-      .post('/api/media')
-      .set('origin', 'http://127.0.0.1')
-      .set('host', '127.0.0.1')
-      .set('x-csrf-token', csrfToken)
-      .set('cookie', csrfCookie ? [csrfCookie] : [])
-      .field('title', 'sample title')
-      .field('tags[0][category]', '作者')
-      .field('tags[0][label]', '山田')
-      .field('contents[0][position]', '1')
-      .attach('contents[0][file]', Buffer.from([0xff, 0xd8, 0xff]), 'first.jpg');
-
-    expect(mediaResponse.status).toBe(200);
-    expect(mediaResponse.body).toEqual({
-      code: 0,
-      mediaId: expect.stringMatching(/^[0-9a-f]{32}$/),
-    });
   });
 
-  test('ALLOW_INSECURE_DEFAULT_LOGIN=true を指定しても弱いデフォルト認証は有効化されない', () => {
-    expect(() => createApp({
-      databaseStoragePath: databasePath,
-      contentRootDirectory,
-      loginPassword: '',
-      loginUserId: '',
-      allowInsecureDefaultLogin: 'true',
-    })).toThrow('ALLOW_INSECURE_DEFAULT_LOGIN=true は許可できません');
-  });
 });

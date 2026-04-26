@@ -2,15 +2,9 @@ const path = require('path');
 
 const createApp = require('./app');
 const {
-  resolveLoginAuthConfig,
   assertRequiredSecurityConfiguration,
 } = require('./app/createDependencies');
 const { hasDevelopmentSession, isLoopbackHost } = require('./app/developmentSession');
-
-const parsePositiveInt = (value, fallback) => {
-  const parsed = Number.parseInt(value, 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
-};
 
 const parseSessionPaths = value => (value || '')
   .split(',')
@@ -81,22 +75,6 @@ const createEnv = source => ({
   devSessionPaths: parseSessionPaths(source.DEV_SESSION_PATHS),
   enableDevSession: source.ENABLE_DEV_SESSION || '',
   allowRemoteDevSession: source.ALLOW_REMOTE_DEV_SESSION || '',
-  loginPassword: source.FIXED_LOGIN_PASSWORD || source.LOGIN_PASSWORD || '',
-  loginPasswordHash: source.FIXED_LOGIN_PASSWORD_HASH || source.LOGIN_PASSWORD_HASH || '',
-  loginUserId: source.FIXED_LOGIN_USER_ID || source.LOGIN_USER_ID || '',
-  allowInsecureDefaultLogin: source.ALLOW_INSECURE_DEFAULT_LOGIN || '',
-  loginSessionTtlMs: Number.parseInt(source.LOGIN_SESSION_TTL_MS, 10) || 86_400_000,
-  authStateStoreBackend: source.AUTH_STATE_STORE_BACKEND || 'memory',
-  redisUrl: source.REDIS_URL || '',
-  redisSessionKeyPrefix: source.REDIS_SESSION_KEY_PREFIX || 'session',
-  redisAuthKeyPrefix: source.REDIS_AUTH_KEY_PREFIX || 'auth',
-  loginRateLimitWindowMs: Number.parseInt(source.LOGIN_RATE_LIMIT_WINDOW_MS, 10) || 60_000,
-  loginFailureStateTtlMs: Number.parseInt(source.LOGIN_FAILURE_STATE_TTL_MS, 10) || 86_400_000,
-  authStoreFailurePolicy: source.AUTH_STORE_FAILURE_POLICY || 'fail_close',
-  loginHashMemoryCost: parsePositiveInt(source.LOGIN_HASH_MEMORY_COST, 65_536),
-  loginHashIterations: parsePositiveInt(source.LOGIN_HASH_ITERATIONS, 16_384),
-  loginHashParallelism: parsePositiveInt(source.LOGIN_HASH_PARALLELISM, 1),
-  loginHashTimeCost: parsePositiveInt(source.LOGIN_HASH_TIME_COST, 8),
   logFilePath: source.LOG_FILE_PATH || path.join(process.cwd(), 'var', 'logs', 'mangaviewer.log'),
   logLevel: source.LOG_LEVEL || 'INFO',
   logOutputs: source.LOG_OUTPUTS
@@ -108,7 +86,6 @@ const startServer = async () => {
   try {
     assertRequiredSecurityConfiguration(env);
     assertDevelopmentSessionConfigurationAllowed(env, process.env);
-    resolveLoginAuthConfig(env);
   } catch (error) {
     if (error?.code === 'APP_ORIGIN_REQUIRED') {
       console.error('サーバーの起動を中止しました: APP_ORIGIN を設定してください (例: http://127.0.0.1:3000)', error);
@@ -129,12 +106,7 @@ const startServer = async () => {
       process.exit(1);
       return;
     }
-    if (error?.code === 'INSECURE_DEFAULT_LOGIN_DISALLOWED') {
-      console.error('サーバーの起動を中止しました: ALLOW_INSECURE_DEFAULT_LOGIN=true は使用できません', error);
-      process.exit(1);
-      return;
-    }
-    console.error('サーバーの起動に失敗しました: ログイン認証設定が不足しています', error);
+    console.error('サーバーの起動に失敗しました: 起動設定の検証でエラーが発生しました', error);
     process.exit(1);
     return;
   }
