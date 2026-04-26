@@ -3,12 +3,11 @@ get:
   summary: ルート画面遷移
   responses:
     "302":
-      description: 認証状態に応じた画面リダイレクト
+      description: 公開導線としてメディア一覧画面へリダイレクト
       headers:
         Location:
-          description: リダイレクト先URL（`/screen/entry` または `/screen/summary`）
+          description: リダイレクト先URL（`/screen/summary`）
           schema:
             type: string
             enum:
-              - /screen/entry
               - /screen/summary
