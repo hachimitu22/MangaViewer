@@ -53,7 +53,7 @@
     </style>
   </head>
   <body>
-    <%- include('../partials/topNavigator', { currentPath: typeof currentPath === 'string' ? currentPath : '', currentUserId: typeof currentUserId === 'string' ? currentUserId : null }) %>
+    <%- include('../partials/topNavigator', { currentPath: typeof currentPath === 'string' ? currentPath : '', currentActorId: typeof currentActorId === 'string' ? currentActorId : null }) %>
     <main class="page">
       <div class="stack">
         <section class="card hero">
@@ -137,51 +137,7 @@
             <a class="link-button" href="/screen/edit/<%= mediaDetail.id %>">編集画面へ</a>
           </div>
         </section>
-
-        <section class="card">
-          <h2>ユーザー操作</h2>
-          <div class="action-list">
-            <button id="favorite-add" class="api-button" type="button">お気に入り追加</button>
-            <button id="favorite-remove" class="api-button secondary" type="button">お気に入り解除</button>
-            <button id="queue-add" class="api-button" type="button">あとで見る追加</button>
-            <button id="queue-remove" class="api-button secondary" type="button">あとで見る解除</button>
-          </div>
-          <p id="request-status" class="status" aria-live="polite"></p>
-        </section>
       </div>
     </main>
-
-    <script nonce="<%= typeof cspNonce === 'string' ? cspNonce : '' %>">
-      (() => {
-        const mediaId = <%- JSON.stringify(mediaDetail.id) %>;
-        const status = document.getElementById('request-status');
-
-        const request = async (path, method, successMessage) => {
-          status.textContent = '通信中です...';
-          try {
-            const response = await fetch(path, {
-              method,
-              headers: {
-                Accept: 'application/json',
-                'X-CSRF-Token': window.__csrfToken || '',
-              },
-            });
-            if (!response.ok) {
-              status.textContent = `${successMessage}に失敗しました (${response.status})`;
-              return;
-            }
-
-            status.textContent = successMessage;
-          } catch (_error) {
-            status.textContent = `${successMessage}に失敗しました`;
-          }
-        };
-
-        document.getElementById('favorite-add').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'PUT', 'お気に入りに追加しました'));
-        document.getElementById('favorite-remove').addEventListener('click', () => request(`/api/favorite/${mediaId}`, 'DELETE', 'お気に入りから削除しました'));
-        document.getElementById('queue-add').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'PUT', 'あとで見るに追加しました'));
-        document.getElementById('queue-remove').addEventListener('click', () => request(`/api/queue/${mediaId}`, 'DELETE', 'あとで見るから削除しました'));
-      })();
-    </script>
   </body>
 </html>

@@ -1,14 +1,8 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 
 const setRouterScreenEntryGet = ({
   router,
-  authResolver,
 }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
-
-  router.get('/screen/entry', ...[
-    auth.execute.bind(auth),
-    (req, res) => {
+  router.get('/screen/entry', (req, res) => {
       res.status(200).render('screen/entry', {
         pageTitle: 'メディア登録',
         categoryOptions: ['作者', 'ジャンル', 'シリーズ'],
@@ -18,10 +12,9 @@ const setRouterScreenEntryGet = ({
           シリーズ: ['第1部', '短編集'],
         },
         currentPath: '/screen/entry',
-        currentUserId: req.context?.userId || null,
+        currentActorId: null,
       });
-    },
-  ]);
+  });
 };
 
 module.exports = setRouterScreenEntryGet;

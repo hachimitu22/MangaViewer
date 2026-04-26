@@ -1,13 +1,8 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const { Input } = require('../../../application/media/query/GetMediaDetailService');
 const { toPublicContentPath } = require('../../screen/publicContentPath');
 
-const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
-
-  router.get('/screen/edit/:mediaId', ...[
-    auth.execute.bind(auth),
-    async (req, res, next) => {
+const setRouterScreenEditGet = ({ router, getMediaDetailService }) => {
+  router.get('/screen/edit/:mediaId', async (req, res, next) => {
       const logger = req.app?.locals?.dependencies?.logger;
       try {
         const result = await getMediaDetailService.execute(new Input({
@@ -44,20 +39,19 @@ const setRouterScreenEditGet = ({ router, authResolver, getMediaDetailService })
             シリーズ: ['第1部', '短編集'],
           },
           currentPath: '/screen/edit',
-          currentUserId: req.context?.userId || null,
+          currentActorId: null,
         });
       } catch (error) {
         logger?.error('screen.edit.error', {
           request_id: req.context?.requestId,
-          user_id: req.context?.userId || 'anonymous',
+          actor_id: 'anonymous',
           target_id: req.params?.mediaId,
           message: error?.message,
           error,
         });
         next(error);
       }
-    },
-  ]);
+  });
 };
 
 module.exports = setRouterScreenEditGet;

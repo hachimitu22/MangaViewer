@@ -1,4 +1,3 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const {
   Input,
   InputSortType,
@@ -6,7 +5,6 @@ const {
 const { mapMediaOverviewThumbnailToPublicPath } = require('../../screen/publicContentPath');
 const {
   DEFAULT_SUMMARY_PAGE,
-  DEFAULT_START,
   DEFAULT_SIZE,
 } = require('./setRouterScreenSearchGet');
 
@@ -92,74 +90,68 @@ const createPagination = ({ totalCount, summaryPage, pageSize }) => {
   return { totalPages, currentPage, items };
 };
 
-const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
+const setRouterScreenSummaryGet = ({ router, searchMediaService }) => {
+  router.get('/screen/summary', async (req, res, next) => {
+    const logger = req.app?.locals?.dependencies?.logger;
+    try {
+      const range = normalizeSearchRange({
+        summaryPage: req.query.summaryPage,
+        start: req.query.start,
+        size: req.query.size,
+      });
+      const title = typeof req.query.title === 'string' ? req.query.title : '';
+      const tags = normalizeTags(req.query.tags);
+      const sort = typeof req.query.sort === 'string' && SORT_TYPES_BY_QUERY[req.query.sort]
+        ? req.query.sort
+        : 'date_asc';
 
-  router.get('/screen/summary', ...[
-    auth.execute.bind(auth),
-    async (req, res, next) => {
-      const logger = req.app?.locals?.dependencies?.logger;
-      try {
-        const range = normalizeSearchRange({
-          summaryPage: req.query.summaryPage,
-          start: req.query.start,
-          size: req.query.size,
-        });
-        const title = typeof req.query.title === 'string' ? req.query.title : '';
-        const tags = normalizeTags(req.query.tags);
-        const sort = typeof req.query.sort === 'string' && SORT_TYPES_BY_QUERY[req.query.sort]
-          ? req.query.sort
-          : 'date_asc';
+      const result = await searchMediaService.execute(new Input({
+        title,
+        tags,
+        sortType: SORT_TYPES_BY_QUERY[sort],
+        start: range.start,
+        size: range.size,
+      }));
 
-        const result = await searchMediaService.execute(new Input({
+      const pagination = createPagination({
+        totalCount: result.totalCount,
+        summaryPage: range.summaryPage,
+        pageSize: range.size,
+      });
+      const mediaOverviews = result.mediaOverviews.map(mapMediaOverviewThumbnailToPublicPath);
+
+      res.status(200).render('screen/summary', {
+        pageTitle: 'メディア一覧',
+        currentConditions: {
+          summaryPage: pagination.currentPage,
           title,
           tags,
-          sortType: SORT_TYPES_BY_QUERY[sort],
+          sort,
           start: range.start,
           size: range.size,
-        }));
-
-        const pagination = createPagination({
-          totalCount: result.totalCount,
-          summaryPage: range.summaryPage,
-          pageSize: range.size,
-        });
-        const mediaOverviews = result.mediaOverviews.map(mapMediaOverviewThumbnailToPublicPath);
-
-        res.status(200).render('screen/summary', {
-          pageTitle: 'メディア一覧',
-          currentConditions: {
-            summaryPage: pagination.currentPage,
-            title,
-            tags,
-            sort,
-            start: range.start,
-            size: range.size,
-          },
-          mediaOverviews,
-          totalCount: result.totalCount,
-          pagination,
-          currentPath: '/screen/summary',
-          currentUserId: req.context?.userId || null,
-          sortOptions: [
-            { value: 'date_desc', label: '登録の新しい順' },
-            { value: 'date_asc', label: '登録の古い順' },
-            { value: 'title_asc', label: 'タイトル名の昇順' },
-            { value: 'title_desc', label: 'タイトル名の降順' },
-            { value: 'random', label: 'ランダム' },
-          ],
-        });
-      } catch (error) {
-        logger?.error('screen.summary.error', {
-          request_id: req.context?.requestId,
-          user_id: req.context?.userId || 'anonymous',
-          message: error?.message,
-          error,
-        });
-        next(error);
-      }
-    },
-  ]);
+        },
+        mediaOverviews,
+        totalCount: result.totalCount,
+        pagination,
+        currentPath: '/screen/summary',
+        currentActorId: null,
+        sortOptions: [
+          { value: 'date_desc', label: '登録の新しい順' },
+          { value: 'date_asc', label: '登録の古い順' },
+          { value: 'title_asc', label: 'タイトル名の昇順' },
+          { value: 'title_desc', label: 'タイトル名の降順' },
+          { value: 'random', label: 'ランダム' },
+        ],
+      });
+    } catch (error) {
+      logger?.error('screen.summary.error', {
+        request_id: req.context?.requestId,
+        message: error?.message,
+        error,
+      });
+      next(error);
+    }
+  });
 };
 
 module.exports = setRouterScreenSummaryGet;
