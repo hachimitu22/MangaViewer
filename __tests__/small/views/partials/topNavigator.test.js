@@ -22,6 +22,6 @@ describe('views/partials/topNavigator', () => {
     });
 
     expect(html).toContain('href="/screen/search" aria-current=&#39;page&#39;');
-    expect(html).not.toContain('id="common-nav-logout"');
+    expect(html).not.toContain('href="/screen/summary" aria-current=&#39;page&#39;');
   });
 });
