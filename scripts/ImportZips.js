@@ -1,6 +1,7 @@
+const fs = require('fs');
 const path = require('path');
-const { RegisterMediaServiceInput } = require('../../media/command/RegisterMediaService');
-const ImportZipsPolicy = require('./ImportZipsPolicy');
+const { RegisterMediaServiceInput } = require('../src/application/media/command/RegisterMediaService');
+const ImportZipsPolicy = require('../src/application/app/importZips/ImportZipsPolicy');
 
 class Query {
   constructor({ targetDir } = {}) {
@@ -143,7 +144,42 @@ class ImportZips {
   }
 }
 
+const runFromCommandLine = async () => {
+  const targetDir = process.argv[2];
+  const app = new ImportZips({
+    fileAccess: {
+      async inspectTarget(dir) {
+        if (!(typeof dir === 'string' && dir.length > 0)) {
+          return { hasArg: false, exists: false, readable: false, isDirectory: false };
+        }
+        try {
+          const stats = await fs.promises.stat(dir);
+          return { hasArg: true, exists: true, readable: true, isDirectory: stats.isDirectory() };
+        } catch (_error) {
+          return { hasArg: true, exists: false, readable: false, isDirectory: false };
+        }
+      },
+      async listDirectEntries(dir) {
+        const names = await fs.promises.readdir(dir);
+        return names.map(name => ({ name, path: path.join(dir, name) }));
+      },
+    },
+    zipHandler: { async listEntries() { return []; } },
+    contentStorage: { async saveFromZipEntries() { return []; } },
+    registerMediaService: { async execute() { return { mediaId: null }; } },
+    logger: console,
+  });
+
+  const result = await app.execute(new Query({ targetDir }));
+  process.exitCode = result.exitCode;
+};
+
+if (require.main === module) {
+  runFromCommandLine();
+}
+
 module.exports = {
   Query,
   ImportZips,
+  runFromCommandLine,
 };

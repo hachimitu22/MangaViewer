@@ -1,4 +1,4 @@
-const { ImportZips, Query } = require('../../../../../src/application/app/importZips/ImportZips');
+const { ImportZips, Query } = require('../../../../../scripts/ImportZips');
 
 const createDeps = () => ({
   fileAccess: {
