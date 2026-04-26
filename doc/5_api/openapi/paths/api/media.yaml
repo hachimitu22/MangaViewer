@@ -1,15 +1,13 @@
 # /api/media
 post:
   summary: メディア登録処理
-  security:
-    - cookieAuth: []
   parameters:
     - name: X-CSRF-Token
       in: header
       required: true
       schema:
         type: string
-      description: セッションに紐づくCSRFトークン
+      description: CSRFトークン
   requestBody:
     required: true
     content:

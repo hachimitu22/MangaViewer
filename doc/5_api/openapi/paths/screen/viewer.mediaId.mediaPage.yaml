@@ -1,8 +1,6 @@
 # /viewer/{mediaId}/{mediaPage}
 get:
   summary: ビューアー画面
-  security:
-    - cookieAuth: []
   parameters:
     - name: mediaId
       in: path

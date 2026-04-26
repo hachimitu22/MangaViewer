@@ -1,8 +1,6 @@
 # /detail/{mediaId}
 get:
   summary: メディア詳細画面
-  security:
-    - cookieAuth: []
   parameters:
     - name: mediaId
       in: path

@@ -7,8 +7,6 @@ parameters:
       type: string
 patch:
   summary: メディア更新処理
-  security:
-    - cookieAuth: []
   parameters:
     - name: X-CSRF-Token
       in: header
@@ -80,8 +78,6 @@ patch:
 
 delete:
   summary: メディア削除処理
-  security:
-    - cookieAuth: []
   parameters:
     - name: X-CSRF-Token
       in: header
