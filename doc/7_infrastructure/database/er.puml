@@ -7,23 +7,6 @@ note as G1
   ・原則NOT NULL（例外は <<nullable>> で明示）
 end note
 
-entity session {
-  *session_token : text <<PK>>
-  --
-  user_id : int <<FK>>
-  expires_at : datetime
-}
-
-entity user {
-  *user_id : int <<PK>>
-  --
-  username : text
-  password_hash : text
-  salt : text
-  created_at : datetime
-  updated_at : datetime
-}
-
 entity media {
   *media_id : int <<PK>>
   --
@@ -39,26 +22,6 @@ entity content {
   position : int
   <<unique(media_id, position)>>
 }
-
-entity favorite {
-  *favorite_id : int <<PK>>
-  *user_id : int <<FK>>
-  *media_id : int <<FK>>
-  --
-  added_at : datetime
-  <<unique(user_id, media_id)>>
-}
-note bottom: favorite_idとadded_atで追加順を一意とする
-
-entity queue {
-  *queue_id : int <<PK>>
-  *user_id : int <<FK>>
-  *media_id : int <<FK>>
-  --
-  added_at : datetime
-  <<unique(user_id, media_id)>>
-}
-note bottom: queue_idとadded_atで追加順を一意とする
 
 entity category {
   *category_id : int <<PK>>
@@ -92,12 +55,7 @@ entity media_category {
   <<unique(media_id, category_id, priority)>>
 }
 
-session |o--|| user
-user ||--o{ favorite
-user ||--o{ queue
 media ||-u-|{ content
-media ||--o{ favorite
-media ||--o{ queue
 media ||--o{ media_tag
 media ||--o{ media_category
 tag ||--o{ media_tag
