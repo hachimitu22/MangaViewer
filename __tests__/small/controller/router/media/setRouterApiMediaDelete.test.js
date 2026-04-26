@@ -10,7 +10,7 @@ describe('setRouterApiMediaDelete', () => {
     return res;
   };
 
-  it('DELETE /api/media/:mediaId に認証・削除の順でハンドラーを登録できる', async () => {
+  it('DELETE /api/media/:mediaId に管理者トークン検証・削除の順でハンドラーを登録できる', async () => {
     const router = { delete: jest.fn() };
     const deleteMediaService = { execute: jest.fn().mockResolvedValue(undefined) };
 

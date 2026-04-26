@@ -32,7 +32,7 @@ describe('setRouterApiMediaPatch', () => {
     context: {},
   });
 
-  it('PATCH /api/media/:mediaId に認証・保存・更新の順でハンドラーを登録できる', async () => {
+  it('PATCH /api/media/:mediaId に管理者トークン検証・保存・更新の順でハンドラーを登録できる', async () => {
     const router = { patch: jest.fn() };
     const saveAdapter = {
       execute: jest.fn((req, _res, cb) => {

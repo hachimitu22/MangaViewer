@@ -29,7 +29,7 @@ describe('setRouterApiMediaPost', () => {
     context: {},
   });
 
-  it('POST /api/media に認証・保存・登録の順でハンドラーを登録できる', async () => {
+  it('POST /api/media に管理者トークン検証・保存・登録の順でハンドラーを登録できる', async () => {
     const router = {
       post: jest.fn(),
     };
@@ -100,9 +100,9 @@ describe('setRouterApiMediaPost', () => {
       mediaRepository: { save: jest.fn() },
       unitOfWork: { run: jest.fn(async work => work()) },
     });
-    const [, authHandler] = router.post.mock.calls[0];
+    const [, adminTokenHandler] = router.post.mock.calls[0];
     const res = createRes();
-    await authHandler(createReq(), res, jest.fn());
+    await adminTokenHandler(createReq(), res, jest.fn());
     expect(res.status).toHaveBeenCalledWith(401);
   });
 

@@ -1,6 +1,6 @@
 @startuml
 
-state "ログイン済" as Signin {
+state "利用中" as Signin {
     summary : メディア一覧
     detail : メディア詳細
 
