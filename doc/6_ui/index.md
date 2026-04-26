@@ -6,20 +6,17 @@
 
 ## APIエラー時の画面方針
 
-- 各画面で実際に使用しているAPI（`POST /api/login`, `POST /api/media`, `PATCH /api/media/{mediaId}`, `DELETE /api/media/{mediaId}`, `PUT/DELETE /api/favorite/{mediaId}`, `PUT/DELETE /api/queue/{mediaId}`, `POST /api/logout`）がエラー系レスポンスを返した場合、画面上にエラーメッセージを表示し、ユーザーに再度実行を促す。
+- 各画面で実際に使用しているAPI（`POST /api/media`, `PATCH /api/media/{mediaId}`, `DELETE /api/media/{mediaId}`）がエラー系レスポンスを返した場合、画面上にエラーメッセージを表示し、ユーザーに再度実行を促す。
 - エラー時の表示内容（文言・表示位置・再操作導線）は各画面仕様に従う。
 
 ## 画面一覧
 
 |                      画面名                       |                    概要                    |                  URL                  |                  API                  |
 | ------------------------------------------------- | ------------------------------------------ | ------------------------------------- | ------------------------------------- |
-| [ログイン](./pages/ログイン/index.md)             | ログイン画面                               | /login                                | GET /api/login                        |
 | [メディア一覧](./pages/メディア一覧/index.md)     | メディア一覧を表示する                     | /summary                              | GET /api/summary                      |
 | [メディア詳細](./pages/メディア詳細/index.md)     | 指定のメディアの詳細を表示する             | /detail/メディアID                    | GET /api/detail/{mediaId}             |
 | [ビューアー](./pages/ビューアー/index.md)         | メディアのビューアー                       | /viewer/メディアID/メディアページ番号 | GET /api/viewer/{mediaId}/{mediaPage} |
 | [検索条件入力](./pages/検索条件入力/index.md)     | 検索したいメディアの条件を入力する         | /search                               | GET /api/search                       |
-| [お気に入り一覧](./pages/お気に入り一覧/index.md) | お気に入りに追加したメディア一覧を表示する | /favorite                             | GET /api/favorite                     |
-| [あとで見る一覧](./pages/あとで見る一覧/index.md) | あとで見るに追加したメディア一覧を表示する | /queue                                | GET /api/queue                        |
 | [エラー画面](./pages/エラー画面/index.md)         | 想定外な動作をした場合に表示する           | /error                                | GET /api/error                        |
 | [メディア登録](./pages/メディア登録/index.md)     | 新しいメディアを登録する画面               | /entry                                | GET /api/entry                        |
 | [メディア編集](./pages/メディア編集/index.md)     | メディアの編集画面                         | /edit/メディアID                      | GET /api/edit/{mediaId}               |

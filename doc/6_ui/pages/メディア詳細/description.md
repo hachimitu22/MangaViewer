@@ -11,4 +11,4 @@
 なし
 
 ## APIエラー時の表示方針
-- `PUT/DELETE /api/favorite/{mediaId}`、`PUT/DELETE /api/queue/{mediaId}`、または `POST /api/logout`（ナビゲーターのログアウト）がエラー系レスポンスを返した場合、画面上にエラーメッセージを表示し、ユーザーに再度実行を促す。
+- 本画面で利用するAPIがエラー系レスポンスを返した場合は、画面上にエラーメッセージを表示する。
