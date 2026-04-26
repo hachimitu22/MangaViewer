@@ -3,7 +3,7 @@
 ## 概要
 - `src/app.js` の `createApp(env)` は、Express アプリケーションの生成とアプリ全体の初期配線を担当する。
 - アプリケーション起動時に `createDependencies`・`setupMiddleware`・`setupRoutes` を順に呼び出し、HTTP 受け付け前に必要な依存関係とルーティングをまとめて束ねる。
-- `DevelopmentSession` を含む起動時設定は `env` 経由で下位モジュールへ引き渡し、`createApp` 自身は判定ロジックを持たない。
+- 起動時設定は `env` 経由で下位モジュールへ引き渡し、`createApp` 自身は判定ロジックを持たない。
 
 ## 対象実装
 - 実装: `src/app.js`
@@ -20,13 +20,7 @@
 | --- | --- | --- |
 | `databaseStoragePath` | SQLite ファイル格納先 | `createDependencies` |
 | `contentRootDirectory` | コンテンツ保存先ディレクトリ | `createDependencies` |
-| `loginPassword` | 固定ログイン認証のパスワード | `createDependencies` |
-| `loginUserId` | ログイン成功時に採用する利用主体ID | `createDependencies` |
-| `loginSessionTtlMs` | 通常ログインセッションの TTL | `createDependencies` |
-| `devSessionToken` | 開発用固定セッションのトークン | `createDependencies` / `setupMiddleware` |
-| `devSessionUserId` | 開発用固定セッションの利用主体ID | `createDependencies` |
-| `devSessionTtlMs` | 開発用固定セッションの TTL | `createDependencies` |
-| `devSessionPaths` | 開発用固定セッションを自動適用するパス一覧 | `setupMiddleware` |
+| 開発用固定認証に関する設定群 | 固定認証の事前登録と自動適用の制御 | `createDependencies` / `setupMiddleware` |
 
 - `port` は `server.js` が `listen` にだけ利用するため、`createApp` 自体では参照しない。
 - `env` は `app.locals.env` に保存し、起動後の参照元として残す。
@@ -52,10 +46,9 @@
 - `app.locals.close` は、`ready` 完了後に接続クローズを実行する非同期関数として保持する。
 - `createApp` は `ready` / `close` を再定義せず、アプリ利用者が `app.locals` 経由で一貫したライフサイクル API を扱えるようにする。
 
-## `DevelopmentSession` との関連
-- 開発用固定セッションの事前登録責務は `createDependencies`、リクエスト単位の適用判定は `setupMiddleware` が担う。
+## 開発用固定認証との関連
+- 開発用固定認証の事前登録責務は `createDependencies`、リクエスト単位の適用判定は `setupMiddleware` が担う。
 - `createApp` は `env` と `dependencies` を両モジュールへ渡す接続点として機能する。
-- 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
 
 ## 関連ドキュメント
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)
