@@ -16,7 +16,7 @@ describe('setRouterScreenSearchGet', () => {
     setRouterScreenSearchGet({ router });
     const [, renderHandler] = router.get.mock.calls[0];
     const res = createRes();
-    renderHandler({ context: { userId: 'user-001' } }, res);
+    renderHandler({}, res);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 });

@@ -25,7 +25,7 @@ describe('ScreenViewerGetController', () => {
       })),
     };
     const controller = new ScreenViewerGetController({ getMediaContentWithNavigationService });
-    const req = { params: { mediaId: 'media-1', mediaPage: '2' }, context: { userId: 'admin' } };
+    const req = { params: { mediaId: 'media-1', mediaPage: '2' } };
     const res = createRes();
 
     await controller.execute(req, res);
