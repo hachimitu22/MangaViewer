@@ -8,7 +8,7 @@ const runImportViaNodeProcess = ({ targetDir, entriesMapPath }) => {
   const script = `
 const fs = require('fs');
 const path = require('path');
-const { ImportZips, Query } = require('${path.resolve('src/application/app/importZips/ImportZips').replace(/\\/g, '\\\\')}');
+const { ImportZips, Query } = require('${path.resolve('scripts/ImportZips').replace(/\\/g, '\\\\')}');
 const entriesMap = JSON.parse(fs.readFileSync('${entriesMapPath.replace(/\\/g, '\\\\')}', 'utf8'));
 const targetDir = '${targetDir.replace(/\\/g, '\\\\')}';
 

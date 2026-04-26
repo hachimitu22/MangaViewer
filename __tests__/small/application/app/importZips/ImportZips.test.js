@@ -1,4 +1,4 @@
-const { ImportZips, Query } = require('../../../../../src/application/app/importZips/ImportZips');
+const { ImportZips, Query } = require('../../../../../scripts/ImportZips');
 const { RegisterMediaServiceInput } = require('../../../../../src/application/media/command/RegisterMediaService');
 
 const createDeps = () => ({
