@@ -14,6 +14,7 @@ const createApp = () => {
   app.get('/protected', (req, res) => {
     res.status(200).json({
       csrfToken: req.session.csrf_token,
+      sessionToken: req.session.session_token,
       requestId: req.context.requestId,
     });
   });
@@ -56,5 +57,16 @@ describe('setupMiddleware の接続 (medium)', () => {
     expect(response.status).toBe(200);
     expect(response.headers['x-request-id']).toBe('req-123');
     expect(response.body.requestId).toBe('req-123');
+  });
+
+  test('session_token Cookie があっても認証セッションは補完しない', async () => {
+    const { app } = createApp();
+
+    const response = await request(app)
+      .get('/protected')
+      .set('cookie', 'session_token=legacy-token');
+
+    expect(response.status).toBe(200);
+    expect(response.body.sessionToken).toBeUndefined();
   });
 });

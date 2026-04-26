@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterScreenSearchGet = require('../../../../../src/controller/router/screen/setRouterScreenSearchGet');
 const requestApp = async ({ app, method, targetPath, headers = {} } = {}) => {
@@ -51,9 +50,7 @@ describe('setRouterScreenSearchGet (middle)', () => {
     });
 
     app.use((req, _res, next) => {
-      req.session = {
-        session_token: extractSessionTokenFromCookie(req.header('cookie')),
-      };
+      req.session = {};
       req.context = {};
       next();
     });
@@ -73,9 +70,6 @@ describe('setRouterScreenSearchGet (middle)', () => {
       app,
       method: 'GET',
       targetPath: '/screen/search',
-      headers: {
-        cookie: 'session_token=valid-token',
-      },
     });
 
     expect(response.status).toBe(200);
