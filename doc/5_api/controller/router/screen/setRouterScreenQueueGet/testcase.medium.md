@@ -28,7 +28,7 @@
 - **操作**
   - 登録済みの2ハンドラーを順に実行する。
 - **結果**
-  - 認証処理が `session_token` で呼ばれる。
+  - 認証処理が `auth_token` で呼ばれる。
   - 一覧取得処理が `req.context.userId` とクエリパラメータ `sort` / `queuePage` を使って実行される。
   - `screen/queue` が `pageTitle` / `currentConditions` / `pagination` / `mediaOverviews` を含む表示データで描画される。
 
@@ -43,6 +43,6 @@
   - `next(error)` が呼ばれる。
 
 ## medium テストで担保する観点
-- `__tests__/medium/controller/router/screen/setRouterScreenQueueGet.test.js` では、Express アプリへ当該ルーターを登録した状態で `GET /screen/queue` を実行し、認証済みセッションから HTML を返せることを担保する。
-- medium テストでは `SessionStateAuthAdapter` により `x-session-token` から `userId` を解決し、認証ミドルウェアが実際に適用されることを担保する。
+- `__tests__/medium/controller/router/screen/setRouterScreenQueueGet.test.js` では、Express アプリへ当該ルーターを登録した状態で `GET /screen/queue` を実行し、認証済み状態から HTML を返せることを担保する。
+- medium テストでは `SessionStateAuthAdapter` により `x-auth-token` から `userId` を解決し、認証ミドルウェアが実際に適用されることを担保する。
 - medium テストでは `GetQueueService` 相当の依存が返した並び順・ページ番号・総件数・トグル表示状態を描画結果へ反映し、`screen/queue` テンプレートが応答に使われることを担保する。

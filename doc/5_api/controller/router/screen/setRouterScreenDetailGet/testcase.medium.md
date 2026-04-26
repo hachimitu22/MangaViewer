@@ -26,7 +26,7 @@
 - **操作**
   - ルーターに登録された2ハンドラーを `next` で順に実行する。
 - **結果**
-  - 認証処理が `session_token` で呼ばれる。
+  - 認証処理が `auth_token` で呼ばれる。
   - 詳細取得処理が `mediaId` を使って実行される。
   - `screen/detail` が描画される。
   - `contents[*].thumbnail` は `/contents/...` の公開パスとして描画モデルへ渡される。

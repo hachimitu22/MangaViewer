@@ -2,7 +2,7 @@
 
 ## 概要
 - `PATCH /api/media/:mediaId` のルーティング定義。
-- ハンドラー順: `SessionAuthMiddleware` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPatchController`。
+- ハンドラー順: `認証ミドルウェア` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPatchController`。
 
 ## エラーハンドリング
 - 認証失敗: `401`

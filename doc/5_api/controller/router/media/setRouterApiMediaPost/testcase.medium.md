@@ -6,6 +6,6 @@
 - `authResolver` / `saveAdapter` が不正な場合は初期化時に例外となる。
 
 ## 期待結果
-- ハンドラー順: `SessionAuthMiddleware` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
-- リクエストには `session_token` と `csrf_token`（Cookie由来）および `X-CSRF-Token` / `Origin` が必要。
+- ハンドラー順: `認証ミドルウェア` → `CsrfProtectionMiddleware` → `ContentSaveMiddleware` → `MediaPostController`。
+- リクエストには `auth_token` と `csrf_token`（Cookie由来）および `X-CSRF-Token` / `Origin` が必要。
 - 正常時は `200 + { code: 0, mediaId }`。
