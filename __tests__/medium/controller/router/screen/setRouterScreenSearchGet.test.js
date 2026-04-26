@@ -50,7 +50,6 @@ describe('setRouterScreenSearchGet (middle)', () => {
     });
 
     app.use((req, _res, next) => {
-      req.session = {};
       req.context = {};
       next();
     });

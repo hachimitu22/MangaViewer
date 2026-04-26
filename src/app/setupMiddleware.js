@@ -29,21 +29,6 @@ const parseCookieHeader = cookieHeader => {
     }, {});
 };
 
-const attachSessionHelpers = req => {
-  req.session = req.session ?? {};
-  req.session.req = req;
-  req.session.regenerate = callback => {
-    req.session = {};
-    attachSessionHelpers(req);
-    callback(null);
-  };
-  req.session.destroy = callback => {
-    req.session = {};
-    attachSessionHelpers(req);
-    callback(null);
-  };
-};
-
 const createCsrfToken = () => crypto.randomBytes(32).toString('hex');
 
 const resolveCsrfCookiePolicy = env => {
@@ -164,7 +149,6 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
 
   app.use((req, res, next) => {
     req.context = req.context ?? {};
-    attachSessionHelpers(req);
     const logger = req.app?.locals?.dependencies?.logger;
     const allowedHosts = resolveAllowedHosts(env);
     const rawHost = normalizeHost(req.header('host'));
@@ -200,12 +184,11 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
     });
 
     const cookies = parseCookieHeader(req.header('cookie'));
-    if (typeof cookies.csrf_token === 'string' && cookies.csrf_token.length > 0) {
-      req.session.csrf_token = cookies.csrf_token;
-    } else {
-      req.session.csrf_token = createCsrfToken();
+    const hasCsrfCookie = typeof cookies.csrf_token === 'string' && cookies.csrf_token.length > 0;
+    const csrfToken = hasCsrfCookie ? cookies.csrf_token : createCsrfToken();
+    if (!hasCsrfCookie) {
       const policy = resolveCsrfCookiePolicy(env);
-      res.cookie?.('csrf_token', req.session.csrf_token, {
+      res.cookie?.('csrf_token', csrfToken, {
         httpOnly: false,
         path: '/',
         secure: policy.secure,
@@ -213,7 +196,7 @@ const setupMiddleware = (app, { env = {}, dependencies: _dependencies } = {}) =>
       });
     }
 
-    res.locals.csrfToken = req.session.csrf_token;
+    res.locals.csrfToken = csrfToken;
 
     const startedAt = Date.now();
     const requestId = req.header('x-request-id') || crypto.randomUUID();

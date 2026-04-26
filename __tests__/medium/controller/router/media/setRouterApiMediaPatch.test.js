@@ -18,21 +18,6 @@ const Tag = require('../../../../../src/domain/media/tag');
 const Category = require('../../../../../src/domain/media/category');
 const Label = require('../../../../../src/domain/media/label');
 
-const extractCsrfTokenFromCookie = cookieHeader => {
-  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
-    return undefined;
-  }
-  const pair = cookieHeader
-    .split(';')
-    .map(entry => entry.trim())
-    .find(entry => entry.startsWith('csrf_token='));
-  if (!pair) {
-    return undefined;
-  }
-  const [, value = ''] = pair.split('=');
-  return value || undefined;
-};
-
 describe('setRouterApiMediaPatch (middle)', () => {
   let sequelize;
   let unitOfWork;
@@ -73,9 +58,6 @@ describe('setRouterApiMediaPatch (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = {
-        csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
-      };
       req.context = {};
       next();
     });

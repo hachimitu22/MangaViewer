@@ -48,7 +48,6 @@ describe('setRouterScreenSummaryGet (middle)', () => {
     });
 
     app.use((req, _res, next) => {
-      req.session = {};
       req.context = {};
       next();
     });

@@ -11,21 +11,6 @@ const SequelizeUnitOfWork = require('../../../../../src/infrastructure/Sequelize
 const MediaId = require('../../../../../src/domain/media/mediaId');
 const MulterDiskStorageContentUploadAdapter = require('../../../../../src/infrastructure/MulterDiskStorageContentUploadAdapter');
 
-const extractCsrfTokenFromCookie = cookieHeader => {
-  if (typeof cookieHeader !== 'string' || cookieHeader.length === 0) {
-    return undefined;
-  }
-  const pair = cookieHeader
-    .split(';')
-    .map(entry => entry.trim())
-    .find(entry => entry.startsWith('csrf_token='));
-  if (!pair) {
-    return undefined;
-  }
-  const [, value = ''] = pair.split('=');
-  return value || undefined;
-};
-
 class FixedMediaIdValueGenerator {
   generate() {
     return '1234567890abcdef1234567890abcdef';
@@ -59,9 +44,6 @@ describe('setRouterApiMediaPost (middle)', () => {
     const router = express.Router();
 
     app.use((req, _res, next) => {
-      req.session = {
-        csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
-      };
       req.context = {};
       next();
     });
