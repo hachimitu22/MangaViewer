@@ -57,7 +57,7 @@
 - 開発環境で `ENABLE_DEV_SESSION` が未指定の場合は無効として扱うため、起動時に誤設定検知ログを出力する。
 - `ENABLE_DEV_SESSION=true` かつ `host` が loopback 以外の場合は起動を拒否する（`ALLOW_REMOTE_DEV_SESSION=true` を明示した非常時のみ回避可能）。
 - セッションストアへの事前登録は `createDependencies`、リクエスト適用は `setupMiddleware` が担うため、`server.js` は環境変数解釈と起動ログ出力に責務を限定する。
-- 固定セッションの優先順位は `x-session-token` → `session_token` Cookie → 開発用固定セッションであり、その実行仕様自体は [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md) を参照する。
+- 固定セッションの優先順位や適用仕様は [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md) を参照する。
 - 詳細は [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
 
 ## 関連ドキュメント
