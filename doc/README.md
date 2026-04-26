@@ -69,3 +69,10 @@ MediaViewerは、漫画・動画などの複数種類のメディアを閲覧可
 - [ ] しおり機能
 - [ ] あとで見るのメディアを最後まで見たら一覧から削除する
 - [ ] ビューアーからのお気に入り登録
+
+
+## 管理系 API 認可ポリシー（暫定）
+- `/api/media` 系の更新系 API（POST/PATCH/DELETE）は、通常ユーザーセッション認証ではなく管理者向けの別認可を使う。
+- 現時点では `ADMIN_API_TOKEN` を `x-admin-token` または `Authorization: Bearer <token>` で照合する方式を採用する。
+- `ADMIN_API_TOKEN` 未設定時は fail-close（常に 401）を維持し、意図せぬ公開を防ぐ。
+

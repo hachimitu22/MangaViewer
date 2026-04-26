@@ -1,10 +1,8 @@
 const express = require('express');
 const request = require('supertest');
 const { Sequelize } = require('sequelize');
-const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterApiMediaDelete = require('../../../../../src/controller/router/media/setRouterApiMediaDelete');
-const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
 const SequelizeMediaRepository = require('../../../../../src/infrastructure/SequelizeMediaRepository');
 const SequelizeUnitOfWork = require('../../../../../src/infrastructure/SequelizeUnitOfWork');
 const { DeleteMediaService } = require('../../../../../src/application/media/command/DeleteMediaService');
@@ -30,16 +28,6 @@ const extractCsrfTokenFromCookie = cookieHeader => {
   const [, value = ''] = pair.split('=');
   return value || undefined;
 };
-
-class InMemorySessionStateStore {
-  constructor(entries = []) {
-    this.tokenToUserId = new Map(entries);
-  }
-
-  findUserIdBySessionToken(sessionToken) {
-    return this.tokenToUserId.get(sessionToken) ?? null;
-  }
-}
 
 describe('setRouterApiMediaDelete (middle)', () => {
   let sequelize;
@@ -77,7 +65,6 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     app.use((req, _res, next) => {
       req.session = {
-        session_token: extractSessionTokenFromCookie(req.header('cookie')),
         csrf_token: extractCsrfTokenFromCookie(req.header('cookie')),
       };
       req.context = {};
@@ -86,9 +73,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
 
     setRouterApiMediaDelete({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user-001']]),
-      }),
+      adminApiToken: 'admin-token',
       deleteMediaService: new DeleteMediaService({ mediaRepository, unitOfWork }),
     });
 
@@ -104,7 +89,8 @@ describe('setRouterApiMediaDelete (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1');
+      .set('cookie', 'csrf_token=csrf-1')
+      .set('x-admin-token', 'admin-token');
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ code: 0 });
@@ -121,7 +107,8 @@ describe('setRouterApiMediaDelete (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=valid-token; csrf_token=csrf-1');
+      .set('cookie', 'csrf_token=csrf-1')
+      .set('x-admin-token', 'admin-token');
 
     expect(response.status).toBe(500);
     expect(response.body).toEqual({ message: 'Internal Server Error' });
@@ -135,7 +122,7 @@ describe('setRouterApiMediaDelete (middle)', () => {
       .set('origin', 'http://127.0.0.1')
       .set('host', '127.0.0.1')
       .set('x-csrf-token', 'csrf-1')
-      .set('cookie', 'session_token=invalid-token; csrf_token=csrf-1');
+      .set('cookie', 'csrf_token=csrf-1');
 
     expect(response.status).toBe(401);
     expect(response.body).toEqual({

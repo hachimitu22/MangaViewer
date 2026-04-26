@@ -34,9 +34,6 @@ describe('setRouterScreenSummaryGet', () => {
 
     setRouterScreenSummaryGet({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user-001']]),
-      }),
       searchMediaService,
     });
 

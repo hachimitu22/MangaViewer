@@ -1,4 +1,3 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const {
   Input,
   InputSortType,
@@ -92,11 +91,8 @@ const createPagination = ({ totalCount, summaryPage, pageSize }) => {
   return { totalPages, currentPage, items };
 };
 
-const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
-
+const setRouterScreenSummaryGet = ({ router, searchMediaService }) => {
   router.get('/screen/summary', ...[
-    auth.execute.bind(auth),
     async (req, res, next) => {
       const logger = req.app?.locals?.dependencies?.logger;
       try {

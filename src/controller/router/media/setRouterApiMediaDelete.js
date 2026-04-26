@@ -1,14 +1,14 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
+const AdminTokenAuthMiddleware = require('../../middleware/AdminTokenAuthMiddleware');
 const CsrfProtectionMiddleware = require('../../middleware/CsrfProtectionMiddleware');
 const MediaDeleteController = require('../../api/MediaDeleteController');
 
 const setRouterApiMediaDelete = ({
   router,
-  authResolver,
+  adminApiToken,
   deleteMediaService,
   allowedOrigin,
 }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
+  const auth = new AdminTokenAuthMiddleware({ expectedToken: adminApiToken });
   const csrf = new CsrfProtectionMiddleware({ allowedOrigin });
   const controller = new MediaDeleteController({
     deleteMediaService,

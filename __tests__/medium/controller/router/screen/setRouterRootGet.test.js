@@ -2,18 +2,6 @@ const express = require('express');
 const { extractSessionTokenFromCookie } = require('../../../../helpers/extractSessionTokenFromCookie');
 
 const setRouterRootGet = require('../../../../../src/controller/router/screen/setRouterRootGet');
-const SessionStateAuthAdapter = require('../../../../../src/infrastructure/SessionStateAuthAdapter');
-
-class InMemorySessionStateStore {
-  constructor(entries = []) {
-    this.tokenToUserId = new Map(entries);
-  }
-
-  findUserIdBySessionToken(sessionToken) {
-    return this.tokenToUserId.get(sessionToken) ?? null;
-  }
-}
-
 const requestApp = async ({ app, method, targetPath, headers = {} } = {}) => {
   const server = app.listen(0);
 
@@ -61,18 +49,13 @@ describe('setRouterRootGet (middle)', () => {
 
     setRouterRootGet({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([
-          ['valid-token', 'user-001'],
-        ]),
-      }),
     });
 
     app.use(router);
     return app;
   };
 
-  test('未認証アクセス GET / は /screen/login へリダイレクトする', async () => {
+  test('GET / は /screen/summary へリダイレクトする', async () => {
     const app = createApp();
 
     const response = await requestApp({
@@ -83,7 +66,7 @@ describe('setRouterRootGet (middle)', () => {
 
     expect(response.status).toBeGreaterThanOrEqual(300);
     expect(response.status).toBeLessThan(400);
-    expect(response.headers.get('location')).toBe('/screen/login');
+    expect(response.headers.get('location')).toBe('/screen/summary');
   });
 
   test('認証済みアクセス GET / は /screen/summary へリダイレクトする', async () => {

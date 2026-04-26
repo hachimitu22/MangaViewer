@@ -13,7 +13,6 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
   });
   dependencies.routeSetters.setRouterScreenDetailGet({
     router,
-    authResolver: dependencies.authResolver,
     getMediaDetailService: dependencies.getMediaDetailService,
   });
   dependencies.routeSetters.setRouterScreenEditGet({
@@ -27,22 +26,19 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
   });
   dependencies.routeSetters.setRouterScreenSearchGet({
     router,
-    authResolver: dependencies.authResolver,
   });
   dependencies.routeSetters.setRouterScreenSummaryGet({
     router,
-    authResolver: dependencies.authResolver,
     searchMediaService: dependencies.searchMediaService,
   });
   dependencies.routeSetters.setRouterScreenViewerGet({
     router,
-    authResolver: dependencies.authResolver,
     getMediaContentWithNavigationService: dependencies.getMediaContentWithNavigationService,
   });
 
   dependencies.routeSetters.setRouterApiMediaPost({
     router,
-    authResolver: dependencies.authResolver,
+    adminApiToken: env.adminApiToken,
     saveAdapter: dependencies.saveAdapter,
     mediaIdValueGenerator: dependencies.mediaIdValueGenerator,
     mediaRepository: dependencies.mediaRepository,
@@ -51,14 +47,14 @@ const setupRoutes = (app, { env = {}, dependencies } = {}) => {
   });
   dependencies.routeSetters.setRouterApiMediaPatch({
     router,
-    authResolver: dependencies.authResolver,
+    adminApiToken: env.adminApiToken,
     saveAdapter: dependencies.saveAdapter,
     updateMediaService: dependencies.updateMediaService,
     allowedOrigin: env.appOrigin,
   });
   dependencies.routeSetters.setRouterApiMediaDelete({
     router,
-    authResolver: dependencies.authResolver,
+    adminApiToken: env.adminApiToken,
     deleteMediaService: dependencies.deleteMediaService,
     allowedOrigin: env.appOrigin,
   });

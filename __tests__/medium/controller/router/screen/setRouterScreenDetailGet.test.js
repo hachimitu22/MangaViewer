@@ -89,9 +89,6 @@ describe('setRouterScreenDetailGet (middle)', () => {
 
     setRouterScreenDetailGet({
       router,
-      authResolver: new SessionStateAuthAdapter({
-        sessionStateStore: new InMemorySessionStateStore([['valid-token', 'user001']]),
-      }),
       getMediaDetailService: new GetMediaDetailService({ mediaRepository }),
     });
 

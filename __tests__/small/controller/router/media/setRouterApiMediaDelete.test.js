@@ -12,12 +12,11 @@ describe('setRouterApiMediaDelete', () => {
 
   it('DELETE /api/media/:mediaId に認証・削除の順でハンドラーを登録できる', async () => {
     const router = { delete: jest.fn() };
-    const authResolver = { execute: jest.fn().mockResolvedValue('u1') };
     const deleteMediaService = { execute: jest.fn().mockResolvedValue(undefined) };
 
     setRouterApiMediaDelete({
       router,
-      authResolver,
+      adminApiToken: 'admin-token',
       deleteMediaService,
     });
 
@@ -27,10 +26,11 @@ describe('setRouterApiMediaDelete', () => {
     expect(handlers).toHaveLength(3);
 
     const req = {
-      session: { session_token: 'token-1', csrf_token: 'csrf-1' },
+      session: { csrf_token: 'csrf-1' },
       protocol: 'http',
       get: name => ({
         'x-csrf-token': 'csrf-1',
+      'x-admin-token': 'admin-token',
         origin: 'http://localhost',
         host: 'localhost',
       }[String(name).toLowerCase()] || undefined),
@@ -45,7 +45,6 @@ describe('setRouterApiMediaDelete', () => {
       });
     });
 
-    expect(authResolver.execute).toHaveBeenCalledWith('token-1');
     expect(deleteMediaService.execute).toHaveBeenCalledWith(expect.objectContaining({
       id: 'media-1',
     }));
