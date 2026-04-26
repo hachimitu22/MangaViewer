@@ -6,9 +6,9 @@ get:
       description: 認証状態に応じた画面リダイレクト
       headers:
         Location:
-          description: リダイレクト先URL（`/screen/login` または `/screen/summary`）
+          description: リダイレクト先URL（`/screen/entry` または `/screen/summary`）
           schema:
             type: string
             enum:
-              - /screen/login
+              - /screen/entry
               - /screen/summary
