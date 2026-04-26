@@ -28,14 +28,6 @@
   - 並び順変更の反映
   - ページ移動時の表示整合
 
-### TC-E2E-003: 詳細画面でお気に入り/あとで見る操作ができる
-
-- 対応テスト: `__tests__/large/e2e/detail/detail-preference-watchlist-actions.large.test.js`
-- 観点:
-  - 詳細画面表示
-  - お気に入り追加/解除
-  - あとで見る追加/解除
-
 ### TC-E2E-004: 画面ナビゲーションが機能する
 
 - 対応テスト: `__tests__/large/e2e/navigation/navigation-and-exit.large.test.js`
@@ -48,8 +40,6 @@
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard.large.test.js`
 - 観点:
-  - 条件未充足で保護画面（`/screen/summary`, `/screen/detail/:mediaId`, `/screen/preference`, `/screen/watchlist`, `/screen/entry`, `/screen/edit/:mediaId`）へ直接アクセスした際の統一的な拒否（401）
-  - 条件未充足で保護 API（`PUT /api/preference/:mediaId`, `PUT /api/watchlist/:mediaId`, `PATCH /api/media/:mediaId`, `DELETE /api/media/:mediaId`）を呼んだ際の拒否
   - 条件充足後に同一 API / 画面アクセスが許可されること
 
 ### TC-E2E-006: ビューアーのページ遷移と URL パラメータ整合が機能する
@@ -102,14 +92,6 @@
   - `/screen/summary` の URL クエリ（`title`, `tags`, `start`, `size`, `sort`, `summaryPage`）に条件が反映される
   - 一覧の「現在の検索条件」チップ表示と結果件数が入力条件に整合する
 
-### TC-E2E-012: お気に入り・あとで見る一覧の並び替えとページングが機能する
-
-- 対応テスト: `__tests__/large/e2e/preference-watchlist/preference-watchlist-sort-pagination.large.test.js`
-- 観点:
-  - 複数件データで `/screen/preference` と `/screen/watchlist` のページング UI が機能する
-  - sort クエリ変更で表示順（date/title, asc/desc）が切り替わる
-  - 一覧上の解除操作（`DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId`）後に件数とページ表示が整合する
-
 ### TC-E2E-013: 初期導線失敗時に遷移せずエラーメッセージを表示する
 
 - 対応テスト: `__tests__/large/e2e/auth/auth-failure.large.test.js`
@@ -124,7 +106,6 @@
 - 対応テスト: `__tests__/large/e2e/auth/auth-guard-uncovered-routes.large.test.js`
 - 観点:
   - 条件未充足で `/screen/viewer/:mediaId/:mediaPage` と `/screen/search` へ直接アクセスした際に `401` で拒否される
-  - 条件未充足で `POST /api/media`, `POST /api/navigation-exit`, `DELETE /api/preference/:mediaId`, `DELETE /api/watchlist/:mediaId` を実行した際に `401` で拒否される
   - 条件充足後は同一導線が許可される
 
 ### TC-E2E-015: 画面で利用する各APIの異常系で画面内メッセージ表示と再操作ができる
@@ -134,17 +115,12 @@
   - `/screen/auth` で `POST /api/auth` が失敗した場合、遷移せずエラーメッセージを表示して再入力・再実行できる
   - `/screen/entry` で `POST /api/media` が失敗した場合、入力値を保持したままエラーメッセージを表示し再実行できる
   - `/screen/edit/:mediaId` で `PATCH /api/media/{mediaId}` または `DELETE /api/media/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再実行できる
-  - `/screen/detail/:mediaId` で `PUT/DELETE /api/preference/{mediaId}` と `PUT/DELETE /api/watchlist/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
-  - `/screen/preference` で `DELETE /api/preference/{mediaId}` または `PUT /api/watchlist/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
-  - `/screen/watchlist` で `PUT/DELETE /api/preference/{mediaId}` と `PUT/DELETE /api/watchlist/{mediaId}` が失敗した場合、同一画面でエラーメッセージを表示し再操作できる
   - ナビゲーターから `POST /api/navigation-exit` が失敗した場合、表示中の画面にエラーメッセージを表示し、画面が操作不能にならない
 
 ## 判定基準
 
 - 各シナリオで期待する HTTP ステータス・画面遷移・表示要素が一致すること
-- `POST /api/auth`, `POST /api/media`, `PATCH/DELETE /api/media/{mediaId}`, `PUT/DELETE /api/preference/{mediaId}`, `PUT/DELETE /api/watchlist/{mediaId}`, `POST /api/navigation-exit` の異常系で、画面遷移ではなく画面内エラーメッセージ表示と再操作可能性が満たされること
 - 画面状態の遷移が期待どおりであること
-- 操作結果（お気に入り・あとで見る等）が画面表示に反映されること
 
 ## メンテナンス方針
 
