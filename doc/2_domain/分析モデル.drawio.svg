@@ -60,13 +60,13 @@
                                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 120px; margin-left: 111px;">
                                         <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
                                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                ユーザー
+                                                媒体閲覧
                                             </div>
                                         </div>
                                     </div>
                                 </foreignObject>
                                 <text x="170" y="124" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                                    ユーザー
+                                    媒体閲覧
                                 </text>
                             </switch>
                         </g>
@@ -83,13 +83,13 @@
                                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 270px; margin-left: 231px;">
                                         <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
                                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                お気に入り
+                                                ピックアップ
                                             </div>
                                         </div>
                                     </div>
                                 </foreignObject>
                                 <text x="290" y="274" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                                    お気に入り
+                                    ピックアップ
                                 </text>
                             </switch>
                         </g>
@@ -106,13 +106,13 @@
                                     <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 270px; margin-left: 1px;">
                                         <div style="box-sizing: border-box; font-size: 0; text-align: center; color: #000000; ">
                                             <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: light-dark(#000000, #ffffff); line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
-                                                あとで見る
+                                                閲覧予定
                                             </div>
                                         </div>
                                     </div>
                                 </foreignObject>
                                 <text x="60" y="274" fill="light-dark(#000000, #ffffff)" font-family="Helvetica" font-size="12px" text-anchor="middle">
-                                    あとで見る
+                                    閲覧予定
                                 </text>
                             </switch>
                         </g>
