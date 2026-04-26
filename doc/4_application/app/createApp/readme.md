@@ -20,7 +20,6 @@
 | --- | --- | --- |
 | `databaseStoragePath` | SQLite ファイル格納先 | `createDependencies` |
 | `contentRootDirectory` | コンテンツ保存先ディレクトリ | `createDependencies` |
-| 開発用固定認証に関する設定群 | 固定認証の事前登録と自動適用の制御 | `createDependencies` / `setupMiddleware` |
 
 - `port` は `server.js` が `listen` にだけ利用するため、`createApp` 自体では参照しない。
 - `env` は `app.locals.env` に保存し、起動後の参照元として残す。
@@ -45,10 +44,6 @@
 - `server.js` は `listen` 前に `await app.locals.ready` を実行し、DB スキーマ同期失敗時に起動を中断する。
 - `app.locals.close` は、`ready` 完了後に接続クローズを実行する非同期関数として保持する。
 - `createApp` は `ready` / `close` を再定義せず、アプリ利用者が `app.locals` 経由で一貫したライフサイクル API を扱えるようにする。
-
-## 開発用固定認証との関連
-- 開発用固定認証の事前登録責務は `createDependencies`、リクエスト単位の適用判定は `setupMiddleware` が担う。
-- `createApp` は `env` と `dependencies` を両モジュールへ渡す接続点として機能する。
 
 ## 関連ドキュメント
 - [createDependencies 設計書](/doc/4_application/app/createDependencies/readme.md)

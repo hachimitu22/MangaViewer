@@ -2,7 +2,7 @@
 
 ## 概要
 - `src/app/createDependencies.js` は、アプリケーション起動時に必要な永続化アダプター・アプリケーションサービス・ルートセッター群をまとめて生成する。
-- SQLite / Sequelize 初期化、コンテンツ保存先ディレクトリ準備、ログイン認証、各種サービス組み立てを 1 箇所へ集約する。
+- SQLite / Sequelize 初期化、コンテンツ保存先ディレクトリ準備、各種サービス組み立てを 1 箇所へ集約する。
 
 ## 対象実装
 - 実装: `src/app/createDependencies.js`
@@ -32,9 +32,6 @@
   - `GetMediaContentWithNavigationService`
   - `UpdateMediaService`
   - `DeleteMediaService`
-- 認証・セッション系
-  - `LoginService`
-  - `LogoutService`
 
 ### ルートセッターの集約
 - 画面系・API 系のルート定義関数を `dependencies.routeSetters` に束ねる。
