@@ -2,8 +2,7 @@
 
 ## 概要
 - `src/app/createDependencies.js` は、アプリケーション起動時に必要な永続化アダプター・アプリケーションサービス・ルートセッター群をまとめて生成する。
-- SQLite / Sequelize 初期化、コンテンツ保存先ディレクトリ準備、ログイン認証、セッションストア、各種サービス組み立てを 1 箇所へ集約する。
-- 開発用固定セッションが有効な場合は、`DevelopmentSession` 用のセッションレコードを起動時に事前登録する。
+- SQLite / Sequelize 初期化、コンテンツ保存先ディレクトリ準備、ログイン認証、各種サービス組み立てを 1 箇所へ集約する。
 
 ## 対象実装
 - 実装: `src/app/createDependencies.js`
@@ -15,10 +14,6 @@
 | --- | --- | --- |
 | `databaseStoragePath` | 必須 | SQLite ファイルの保存先。親ディレクトリを自動生成する。 |
 | `contentRootDirectory` | 必須 | メディアコンテンツ保存先。ディレクトリを自動生成する。 |
-| `devSessionToken` | 条件付き | 開発用固定セッションのトークン。 |
-| `devSessionUserId` | 条件付き | 開発用固定セッションの主体 ID。 |
-| `devSessionTtlMs` | 条件付き | 開発用固定セッションの TTL。正の整数時のみ有効。 |
-| `devSessionPaths` | 任意 | 開発用固定セッションの適用対象パス一覧。生成処理では判定に使わず、他モジュールが参照する。 |
 
 ## 依存オブジェクトの生成責務
 
@@ -51,15 +46,6 @@
 - `contentRootDirectory` は `ensureDirectory` で再帰的に生成する。
 - これにより、初回起動時でも保存先未作成を理由に初期化失敗しにくくする。
 
-## `DevelopmentSession` の事前登録
-- `hasDevelopmentSession(env)` が `true` の場合のみ、起動直後に `sessionStateStore.save(...)` を 1 回実行する。
-- 登録内容は以下の通り。
-  - `sessionToken: env.devSessionToken`
-  - `principalId: env.devSessionUserId`（実装側の識別子キーへ格納）
-  - `ttlMs: env.devSessionTtlMs`
-- この事前登録により、`setupMiddleware` が注入した固定トークンを `SessionStateAuthAdapter` が通常セッションと同様に解決できる。
-- 開発用固定セッションの有効条件そのものは [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md) を参照する。
-
 ## `app.locals.ready` / `app.locals.close` の供給責務
 - `dependencies.ready` は `mediaRepository.sync()` の Promise を保持する。
 - `createApp` はこの Promise を `app.locals.ready` として公開する。
@@ -76,7 +62,6 @@
 - [createApp 設計書](/doc/4_application/app/createApp/readme.md)
 - [setupMiddleware 設計書](/doc/5_api/controller/middleware/setupMiddleware/readme.md)
 - [setupRoutes 設計書](/doc/5_api/controller/router/setupRoutes/readme.md)
-- [DevelopmentSession 設計書](/doc/5_api/controller/middleware/DevelopmentSession/readme.md)
 
 - [createDependencies small テスト観点](/doc/4_application/app/createDependencies/testcase.small.md)
 - [createDependencies medium テスト観点](/doc/4_application/app/createDependencies/testcase.medium.md)
