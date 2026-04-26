@@ -72,7 +72,7 @@ post:
             badRequest:
               value: { message: Bad Request }
     "401":
-      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
+      description: リクエスト受け付け条件を満たさない
     "403":
       description: CSRF検証またはOrigin検証に失敗
       content:

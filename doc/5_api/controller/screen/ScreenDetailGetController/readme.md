@@ -43,7 +43,7 @@
   - `mediaId` の入力変換
   - 成功時の描画モデル生成
   - 失敗時の `/screen/error` へのリダイレクト
-- 認証や route 登録順序、Express 統合は router テストに委譲する。
+- route 登録順序、Express 統合は router テストに委譲する。
 
 ## 関連ドキュメント
 - [controllerテストケース](/doc/5_api/controller/screen/ScreenDetailGetController/testcase.medium.md)

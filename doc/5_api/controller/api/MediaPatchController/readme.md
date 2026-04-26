@@ -2,7 +2,7 @@
 
 ## 概要
 - `PATCH /api/media/:mediaId` を受け取り、`UpdateMediaService` へ委譲する。
-- 認証・CSRF検証・コンテンツ保存は前段ミドルウェアで完了している前提。
+- CSRF検証・コンテンツ保存は前段ミドルウェアで完了している前提。
 
 ## バリデーション
 - `mediaId`: 非空 `string`

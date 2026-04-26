@@ -2,7 +2,7 @@
 
 ## 概要
 - `POST /api/media` を受け取り、`RegisterMediaService` へ委譲する。
-- 認証・CSRF検証・コンテンツ保存は前段ミドルウェアで完了している前提。
+- CSRF検証・コンテンツ保存は前段ミドルウェアで完了している前提。
 
 ## バリデーション
 - `title`: 非空 `string`

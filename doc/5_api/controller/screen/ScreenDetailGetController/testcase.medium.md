@@ -30,7 +30,7 @@
   - 例外内容に依存した分岐は持たない。
 
 ## テスト責務の境界
-- 認証ミドルウェアとの接続、route path、実際の HTTP レスポンスは router / medium テストで担保する。
+- ルーターとの接続、route path、実際の HTTP レスポンスは router / medium テストで担保する。
 - controller 単体では入力変換・分岐・描画モデル生成のみを確認する。
 
 
