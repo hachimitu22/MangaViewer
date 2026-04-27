@@ -209,7 +209,7 @@ describe('setupMiddleware (small)', () => {
       use: jest.fn(),
     };
     const env = {
-      loginSessionTtlMs: 60_000,
+      requestTtlMs: 60_000,
     };
 
     setupMiddleware(app, { env, dependencies: {} });
@@ -247,8 +247,8 @@ describe('setupMiddleware (small)', () => {
     const productionRes = createRes();
     const developmentRes = createRes();
 
-    productionHarness.middleware(createReq({ path: '/screen/login' }), productionRes, jest.fn());
-    developmentHarness.middleware(createReq({ path: '/screen/login' }), developmentRes, jest.fn());
+    productionHarness.middleware(createReq({ path: '/screen/summary' }), productionRes, jest.fn());
+    developmentHarness.middleware(createReq({ path: '/screen/summary' }), developmentRes, jest.fn());
 
     expect(productionRes.setHeader).toHaveBeenCalledWith(
       'Strict-Transport-Security',
