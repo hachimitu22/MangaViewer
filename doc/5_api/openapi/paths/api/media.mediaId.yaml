@@ -7,8 +7,6 @@ parameters:
       type: string
 patch:
   summary: メディア更新処理
-  security:
-    - cookieAuth: []
   parameters:
     - name: X-CSRF-Token
       in: header
@@ -61,8 +59,6 @@ patch:
           examples:
             badRequest:
               value: { message: Bad Request }
-    "401":
-      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
     "403":
       description: CSRF検証またはOrigin検証に失敗
       content:
@@ -80,8 +76,6 @@ patch:
 
 delete:
   summary: メディア削除処理
-  security:
-    - cookieAuth: []
   parameters:
     - name: X-CSRF-Token
       in: header
@@ -103,8 +97,6 @@ delete:
           examples:
             badRequest:
               value: { message: Bad Request }
-    "401":
-      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
     "403":
       description: CSRF検証またはOrigin検証に失敗
       content:

@@ -1,8 +1,6 @@
 # /api/media
 post:
   summary: メディア登録処理
-  security:
-    - cookieAuth: []
   parameters:
     - name: X-CSRF-Token
       in: header
@@ -73,8 +71,6 @@ post:
           examples:
             badRequest:
               value: { message: Bad Request }
-    "401":
-      $ref: '../../openapi.yaml#/components/responses/UnauthorizedApi'
     "403":
       description: CSRF検証またはOrigin検証に失敗
       content:

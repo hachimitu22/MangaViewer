@@ -5,11 +5,8 @@ info:
 servers:
   - url: https://example.com
 paths:
-  # ページURL
   /:
     $ref: './paths/screen/root.yaml'
-  /screen/login:
-    $ref: './paths/screen/login.yaml'
   /screen/summary:
     $ref: './paths/screen/summary.yaml'
   /screen/detail/{mediaId}:
@@ -18,10 +15,6 @@ paths:
     $ref: './paths/screen/viewer.mediaId.mediaPage.yaml'
   /screen/search:
     $ref: './paths/screen/search.yaml'
-  /screen/favorite:
-    $ref: './paths/screen/favorite.yaml'
-  /screen/queue:
-    $ref: './paths/screen/queue.yaml'
   /screen/error:
     $ref: './paths/screen/error.yaml'
   /screen/entry:
@@ -29,26 +22,12 @@ paths:
   /screen/edit/{mediaId}:
     $ref: './paths/screen/edit.mediaId.yaml'
 
-  # WebAPI
-  /api/login:
-    $ref: './paths/api/login.yaml'
-  /api/logout:
-    $ref: './paths/api/logout.yaml'
   /api/media:
     $ref: './paths/api/media.yaml'
   /api/media/{mediaId}:
     $ref: './paths/api/media.mediaId.yaml'
-  /api/favorite/{mediaId}:
-    $ref: './paths/api/favorite.mediaId.yaml'
-  /api/queue/{mediaId}:
-    $ref: './paths/api/queue.mediaId.yaml'
 
 components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: session_token
   responses:
     RedirectError:
       description: エラー画面リダイレクト
@@ -58,19 +37,3 @@ components:
           schema:
             type: string
             example: /error
-    UnauthorizedApi:
-      description: session_token Cookie が無効、または未送信
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                description: 認証失敗メッセージ
-                type: string
-          examples:
-            fail:
-              summary: 認証失敗
-              value: {
-                message: 認証に失敗しました
-              }

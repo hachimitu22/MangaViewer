@@ -7,8 +7,6 @@ participant サーバー
 database データベース
 
 クライアント -> サーバー: リクエスト
-!include ./auth_guard.puml
-
 クライアント <-- サーバー: メディア登録画面HTML
 
 @enduml

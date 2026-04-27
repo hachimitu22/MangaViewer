@@ -1,4 +1,3 @@
-const SessionAuthMiddleware = require('../../middleware/SessionAuthMiddleware');
 const {
   Input,
   InputSortType,
@@ -92,12 +91,8 @@ const createPagination = ({ totalCount, summaryPage, pageSize }) => {
   return { totalPages, currentPage, items };
 };
 
-const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService }) => {
-  const auth = new SessionAuthMiddleware(authResolver);
-
-  router.get('/screen/summary', ...[
-    auth.execute.bind(auth),
-    async (req, res, next) => {
+const setRouterScreenSummaryGet = ({ router, searchMediaService }) => {
+  router.get('/screen/summary', async (req, res, next) => {
       const logger = req.app?.locals?.dependencies?.logger;
       try {
         const range = normalizeSearchRange({
@@ -140,7 +135,7 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
           totalCount: result.totalCount,
           pagination,
           currentPath: '/screen/summary',
-          currentUserId: req.context?.userId || null,
+          currentUserId: null,
           sortOptions: [
             { value: 'date_desc', label: '登録の新しい順' },
             { value: 'date_asc', label: '登録の古い順' },
@@ -158,8 +153,7 @@ const setRouterScreenSummaryGet = ({ router, authResolver, searchMediaService })
         });
         next(error);
       }
-    },
-  ]);
+  });
 };
 
 module.exports = setRouterScreenSummaryGet;
